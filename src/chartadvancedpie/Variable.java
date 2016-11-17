@@ -11,6 +11,7 @@ import java.util.ArrayList;
  *
  * @author thegoodhen
  */
+@Deprecated
 public abstract class Variable {
 
 	Request readRequest;

@@ -15,13 +15,13 @@ import shuntingyard.VirtualMachine;
  *
  * @author thegoodhen
  */
-public class FindGUIElementByNameUserFunctionToken extends AbstractBuiltInFunctionToken{
+public class GetPropertyIDByNameUserFunctionToken extends AbstractBuiltInFunctionToken{
 
 
-	public FindGUIElementByNameUserFunctionToken(String tokenString) {
+	public GetPropertyIDByNameUserFunctionToken(String tokenString) {
 		super(tokenString);
-		this.setReturnType(new IntegerNumberToken("0"));//TODO: introduce void
-		VariableToken param1=new shuntingyard.VariableToken("text");
+		this.setReturnType(new IntegerNumberToken("0"));
+		VariableToken param1=new shuntingyard.VariableToken("name");
 		param1.setType(new IntegerNumberToken());
 		this.addArgument(param1);
 	}
@@ -32,8 +32,9 @@ public class FindGUIElementByNameUserFunctionToken extends AbstractBuiltInFuncti
 		StringBuilder sb=new StringBuilder();
 		byte currentCharVal=-1;
 		int index=0;
-		int GUIID=-1;
+		int PID=-1;
 
+		//TODO: move this functionality into VM!
 		while(currentCharVal!=0)
 		{
 			currentCharVal=(byte)(vm.getHeap().get(stringAddress+index).getValue());
@@ -42,17 +43,18 @@ public class FindGUIElementByNameUserFunctionToken extends AbstractBuiltInFuncti
 			index++;
 			currentCharVal=(byte)(vm.getHeap().get(stringAddress+index).getValue());
 		}
+
 		if(vm instanceof GUIVirtualMachine)
 		{
 			//GUIelement ge=((GUIVirtualMachine)vm).getGUIPanel().GUINameMap.get(sb.toString());
-			GUIID =((GUIVirtualMachine)vm).getGUIPanel().getGUIElementIDByName(sb.toString());
+			PID=PropertyManager.get().getPropertyIDByName(sb.toString());
 		}
-		vm.pushIntOnStack(GUIID);
+		vm.pushIntOnStack(PID);
 	}
 
 	@Override
 	public byte getBaseCode() {
-		return (byte)129;
+		return (byte)131;
 	}
 	
 }

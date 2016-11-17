@@ -28,6 +28,9 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new FindGUIElementByNameUserFunctionTokenFactory());
 		this.addSubFactory(new getGEValUserFunctionTokenFactory());
 		this.addSubFactory(new SetGEValUserFunctionTokenFactory());
+		this.addSubFactory(new GetPropertyIDByNameUserFunctionTokenFactory());
+		this.addSubFactory(new GetIntPropertyUserFunctionTokenFactory());
+		this.addSubFactory(new GetFloatPropertyUserFunctionTokenFactory());
 		this.addSubFactory(new AllocBytesOnStackUserFunctionTokenFactory());
 		this.addSubFactory(new StackByteUserFunctionTokenFactory());
 		this.addSubFactory(new SetStackByteUserFunctionTokenFactory());

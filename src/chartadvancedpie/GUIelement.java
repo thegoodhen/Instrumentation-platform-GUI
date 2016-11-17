@@ -28,6 +28,11 @@ public abstract class GUIelement extends Container implements Subscriber {
 	private GUIPanel gup;
 	private GUITab gut;
 	HashMap<String, GUIAbstractAction> actionMap = new HashMap<>();
+	private HashMap<String, Integer> name2IdMap=new HashMap<>();
+
+	private HashMap<Integer, String> id2NameMap=new HashMap<>();
+	private HashMap<Integer, Property> id2PropertyMap=new HashMap<>();
+	private HashMap<Property, Integer> property2idMap=new HashMap<>();
 	private boolean focused;
 	private boolean enabled = true;
 	private boolean selected = false;
@@ -35,6 +40,75 @@ public abstract class GUIelement extends Container implements Subscriber {
 	private boolean matchedLastSearch = true;
 	private String name = "Generic GUI Element";
 	private String uniqueName;
+
+	public void addProperty(int id, String name, Property p)
+	{
+		name2IdMap.put(name, id);
+		id2NameMap.put(id, name);
+		id2PropertyMap.put(id, p);
+		property2idMap.put(p, id);
+	}
+
+	public void addIntegerProperty(int id, String name, int value)
+	{
+		Property p=new IntegerProperty(value);
+		this.addProperty(id, name, p);
+	}
+
+	public void addFloatProperty(int id, String name, float value)
+	{
+		Property p=new FloatProperty(value);
+		this.addProperty(id, name, p);
+	}
+
+	public void addStringProperty(int id, String name, String value)
+	{
+		Property p=new StringProperty(value);
+		this.addProperty(id, name, p);
+	}
+
+	public HashMap<String, Integer> getName2IdMap() {
+		return name2IdMap;
+	}
+
+	public void setName2IdMap(HashMap<String, Integer> name2IdMap) {
+		this.name2IdMap = name2IdMap;
+	}
+
+	public HashMap<Integer, String> getId2NameMap() {
+		return id2NameMap;
+	}
+
+	public void setId2NameMap(HashMap<Integer, String> id2NameMap) {
+		this.id2NameMap = id2NameMap;
+	}
+
+	public HashMap<Integer, Property> getId2PropertyMap() {
+		return id2PropertyMap;
+	}
+
+	public void setId2PropertyMap(HashMap<Integer, Property> id2PropertyMap) {
+		this.id2PropertyMap = id2PropertyMap;
+	}
+
+	public HashMap<Property, Integer> getProperty2idMap() {
+		return property2idMap;
+	}
+
+	public void setProperty2idMap(HashMap<Property, Integer> property2idMap) {
+		this.property2idMap = property2idMap;
+	}
+
+	public Property getPropertyById(int id)
+	{
+		return id2PropertyMap.get(id);
+	}
+
+	public Property getPropertyByName(String name)
+	{
+		int id=name2IdMap.get(name);
+		return id2PropertyMap.get(id);
+	}
 
 	public boolean isVisible() {
 		return visible;
@@ -47,10 +121,34 @@ public abstract class GUIelement extends Container implements Subscriber {
 	private int value;
 
 	public GUIelement() {
+		this.initialize();
+	}
 
+	final void initialize()
+	{
+		this.id2NameMap=new HashMap<>();
+		this.name2IdMap=new HashMap<>();
+		this.property2idMap=new HashMap<>();
+		this.id2PropertyMap=new HashMap<>();
+		this.addFloatProperty(0, "Value", 0);
+		this.addFloatProperty(1, "Max", 100);
+		this.addFloatProperty(2, "Min", 0);
+		this.addFloatProperty(3, "Step", 1);
+		this.addStringProperty(4, "Name", "Generic gui element");
+		this.addStringProperty(5, "UniqueName", "GUI_GENERIC");
+		this.addIntegerProperty(6, "Color1", 0);
+		this.addIntegerProperty(7, "Color2", 200);
+		this.addIntegerProperty(8, "Color3", 400);
+		this.addIntegerProperty(9, "Color4", 600);
+		this.addIntegerProperty(10, "Focused", 0);
+		this.addIntegerProperty(11, "Selected", 0);
+		this.addIntegerProperty(11, "Selected", 0);
+		this.addIntegerProperty(12, "Visible", 1);
+		this.addIntegerProperty(13, "Highlighted", 0);
 	}
 
 	public GUIelement(GUITab gut) {
+		initialize();
 		this.gut = gut;
 		if (gut != null) {
 			recalculateUniqueName(gut);
