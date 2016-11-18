@@ -69,6 +69,28 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	private boolean vFlag = false;
 
+	public Position getCurrentPosition() {
+		Position returnPosition = new Position(this.currentGUITab, this.currentGUITab.getFocusedGUIElement());
+		return returnPosition;
+	}
+
+	public void setCurrentPosition(Position p) {
+		if (p != null) {
+			this.setCurrentGUITab(p.getGUITab());
+			this.getCurrentGUITab().focusGUIelement(p.getGUIElement());
+		}
+	}
+
+	public void setCurrentGUITab(GUITab gt) {
+		int position = tabList.indexOf(gt);
+		boolean isValid = (gt != null && position != -1);
+		if (isValid) {
+			this.currentGUITabIndex = position;
+			this.currentGUITab = gt;
+		}
+
+	}
+
 	public GUITab getCurrentGUITab() {
 		return this.currentGUITab;
 	}
@@ -76,7 +98,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	public int getGUIElementIDByName(String name) {
 		if (name.equals("CGE"))//short for "current gui element"
 		{
-			return GUIIDMap.get(this.currentGUITab.getCurrentGUIElement());
+			return GUIIDMap.get(this.currentGUITab.getFocusedGUIElement());
 		} else {
 			GUIelement ge = GUINameMap.get(name);
 			if (ge != null) {
@@ -106,10 +128,19 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 
 	public int getRepeatCount() throws RuntimeException {
+		return getRepeatCount(true);
+	}
+
+	public int getRepeatCount(boolean reset) {
+
 		if (repeatCountString.length() == 0) {
 			return 1;
 		}
+		if (reset) {
+			this.resetRepeatCount();
+		}
 		return Integer.parseInt(this.repeatCountString);
+
 	}
 
 	public String getRegisterContent(String registerName) {
@@ -494,13 +525,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			if (vFlag) {
 				returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
 			} else {
-				returnList.add(this.getCurrentGUITab().getCurrentGUIElement());
+				returnList.add(this.getCurrentGUITab().getFocusedGUIElement());
 			}
 			vFlag = false;
-		}
-		else
-		{
-				returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
+		} else {
+			returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
 		}
 		return returnList;
 
@@ -537,7 +566,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		 }
 		 else
 		 {
-		 getCurrentGUIElement().handleActions(ke);
+		 getFocusedGUIElement().handleActions(ke);
 		 }
 		 */
 		this.currentMenu.handle(ke.getText());

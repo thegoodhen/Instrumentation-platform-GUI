@@ -55,7 +55,7 @@ public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPr
 			@Override
 			public void doAction() {
 				removeOrCopyGUIElements(true);
-				//gp.getCurrentGUITab().removeGUIelement(gp.getCurrentGUITab().getCurrentGUIElementIndex());
+				//gp.getCurrentGUITab().removeGUIelement(gp.getCurrentGUITab().getFocusedGUIElementIndex());
 				//GUIPanel.this.setMark(register);
 			}
 
@@ -69,7 +69,7 @@ public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPr
 
 			@Override
 			public void doAction() {
-				gp.getCurrentGUITab().insertGUIelement(gp.getCurrentGUITab().getCurrentGUIElementIndex(), gp.getCurrentRegisterContentAndReset(), false);
+				gp.getCurrentGUITab().insertGUIelement(gp.getCurrentGUITab().getFocusedGUIElementIndex(), gp.getCurrentRegisterContentAndReset(), false);
 				//GUIPanel.this.setMark(register);
 			}
 
@@ -83,7 +83,7 @@ public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPr
 
 			@Override
 			public void doAction() {
-				gp.getCurrentGUITab().insertGUIelement(gp.getCurrentGUITab().getCurrentGUIElementIndex(), gp.getCurrentRegisterContentAndReset(), true);
+				gp.getCurrentGUITab().insertGUIelement(gp.getCurrentGUITab().getFocusedGUIElementIndex(), gp.getCurrentRegisterContentAndReset(), true);
 				//GUIPanel.this.setMark(register);
 			}
 

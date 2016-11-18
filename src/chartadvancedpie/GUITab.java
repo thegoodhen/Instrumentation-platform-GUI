@@ -60,7 +60,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		if (targetElement != null) {
 			GUIList.get(selectedElementIndex).setFocused(false);
 			targetElement.setFocused(true);
-			this.selectComponent(GUIList.indexOf(targetElement));
+			this.focusGUIelement(GUIList.indexOf(targetElement));
 		}
 	}
 
@@ -159,11 +159,11 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 
-	public GUIelement getCurrentGUIElement() {
+	public GUIelement getFocusedGUIElement() {
 		return GUIList.get(selectedElementIndex);
 	}
 
-	public int getCurrentGUIElementIndex() {
+	public int getFocusedGUIElementIndex() {
 		return selectedElementIndex;
 	}
 
@@ -466,11 +466,12 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		 }
 		 else
 		 {
-		 getCurrentGUIElement().handleActions(ke);
+		 getFocusedGUIElement().handleActions(ke);
 		 }
 		 */
 		this.currentMenu.handle(ke.getText());
 	}
+
 
 	public void addGUIelement(GUIelement ge) {
 		this.addGUIelement(ge, GUIList.size());
@@ -545,12 +546,12 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	 }
 	 */
 	public void editCurrentComponent() {
-		GUIelement currentElement = GUITab.this.getCurrentGUIElement();
+		GUIelement currentElement = GUITab.this.getFocusedGUIElement();
 		currentElement.getMenu().setSuperMenu(getGUIPanel().getMenu());
 		GUITab.this.getGUIPanel().setMenu(currentElement.getMenu());
 	}
 
-	public void selectComponent(int index) {
+	public void focusGUIelement(int index) {
 		GUIList.get(selectedElementIndex).setFocused(false);
 		if (index < 0) {
 			index = 0;
@@ -565,16 +566,22 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		}
 	}
 
+	public void focusGUIelement (GUIelement ge)
+	{
+		this.focusGUIelement(this.getGUIElementIndex(ge));
+	}
+
+
 	public void jumpToBeginning(IRepetitionCounter irc) {
 
 		int newIndex = irc.getRepeatCount();
-		selectComponent(newIndex - 1);
+		focusGUIelement(newIndex - 1);
 	}
 
 	public void jumpToEnd(IRepetitionCounter irc) {
 		int newIndex = irc.getRepeatCount();
 		if (irc.getRepeatCount() == 1) {
-			selectComponent(GUIList.size() - 1);
+			focusGUIelement(GUIList.size() - 1);
 		} else {
 			jumpToBeginning(irc);
 		}
@@ -583,7 +590,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	public void jumpToPercent(IRepetitionCounter irc) {
 		int percent = irc.getRepeatCount();
 		int newIndex = (int) Math.round(((float) GUIList.size() / 100) * percent);
-		selectComponent(newIndex);
+		focusGUIelement(newIndex);
 	}
 
 	public void traverseElements(boolean forward) {

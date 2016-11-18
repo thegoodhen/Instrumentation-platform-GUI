@@ -11,6 +11,8 @@ package chartadvancedpie;
  * @author thegoodhen
  */
 public class GUIAction extends GUIAbstractAction{
+	private int count=1;
+	private GUIPanel gp;
 
 	@Override
 	public void doAction() {
@@ -24,15 +26,30 @@ public class GUIAction extends GUIAbstractAction{
 			doAction();
 		}
 	}
-
-	public void doActionWithCounterHandling(IRepetitionCounter irc)
+	
+	public int getCount()
 	{
-		doAction(irc);
-		irc.resetRepeatCount();
+		return count;
 	}
 
-	@Override
-	public void undoAction() {
+	protected void setCount(int count)
+	{
+		this.count=count;
 	}
+
+	public GUIPanel getGUIPanel()
+	{
+		return this.gp;
+	}
+
+	public void doActionWithHandling(GUIPanel gp)
+	{
+		this.gp=gp;
+		count=gp.getRepeatCount(false);
+		doAction();
+		gp.resetRepeatCount();
+		//gp.resetRepeatCount();
+	}
+
 	
 }

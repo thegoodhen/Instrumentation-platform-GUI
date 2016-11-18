@@ -12,5 +12,5 @@ package chartadvancedpie;
 public abstract class GUIAbstractAction {
 	
 	public abstract void doAction();
-	public abstract void undoAction();
+	//public abstract void undoAction();
 }

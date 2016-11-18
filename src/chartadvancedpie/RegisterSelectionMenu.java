@@ -68,14 +68,7 @@ public class RegisterSelectionMenu extends Menu {
 		public void doAction() {
 		}
 
-		@Override
-		public void doActionWithCounterHandling(IRepetitionCounter irc) {
-			doAction();
-		}
-
-		@Override
-		public void undoAction() {
-		}
+		
 
 		@Override
 		public void doAction(String register) {

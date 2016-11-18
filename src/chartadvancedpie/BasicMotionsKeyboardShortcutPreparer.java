@@ -15,14 +15,14 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 
 		GUIPanel gp = gkeh.getGUIPanel();
 
-		NamedGUIAction testAction = new NamedGUIAction("previous element") {
+		JumpAction testAction = new JumpAction("previous element") {
 			@Override
 			public void doAction() {
 				GUITab currentGUITab = gp.getCurrentGUITab();
 				currentGUITab.traverseElements(true);
 			}
 		};
-		NamedGUIAction testAction2 = new NamedGUIAction("next element") {
+		JumpAction testAction2 = new JumpAction("next element") {
 
 			@Override
 			public void doAction() {
@@ -30,6 +30,27 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 				currentGUITab.traverseElements(false);
 			}
 		};
+
+
+		NamedGUIAction jumpToOlderPosition= new NamedGUIAction("previously visited element") {
+
+			@Override
+			public void doAction() {
+				Position p=JumpHistoryManager.get(gp).getPreviousPosition();
+				gp.setCurrentPosition(p);
+			}
+		};
+
+		NamedGUIAction jumpToNewerPosition= new NamedGUIAction("next visited element") {
+
+			@Override
+			public void doAction() {
+				Position p=JumpHistoryManager.get(gp).getNextPosition();
+				gp.setCurrentPosition(p);
+			}
+		};
+
+
 		NamedGUIAction jumpToPercent = new NamedGUIAction("jump to (n) % ") {
 
 			@Override
@@ -98,6 +119,8 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 			"j", testAction);
 		m.addAction(
 			"k", testAction2);
+		m.addAction("o", jumpToOlderPosition);
+		m.addAction("i", jumpToNewerPosition);
 		m.addAction(
 			"%", jumpToPercent);
 		m.addAction(

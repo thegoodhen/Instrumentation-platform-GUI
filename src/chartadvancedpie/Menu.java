@@ -95,7 +95,7 @@ public class Menu {
 	public void handleAction(String keystroke) {
 		GUIAction ga = actionMap.get(keystroke);
 		if (ga != null) {
-			ga.doActionWithCounterHandling(gp);
+			ga.doActionWithHandling(gp);
 		} 
 		if(!(ga instanceof openSubMenuAction) )//if we opened a submenu, we should never close this menu
 		{
@@ -148,15 +148,7 @@ public class Menu {
 			gp.setMenu(m);
 		}
 
-		@Override
-		public void doActionWithCounterHandling(IRepetitionCounter irc)
-		{
-			doAction();
-		}
 
-		@Override
-		public void undoAction() {
-		}
 
 	}
 

@@ -175,8 +175,8 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 		NamedGUIAction toggleFocusedElementSelectionAction = new NamedGUIAction("toggle selection on focused") {
 			@Override
 			public void doAction() {
-				boolean toggleBool= gp.getCurrentGUITab().getCurrentGUIElement().isSelected();
-				gp.getCurrentGUITab().getCurrentGUIElement().setSelected(!toggleBool);
+				boolean toggleBool= gp.getCurrentGUITab().getFocusedGUIElement().isSelected();
+				gp.getCurrentGUITab().getFocusedGUIElement().setSelected(!toggleBool);
 			}
 		};
 
