@@ -5,13 +5,42 @@
  */
 package chartadvancedpie;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author thegoodhen
  */
-public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardShortcutPreparer{
+public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {
 
 	GUIPanel gp;
+
+	private class selectAllAction extends NamedGUIAction {
+
+		public selectAllAction(String name) {
+			super(name);
+		}
+
+		/**
+		 * Unselect all if some are selected; select all if none are
+		 * selected. There is a bug where if only one is selected, it
+		 * selects all, but that's ok.
+		 */
+		public void doAction() {
+			ArrayList<GUIelement> tempList = gp.getSelectedGUIelementsList(false);
+			if (tempList.size() <= 1) {
+				for (GUIelement ge : gp.getCurrentGUITab().GUIList) {
+					ge.setSelected(true);
+				}
+			} else {
+				for (GUIelement ge : gp.getCurrentGUITab().GUIList) {
+					ge.setSelected(false);
+				}
+
+			}
+		}
+
+	}
 
 	private abstract class searchAction extends NamedGUIAction {
 
@@ -141,92 +170,104 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
 	public void prepareShortcuts(GUIKeyEventHandler gkeh) {
 		Menu m = gkeh.getMainMenu();
-		gp=gkeh.getGUIPanel();
+		gp = gkeh.getGUIPanel();
+
+		NamedGUIAction toggleFocusedElementSelectionAction = new NamedGUIAction("toggle selection on focused") {
+			@Override
+			public void doAction() {
+				boolean toggleBool= gp.getCurrentGUITab().getCurrentGUIElement().isSelected();
+				gp.getCurrentGUITab().getCurrentGUIElement().setSelected(!toggleBool);
+			}
+		};
+
 		m.addAction("/", new regexSearchAction("search using regex", RegexUtils.SET_ON_MATCH));
 
-			/**
-			 * Search related stuff below
-			 */
-			Menu searchMenu = new Menu(gp, "Search", false);
-			Menu addToSearchMenu = new Menu(gp, "Add", false);
-			Menu subtractFromSearchMenu = new Menu(gp, "subtract", false);
+		/**
+		 * Search related stuff below
+		 */
+		Menu searchMenu = new Menu(gp, "Search", false);
+		Menu addToSearchMenu = new Menu(gp, "Add", false);
+		Menu subtractFromSearchMenu = new Menu(gp, "subtract", false);
 
-			searchMenu.addSubMenu("a", addToSearchMenu);
-			searchMenu.addSubMenu("s", subtractFromSearchMenu);
-			searchMenu.addAction(
-				"f", new fuzzySearchAction("fuzzy search", RegexUtils.SET_ON_MATCH));
-			searchMenu.addAction(
-				"r", new regexSearchAction("search using regex", RegexUtils.SET_ON_MATCH));
-			searchMenu.addAction(
-				"l", new literalSearchAction("search for a literal string", RegexUtils.SET_ON_MATCH));
+		searchMenu.addAction("e", new selectAllAction("select each"));
+		searchMenu.addAction("v", toggleFocusedElementSelectionAction);
 
-			searchMenu.addAction(
-				"F", new fuzzySearchAction("MISMATCH fuzzy search", RegexUtils.SET_ON_MISMATCH));
-			searchMenu.addAction(
-				"R", new regexSearchAction("MISMATCH search using regex", RegexUtils.SET_ON_MISMATCH));
-			searchMenu.addAction(
-				"L", new literalSearchAction("MISMATCH search for a literal string", RegexUtils.SET_ON_MISMATCH));
+		searchMenu.addSubMenu("a", addToSearchMenu);
+		searchMenu.addSubMenu("s", subtractFromSearchMenu);
+		searchMenu.addAction(
+			"f", new fuzzySearchAction("fuzzy search", RegexUtils.SET_ON_MATCH));
+		searchMenu.addAction(
+			"r", new regexSearchAction("search using regex", RegexUtils.SET_ON_MATCH));
+		searchMenu.addAction(
+			"l", new literalSearchAction("search for a literal string", RegexUtils.SET_ON_MATCH));
 
-			addToSearchMenu.addAction("f", new fuzzySearchAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
-			addToSearchMenu.addAction("r", new regexSearchAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
-			addToSearchMenu.addAction("l", new literalSearchAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
+		searchMenu.addAction(
+			"F", new fuzzySearchAction("MISMATCH fuzzy search", RegexUtils.SET_ON_MISMATCH));
+		searchMenu.addAction(
+			"R", new regexSearchAction("MISMATCH search using regex", RegexUtils.SET_ON_MISMATCH));
+		searchMenu.addAction(
+			"L", new literalSearchAction("MISMATCH search for a literal string", RegexUtils.SET_ON_MISMATCH));
 
-			addToSearchMenu.addAction("F", new fuzzySearchAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
-			addToSearchMenu.addAction("R", new regexSearchAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
-			addToSearchMenu.addAction("L", new literalSearchAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
+		addToSearchMenu.addAction("f", new fuzzySearchAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
+		addToSearchMenu.addAction("r", new regexSearchAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
+		addToSearchMenu.addAction("l", new literalSearchAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
 
-			subtractFromSearchMenu.addAction("f", new fuzzySearchAction("remove items matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MATCH));
-			subtractFromSearchMenu.addAction("r", new regexSearchAction("remove items matching regex query from search", RegexUtils.SUBTRACT_ON_MATCH));
-			subtractFromSearchMenu.addAction("l", new literalSearchAction("remove items matching a literal string from search", RegexUtils.SUBTRACT_ON_MATCH));
+		addToSearchMenu.addAction("F", new fuzzySearchAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
+		addToSearchMenu.addAction("R", new regexSearchAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
+		addToSearchMenu.addAction("L", new literalSearchAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
 
-			subtractFromSearchMenu.addAction("F", new fuzzySearchAction("remove items NOT matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
-			subtractFromSearchMenu.addAction("R", new regexSearchAction("remove items NOT matching regex query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
-			subtractFromSearchMenu.addAction("L", new literalSearchAction("remove items NOT matching a literal string from search", RegexUtils.SUBTRACT_ON_MISMATCH));
+		subtractFromSearchMenu.addAction("f", new fuzzySearchAction("remove items matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MATCH));
+		subtractFromSearchMenu.addAction("r", new regexSearchAction("remove items matching regex query from search", RegexUtils.SUBTRACT_ON_MATCH));
+		subtractFromSearchMenu.addAction("l", new literalSearchAction("remove items matching a literal string from search", RegexUtils.SUBTRACT_ON_MATCH));
 
-			m.addSubMenu(
-				"s", searchMenu);
+		subtractFromSearchMenu.addAction("F", new fuzzySearchAction("remove items NOT matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
+		subtractFromSearchMenu.addAction("R", new regexSearchAction("remove items NOT matching regex query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
+		subtractFromSearchMenu.addAction("L", new literalSearchAction("remove items NOT matching a literal string from search", RegexUtils.SUBTRACT_ON_MISMATCH));
 
-			/**
-			 * Filtering related stuff below
-			 */
-			Menu filterMenu = new Menu(gp, "filter", false);
+		m.addSubMenu(
+			"s", searchMenu);
 
-			Menu addToFilterMenu = new Menu(gp, "add", false);
-			Menu subtractFromFilterMenu = new Menu(gp, "subtract", false);
-			filterMenu.addSubMenu("a", addToFilterMenu);
-			filterMenu.addSubMenu("s", subtractFromFilterMenu);
-			filterMenu.addAction(
-				"f", new fuzzyFilterAction("fuzzy filter", RegexUtils.SET_ON_MATCH));
-			filterMenu.addAction(
-				"r", new regexFilterAction("filter using regex", RegexUtils.SET_ON_MATCH));
-			filterMenu.addAction(
-				"l", new literalFilterAction("filter using a literal string", RegexUtils.SET_ON_MATCH));
+		/**
+		 * Filtering related stuff below
+		 */
+		Menu filterMenu = new Menu(gp, "filter", false);
 
-			filterMenu.addAction(
-				"F", new fuzzyFilterAction("filter on MISMATCH of fuzzy filter", RegexUtils.SET_ON_MISMATCH));
-			filterMenu.addAction(
-				"R", new regexFilterAction("filter on MISMATCH with regex", RegexUtils.SET_ON_MISMATCH));
-			filterMenu.addAction(
-				"L", new literalFilterAction("filter on MISMATCH with a literal string", RegexUtils.SET_ON_MISMATCH));
+		Menu addToFilterMenu = new Menu(gp, "add", false);
+		Menu subtractFromFilterMenu = new Menu(gp, "subtract", false);
+		filterMenu.addSubMenu("a", addToFilterMenu);
+		filterMenu.addSubMenu("s", subtractFromFilterMenu);
+		filterMenu.addAction(
+			"f", new fuzzyFilterAction("fuzzy filter", RegexUtils.SET_ON_MATCH));
+		filterMenu.addAction(
+			"r", new regexFilterAction("filter using regex", RegexUtils.SET_ON_MATCH));
+		filterMenu.addAction(
+			"l", new literalFilterAction("filter using a literal string", RegexUtils.SET_ON_MATCH));
 
-			addToFilterMenu.addAction("f", new fuzzyFilterAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
-			addToFilterMenu.addAction("r", new regexFilterAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
-			addToFilterMenu.addAction("l", new literalFilterAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
+		filterMenu.addAction(
+			"F", new fuzzyFilterAction("filter on MISMATCH of fuzzy filter", RegexUtils.SET_ON_MISMATCH));
+		filterMenu.addAction(
+			"R", new regexFilterAction("filter on MISMATCH with regex", RegexUtils.SET_ON_MISMATCH));
+		filterMenu.addAction(
+			"L", new literalFilterAction("filter on MISMATCH with a literal string", RegexUtils.SET_ON_MISMATCH));
 
-			addToFilterMenu.addAction("F", new fuzzyFilterAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
-			addToFilterMenu.addAction("R", new regexFilterAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
-			addToFilterMenu.addAction("L", new literalFilterAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
+		addToFilterMenu.addAction("f", new fuzzyFilterAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
+		addToFilterMenu.addAction("r", new regexFilterAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
+		addToFilterMenu.addAction("l", new literalFilterAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
 
-			subtractFromFilterMenu.addAction("f", new fuzzyFilterAction("remove items matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MATCH));
-			subtractFromFilterMenu.addAction("r", new regexFilterAction("remove items matching regex query from filter", RegexUtils.SUBTRACT_ON_MATCH));
-			subtractFromFilterMenu.addAction("l", new literalFilterAction("remove items matching a literal string from filter", RegexUtils.SUBTRACT_ON_MATCH));
+		addToFilterMenu.addAction("F", new fuzzyFilterAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
+		addToFilterMenu.addAction("R", new regexFilterAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
+		addToFilterMenu.addAction("L", new literalFilterAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
 
-			subtractFromFilterMenu.addAction("F", new fuzzyFilterAction("remove items NOT matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
-			subtractFromFilterMenu.addAction("R", new regexFilterAction("remove items NOT matching regex query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
-			subtractFromFilterMenu.addAction("L", new literalFilterAction("remove items NOT matching a literal string from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+		subtractFromFilterMenu.addAction("f", new fuzzyFilterAction("remove items matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MATCH));
+		subtractFromFilterMenu.addAction("r", new regexFilterAction("remove items matching regex query from filter", RegexUtils.SUBTRACT_ON_MATCH));
+		subtractFromFilterMenu.addAction("l", new literalFilterAction("remove items matching a literal string from filter", RegexUtils.SUBTRACT_ON_MATCH));
 
-			m.addSubMenu(
-				"f", filterMenu);
+		subtractFromFilterMenu.addAction("F", new fuzzyFilterAction("remove items NOT matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+		subtractFromFilterMenu.addAction("R", new regexFilterAction("remove items NOT matching regex query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+		subtractFromFilterMenu.addAction("L", new literalFilterAction("remove items NOT matching a literal string from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+
+		m.addSubMenu(
+			"f", filterMenu);
 	}
 
 }

@@ -67,6 +67,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private boolean isRecordingAMacro = false;
 	private Macro currentMacro;
 
+	private boolean vFlag = false;
+
 	public GUITab getCurrentGUITab() {
 		return this.currentGUITab;
 	}
@@ -425,7 +427,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			m.addAction(
 				"a", editComponentAction);
 
-
 			GUIPanel.this.setMenu(m);
 		}
 
@@ -453,6 +454,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 					currentMacro.addKeyEvent(ke);
 				}
 			}
+			if (eventText.equals("V")) {
+				vFlag = !vFlag;
+				System.out.println("V is now:" + (vFlag ? "on" : "off"));
+			}
 			if (isDigit(eventText)) {
 				System.out.println("pressed num: " + eventText);
 				GUIPanel.this.repeatCountString += eventText;
@@ -477,6 +482,32 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				vm.runProgram();
 			}
 		}
+	}
+
+	public ArrayList<GUIelement> getSelectedGUIelementsList() {
+		return getSelectedGUIelementsList(true);
+	}
+
+	public ArrayList<GUIelement> getSelectedGUIelementsList(boolean respectVFlag) {
+		ArrayList<GUIelement> returnList = new ArrayList<>();
+		if (respectVFlag) {
+			if (vFlag) {
+				returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
+			} else {
+				returnList.add(this.getCurrentGUITab().getCurrentGUIElement());
+			}
+			vFlag = false;
+		}
+		else
+		{
+				returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
+		}
+		return returnList;
+
+	}
+
+	public boolean getVFlag() {
+		return this.vFlag;
 	}
 
 	protected void startRecordingMacro(String register) {

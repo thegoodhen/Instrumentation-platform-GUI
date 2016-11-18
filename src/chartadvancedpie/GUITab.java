@@ -33,7 +33,6 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	private String repeatCountString = "";
 
 	//PanelKeyEventHandler pkeh;
-
 	HashMap<String, GUIelement> quickMarkMap = new HashMap<>();
 	//private final GUIPanel gp;
 
@@ -168,6 +167,22 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		return selectedElementIndex;
 	}
 
+	public int getGUIElementIndex(GUIelement ge)
+	{
+		return GUIList.indexOf(ge);
+	}
+
+	ArrayList<GUIelement> getSelectedGUIelementsList() {
+		ArrayList<GUIelement> returnList = new ArrayList<>();
+		for (GUIelement ge : GUIList) {
+			if (ge.isSelected()) {
+				returnList.add(ge);
+			}
+		}
+		return returnList;
+	}
+
+
 	void insertGUIelement(int currentGUIElementIndex, String name, boolean copy) {
 		GUIelement ge = this.getGUIPanel().GUINameMap.get(name);
 		if (ge != null) {
@@ -175,8 +190,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 				ge = ge.makeCopy();
 			}
 			this.addGUIelement(ge, currentGUIElementIndex);
-			for(GUIelement ge2:GUIList)
-			{
+			for (GUIelement ge2 : GUIList) {
 				ge2.setFocused(false);
 			}
 			ge.setFocused(true);
@@ -189,261 +203,261 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
 
 	/*
-	Apparently, my code is so unbelievabely robust, that even such a drastic change, as commenting
-		out around 600 LOC has no impact on its functionality whatsoever. Way to go! ^>^
-		*/
+	 Apparently, my code is so unbelievabely robust, that even such a drastic change, as commenting
+	 out around 600 LOC has no impact on its functionality whatsoever. Way to go! ^>^
+	 */
 	/*
-	private class PanelKeyEventHandler implements GUIKeyEventHandler {
+	 private class PanelKeyEventHandler implements GUIKeyEventHandler {
 
-		Menu mainMenu;
-		private boolean isRecordingAMacro = false;
-		private HashMap<String, Macro> macroMap;
-		private Macro currentMacro;
-		private Menu startRecordingMacroMenu;
-		private final RegisterSelectionMenu executeMacroMenu;
-		private NamedGUIAction stopRecordingMacroAction;
+	 Menu mainMenu;
+	 private boolean isRecordingAMacro = false;
+	 private HashMap<String, Macro> macroMap;
+	 private Macro currentMacro;
+	 private Menu startRecordingMacroMenu;
+	 private final RegisterSelectionMenu executeMacroMenu;
+	 private NamedGUIAction stopRecordingMacroAction;
 
-		public PanelKeyEventHandler() {
-			macroMap = new HashMap<>();
+	 public PanelKeyEventHandler() {
+	 macroMap = new HashMap<>();
 
-			NamedGUIAction editComponentAction = new NamedGUIAction("edit component") {
-				@Override
-				public void doAction() {
-					editCurrentComponent();
-				}
-			};
+	 NamedGUIAction editComponentAction = new NamedGUIAction("edit component") {
+	 @Override
+	 public void doAction() {
+	 editCurrentComponent();
+	 }
+	 };
 
-			NamedGUIAction testAction = new NamedGUIAction("previous element") {
-				@Override
-				public void doAction() {
-					traverseElements(true);
-				}
-			};
-			NamedGUIAction testAction2 = new NamedGUIAction("next element") {
+	 NamedGUIAction testAction = new NamedGUIAction("previous element") {
+	 @Override
+	 public void doAction() {
+	 traverseElements(true);
+	 }
+	 };
+	 NamedGUIAction testAction2 = new NamedGUIAction("next element") {
 
-				@Override
-				public void doAction() {
-					traverseElements(false);
-				}
-			};
-			NamedGUIAction jumpToPercent = new NamedGUIAction("jump to (n) % ") {
+	 @Override
+	 public void doAction() {
+	 traverseElements(false);
+	 }
+	 };
+	 NamedGUIAction jumpToPercent = new NamedGUIAction("jump to (n) % ") {
 
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
+	 @Override
+	 public void doAction() {
+	 //doAction(1);
+	 //GUIList.get(selectedElementIndex).setFocused(false);
+	 //selectedElementIndex = 0;//GUIList.size() - 1;
+	 //traverseElements(true);
+	 }
 
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-				}
-			};
+	 @Override
+	 public void doAction(IRepetitionCounter irc) {
+	 }
+	 };
 
-			NamedGUIAction jumpToBeginning = new NamedGUIAction("beginning") {
+	 NamedGUIAction jumpToBeginning = new NamedGUIAction("beginning") {
 
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
+	 @Override
+	 public void doAction() {
+	 //doAction(1);
+	 //GUIList.get(selectedElementIndex).setFocused(false);
+	 //selectedElementIndex = 0;//GUIList.size() - 1;
+	 //traverseElements(true);
+	 }
 
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					int newIndex = irc.getRepeatCount();
-					GUIList.get(selectedElementIndex).setFocused(false);
-					if (newIndex - 1 < GUIList.size() && (newIndex - 1 >= 0)) {
-						selectedElementIndex = newIndex - 1;
-					}
-				}
-			};
-			NamedGUIAction jumpToEnd = new NamedGUIAction("end") {
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
+	 @Override
+	 public void doAction(IRepetitionCounter irc) {
+	 int newIndex = irc.getRepeatCount();
+	 GUIList.get(selectedElementIndex).setFocused(false);
+	 if (newIndex - 1 < GUIList.size() && (newIndex - 1 >= 0)) {
+	 selectedElementIndex = newIndex - 1;
+	 }
+	 }
+	 };
+	 NamedGUIAction jumpToEnd = new NamedGUIAction("end") {
+	 @Override
+	 public void doAction() {
+	 //doAction(1);
+	 //GUIList.get(selectedElementIndex).setFocused(false);
+	 //selectedElementIndex = 0;//GUIList.size() - 1;
+	 //traverseElements(true);
+	 }
 
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					int newIndex = irc.getRepeatCount();
-					if (newIndex == 1) {
-						GUIList.get(selectedElementIndex).setFocused(false);
-						selectedElementIndex = GUIList.size() - 2;
-						traverseElements(true);
+	 @Override
+	 public void doAction(IRepetitionCounter irc) {
+	 int newIndex = irc.getRepeatCount();
+	 if (newIndex == 1) {
+	 GUIList.get(selectedElementIndex).setFocused(false);
+	 selectedElementIndex = GUIList.size() - 2;
+	 traverseElements(true);
 
-					} else if (newIndex - 1 < GUIList.size() && (newIndex - 1 >= 0)) {
-						GUIList.get(selectedElementIndex).setFocused(false);
-						selectedElementIndex = newIndex - 1;
-					}
-				}
-			};
+	 } else if (newIndex - 1 < GUIList.size() && (newIndex - 1 >= 0)) {
+	 GUIList.get(selectedElementIndex).setFocused(false);
+	 selectedElementIndex = newIndex - 1;
+	 }
+	 }
+	 };
 
-			RegisterAction setMarkAction = new RegisterAction() {
+	 RegisterAction setMarkAction = new RegisterAction() {
 
-				@Override
-				public void doAction(String register) {
-					GUITab.this.setMark(register);
-				}
+	 @Override
+	 public void doAction(String register) {
+	 GUITab.this.setMark(register);
+	 }
 
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
+	 @Override
+	 public void doAction(String register, IRepetitionCounter irc) {
+	 doAction(register);
+	 }
 
-			};
+	 };
 
-			RegisterAction jumpToMarkAction = new RegisterAction() {
+	 RegisterAction jumpToMarkAction = new RegisterAction() {
 
-				@Override
-				public void doAction(String register) {
-					GUITab.this.jumpToMark(register);
-				}
+	 @Override
+	 public void doAction(String register) {
+	 GUITab.this.jumpToMark(register);
+	 }
 
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
+	 @Override
+	 public void doAction(String register, IRepetitionCounter irc) {
+	 doAction(register);
+	 }
+	 };
 
-			RegisterAction startRecordingMacroAction = new RegisterAction() {
+	 RegisterAction startRecordingMacroAction = new RegisterAction() {
 
-				@Override
-				public void doAction(String register) {
-					startRecordingMacro(register);
-					PanelKeyEventHandler.this.mainMenu.addAction("q", PanelKeyEventHandler.this.stopRecordingMacroAction);
-				}
+	 @Override
+	 public void doAction(String register) {
+	 startRecordingMacro(register);
+	 PanelKeyEventHandler.this.mainMenu.addAction("q", PanelKeyEventHandler.this.stopRecordingMacroAction);
+	 }
 
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
+	 @Override
+	 public void doAction(String register, IRepetitionCounter irc) {
+	 doAction(register);
+	 }
+	 };
 
-			stopRecordingMacroAction = new NamedGUIAction("stop recording macro") {
+	 stopRecordingMacroAction = new NamedGUIAction("stop recording macro") {
 
-				@Override
-				public void doAction() {
-					stopRecordingMacro();
-					PanelKeyEventHandler.this.mainMenu.addSubMenu("q", PanelKeyEventHandler.this.startRecordingMacroMenu);
-				}
-			};
+	 @Override
+	 public void doAction() {
+	 stopRecordingMacro();
+	 PanelKeyEventHandler.this.mainMenu.addSubMenu("q", PanelKeyEventHandler.this.startRecordingMacroMenu);
+	 }
+	 };
 
-			RegisterAction executeMacroAction = new RegisterAction() {
+	 RegisterAction executeMacroAction = new RegisterAction() {
 
-				@Override
-				public void doAction(String register) {
-					executeMacro(register);
-				}
+	 @Override
+	 public void doAction(String register) {
+	 executeMacro(register);
+	 }
 
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
+	 @Override
+	 public void doAction(String register, IRepetitionCounter irc) {
+	 doAction(register);
+	 }
+	 };
 
-			Menu m = new Menu(GUITab.this.getGUIPanel(), "Main menu", true);
+	 Menu m = new Menu(GUITab.this.getGUIPanel(), "Main menu", true);
 
-			this.mainMenu = m;
+	 this.mainMenu = m;
 
-			m.addAction(
-				"j", testAction);
-			m.addAction(
-				"k", testAction2);
-			m.addAction("a", editComponentAction);
-			m.addAction("%", jumpToPercent);
+	 m.addAction(
+	 "j", testAction);
+	 m.addAction(
+	 "k", testAction2);
+	 m.addAction("a", editComponentAction);
+	 m.addAction("%", jumpToPercent);
 
-			Menu goMenu = new Menu(GUITab.this.getGUIPanel(), "Go to", false);
+	 Menu goMenu = new Menu(GUITab.this.getGUIPanel(), "Go to", false);
 
-			goMenu.addAction(
-				"g", jumpToBeginning);
-			goMenu.addAction(
-				"G", jumpToEnd);
-			m.addAction("G", jumpToEnd);
-			m.addSubMenu(
-				"g", goMenu);
+	 goMenu.addAction(
+	 "g", jumpToBeginning);
+	 goMenu.addAction(
+	 "G", jumpToEnd);
+	 m.addAction("G", jumpToEnd);
+	 m.addSubMenu(
+	 "g", goMenu);
 
-			Menu setMarkMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "set mark", setMarkAction);
-			Menu jumpToMarkMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "set mark", jumpToMarkAction);
+	 Menu setMarkMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "set mark", setMarkAction);
+	 Menu jumpToMarkMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "set mark", jumpToMarkAction);
 
-			m.addSubMenu(
-				"m", setMarkMenu);
-			m.addSubMenu(
-				"¨", jumpToMarkMenu);
+	 m.addSubMenu(
+	 "m", setMarkMenu);
+	 m.addSubMenu(
+	 "¨", jumpToMarkMenu);
 
-			startRecordingMacroMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "record macro", startRecordingMacroAction);
+	 startRecordingMacroMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "record macro", startRecordingMacroAction);
 
-			executeMacroMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "execute macro", executeMacroAction);
+	 executeMacroMenu = new RegisterSelectionMenu(GUITab.this.getGUIPanel(), "execute macro", executeMacroAction);
 
-			mainMenu.addSubMenu(
-				"q", PanelKeyEventHandler.this.startRecordingMacroMenu);
-			mainMenu.addSubMenu(
-				"v", PanelKeyEventHandler.this.executeMacroMenu);
-			GUITab.this.setMenu(m);
-		}
+	 mainMenu.addSubMenu(
+	 "q", PanelKeyEventHandler.this.startRecordingMacroMenu);
+	 mainMenu.addSubMenu(
+	 "v", PanelKeyEventHandler.this.executeMacroMenu);
+	 GUITab.this.setMenu(m);
+	 }
 
-		private void startRecordingMacro(String register) {
-			this.isRecordingAMacro = true;
-			Macro m = new Macro();
-			this.currentMacro = m;
-			this.macroMap.put(register, m);
-		}
+	 private void startRecordingMacro(String register) {
+	 this.isRecordingAMacro = true;
+	 Macro m = new Macro();
+	 this.currentMacro = m;
+	 this.macroMap.put(register, m);
+	 }
 
-		private void stopRecordingMacro() {
-			this.isRecordingAMacro = false;
-		}
+	 private void stopRecordingMacro() {
+	 this.isRecordingAMacro = false;
+	 }
 
-		private void executeMacro(String register) {
-			Macro m = this.macroMap.get(register);
-			if (m != null) {
-				System.out.println("executing macro");
-				m.execute(this);
-			}
-		}
+	 private void executeMacro(String register) {
+	 Macro m = this.macroMap.get(register);
+	 if (m != null) {
+	 System.out.println("executing macro");
+	 m.execute(this);
+	 }
+	 }
 
-		public void handle(KeyEvent ke) {
-			String eventText = ke.getCharacter();//ke.getText();
-			if (isRecordingAMacro && eventText.equals("q")) {
-				if (currentMacro != null) {
-					currentMacro.addKeyEvent(ke);
-				}
-			}
-			if (isDigit(eventText)) {
-				System.out.println("pressed num: " + eventText);
-				GUITab.this.repeatCountString += eventText;
-				System.out.println("Current num: " + GUITab.this.repeatCountString);
-			} else {
+	 public void handle(KeyEvent ke) {
+	 String eventText = ke.getCharacter();//ke.getText();
+	 if (isRecordingAMacro && eventText.equals("q")) {
+	 if (currentMacro != null) {
+	 currentMacro.addKeyEvent(ke);
+	 }
+	 }
+	 if (isDigit(eventText)) {
+	 System.out.println("pressed num: " + eventText);
+	 GUITab.this.repeatCountString += eventText;
+	 System.out.println("Current num: " + GUITab.this.repeatCountString);
+	 } else {
 
-				GUITab.this.currentMenu.handle(eventText);
-				//GUITab.this.resetRepeatCount(); //leave this to others!
-			}
-		}
+	 GUITab.this.currentMenu.handle(eventText);
+	 //GUITab.this.resetRepeatCount(); //leave this to others!
+	 }
+	 }
 
-		private boolean isDigit(String s) {
-			return (s.length() == 1 && s.charAt(0) > 47 && s.charAt(0) < 58);
-		}
+	 private boolean isDigit(String s) {
+	 return (s.length() == 1 && s.charAt(0) > 47 && s.charAt(0) < 58);
+	 }
 
-		@Override
-		public Menu getMainMenu() {
-			return mainMenu;
-		}
+	 @Override
+	 public Menu getMainMenu() {
+	 return mainMenu;
+	 }
 
-		@Override
-		public void setMainMenu(Menu m) {
-			this.mainMenu=m;
-		}
+	 @Override
+	 public void setMainMenu(Menu m) {
+	 this.mainMenu=m;
+	 }
 
-		@Override
-		public GUIPanel getGUIPanel() {
-			return GUITab.this.getGUIPanel();
-		}
-	}
-*/
+	 @Override
+	 public GUIPanel getGUIPanel() {
+	 return GUITab.this.getGUIPanel();
+	 }
+	 }
+	 */
 	public void handleActions(KeyEvent ke) {
 		GUIAbstractAction gaa = actionMap.get(ke.getText());
 		/*
@@ -459,11 +473,10 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
 
 	public void addGUIelement(GUIelement ge) {
-		this.addGUIelement(ge,GUIList.size());
+		this.addGUIelement(ge, GUIList.size());
 	}
 
-	public void addGUIelement(GUIelement ge, int position)
-	{
+	public void addGUIelement(GUIelement ge, int position) {
 		ge.setGUITab(this);
 		GUIList.add(position, ge);
 		ge.recalculateUniqueName(this);//TODO: this will cause a huge mess, fix it
@@ -472,15 +485,17 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
 
 	public void removeGUIelement(int index) {
-		copyGUIelement(index);
+		//String name=getUniqueName(index);
 		GUIList.get(index).setFocused(false);
 		GUIList.remove(index);
+		//return name;
 	}
 
-	public void copyGUIelement(int index) {
 
-		String elementUniqueName = GUIList.get(index).getUniqueName();
-		this.getGUIPanel().setCurrentRegisterContentAndReset(elementUniqueName);
+	public String getUniqueName(int index) {
+
+		return  GUIList.get(index).getUniqueName();
+		//this.getGUIPanel().setCurrentRegisterContentAndReset(elementUniqueName);
 		//this.getGUIPanel().registerMap.put(register, elementUniqueName);
 	}
 

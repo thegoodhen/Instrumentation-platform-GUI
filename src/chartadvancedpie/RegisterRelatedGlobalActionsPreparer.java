@@ -5,20 +5,42 @@
  */
 package chartadvancedpie;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author thegoodhen
  */
 public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPreparer {
 
+	GUIPanel gp;
+	Menu m;
+
+	private void removeOrCopyGUIElements(boolean remove) {
+		ArrayList<GUIelement> tempList = gp.getSelectedGUIelementsList();
+		StringBuilder sb = new StringBuilder();
+		for (GUIelement ge : tempList) {
+			if (sb.length() != 0) {
+				sb.append("\n");
+			}
+			sb.append(ge.getUniqueName());
+			if (remove) {
+				gp.getCurrentGUITab().removeGUIelement(gp.getCurrentGUITab().getGUIElementIndex(ge));
+			}
+		}
+		gp.setCurrentRegisterContentAndReset(sb.toString());
+
+	}
+
 	@Override
 	public void prepareShortcuts(GUIKeyEventHandler gkeh) {
-		GUIPanel gp = gkeh.getGUIPanel();
-		Menu m = gkeh.getMainMenu();
+		gp = gkeh.getGUIPanel();
+		m = gkeh.getMainMenu();
+
 		NamedGUIAction yankAction = new NamedGUIAction("yank current element") {
 			@Override
 			public void doAction() {
-				gp.getCurrentGUITab().copyGUIelement(gp.getCurrentGUITab().getCurrentGUIElementIndex());
+				removeOrCopyGUIElements(false);
 			}
 
 			@Override
@@ -32,7 +54,8 @@ public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPr
 
 			@Override
 			public void doAction() {
-				gp.getCurrentGUITab().removeGUIelement(gp.getCurrentGUITab().getCurrentGUIElementIndex());
+				removeOrCopyGUIElements(true);
+				//gp.getCurrentGUITab().removeGUIelement(gp.getCurrentGUITab().getCurrentGUIElementIndex());
 				//GUIPanel.this.setMark(register);
 			}
 
