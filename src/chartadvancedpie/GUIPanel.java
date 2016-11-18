@@ -62,41 +62,39 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private String currentRegister = "%";
 	public final static String UNNAMED_REGISTER = "%";
 
-	public GUITab getCurrentGUITab()
-	{
+	private HashMap<String, Macro> macroMap = new HashMap<>();
+
+	private boolean isRecordingAMacro = false;
+	private Macro currentMacro;
+
+	public GUITab getCurrentGUITab() {
 		return this.currentGUITab;
 	}
 
-	public int getGUIElementIDByName(String name)
-	{
-		if(name.equals("CGE"))//short for "current gui element"
+	public int getGUIElementIDByName(String name) {
+		if (name.equals("CGE"))//short for "current gui element"
 		{
 			return GUIIDMap.get(this.currentGUITab.getCurrentGUIElement());
-		}
-		else
-		{
-			GUIelement ge=GUINameMap.get(name);
-			if(ge!=null)
-			{
+		} else {
+			GUIelement ge = GUINameMap.get(name);
+			if (ge != null) {
 				return GUIIDMap.get(ge);
 			}
-			
+
 		}
 		return -1;
 	}
 
-	public GUICompiler getGUICompiler()
-	{
+	public GUICompiler getGUICompiler() {
 		return this.c;
 	}
 
-	public float handleCallBack(ArrayList<Token> program)
-	{
+	public float handleCallBack(ArrayList<Token> program) {
 		this.vm.setProgram(program);
 		vm.runProgram();
 		return 0;
 	}
-	
+
 	public void registerGUIelement(GUIelement ge) {
 		ge.setGUIPanel(this);
 		GUIIDMap.put(ge, totalGUIelementCount);
@@ -281,18 +279,17 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		GUISlider gs2 = new GUISlider(gt2);
 		GUISlider gs3 = new GUISlider(gt2);
 		GUISlider gs4 = new GUISlider(gt2);
-		GUIDisplay gd=new GUIDisplay(gt);
+		GUIDisplay gd = new GUIDisplay(gt);
 		gt.addGUIelement(gd);
 		gt2.addGUIelement(gs2);
 		gt2.addGUIelement(gs3);
 		gt2.addGUIelement(gs4);
-		
-		//gt.addGUIelement(gs4);
 
+		//gt.addGUIelement(gs4);
 		String prog = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
 		String prog2 = "byte test(byte n)\nprintNumber(n+10);\nRETURN 0;\nENDFUNCTION\n";
 
-		String prog3="byte step()\nTAB1_GD_DISPLAY0.setValue(TAB1_GS_SLIDER4.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
+		String prog3 = "byte step()\nTAB1_GD_DISPLAY0.setValue(TAB1_GS_SLIDER4.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
 		c = InterpreterFacade.prepareCompiler(this);
 		c.compile(prog);
 		c.compile(prog2);
@@ -365,15 +362,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private class PanelKeyEventHandler implements GUIKeyEventHandler {
 
 		Menu mainMenu;
-		private boolean isRecordingAMacro = false;
-		private HashMap<String, Macro> macroMap;
-		private Macro currentMacro;
-		private Menu startRecordingMacroMenu;
-		private final RegisterSelectionMenu executeMacroMenu;
-		private NamedGUIAction stopRecordingMacroAction;
-		Menu yankMenu;
-		Menu deleteMenu;
-		Menu pasteMenu;
 
 		@Override
 		public Menu getMainMenu() {
@@ -382,7 +370,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 		@Override
 		public void setMainMenu(Menu m) {
-			this.mainMenu=m;
+			this.mainMenu = m;
 		}
 
 		@Override
@@ -390,9 +378,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			return GUIPanel.this;
 		}
 
-
 		public PanelKeyEventHandler() {
-			macroMap = new HashMap<>();
 
 			NamedGUIAction editComponentAction = new NamedGUIAction("edit component") {
 				@Override
@@ -401,8 +387,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				}
 			};
 
-
-		
 			NamedGUIAction enterExMode = new NamedGUIAction("execute command") {
 				@Override
 				public void doAction() {
@@ -426,192 +410,23 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				}
 			};
 
-			RegisterAction setMarkAction = new RegisterAction() {
-
-				@Override
-				public void doAction(String register) {
-					if (register.charAt(0) >= 'a' && register.charAt(0) <= 'z')//local mark
-					{
-						GUIPanel.this.currentGUITab.setMark(register);
-					}
-					//GUIPanel.this.setMark(register);
-				}
-
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
-
-			RegisterAction jumpToMarkAction = new RegisterAction() {
-
-				@Override
-				public void doAction(String register) {
-					if (register.charAt(0) >= 'a' && register.charAt(0) <= 'z')//local mark
-					{
-						GUIPanel.this.currentGUITab.jumpToMark(register);
-					}
-					//GUIPanel.this.jumpToMark(register);
-				}
-
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
-
-			RegisterAction startRecordingMacroAction = new RegisterAction() {
-
-				@Override
-				public void doAction(String register) {
-					startRecordingMacro(register);
-					PanelKeyEventHandler.this.mainMenu.addAction("q", PanelKeyEventHandler.this.stopRecordingMacroAction);
-				}
-
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
-
-			stopRecordingMacroAction = new NamedGUIAction("stop recording macro") {
-
-				@Override
-				public void doAction() {
-					stopRecordingMacro();
-					PanelKeyEventHandler.this.mainMenu.addSubMenu("q", PanelKeyEventHandler.this.startRecordingMacroMenu);
-				}
-			};
-
-			RegisterAction executeMacroAction = new RegisterAction() {
-
-				@Override
-				public void doAction(String register) {
-					executeMacro(register);
-				}
-
-				@Override
-				public void doAction(String register, IRepetitionCounter irc) {
-					doAction(register);
-				}
-			};
-
-			NamedGUIAction yankAction = new NamedGUIAction("yank current element") {
-				@Override
-				public void doAction() {
-					GUIPanel.this.currentGUITab.copyGUIelement(GUIPanel.this.currentGUITab.getCurrentGUIElementIndex());
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					doAction();
-				}
-
-			};
-
-			NamedGUIAction deleteAction = new NamedGUIAction("delete") {
-
-				@Override
-				public void doAction() {
-					GUIPanel.this.currentGUITab.removeGUIelement(GUIPanel.this.currentGUITab.getCurrentGUIElementIndex());
-					//GUIPanel.this.setMark(register);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					doAction();
-				}
-			};
-
-			NamedGUIAction elementPasteLinkAction = new NamedGUIAction("paste link (don't copy)") {
-
-				@Override
-				public void doAction() {
-					GUIPanel.this.currentGUITab.insertGUIelement(GUIPanel.this.currentGUITab.getCurrentGUIElementIndex(),GUIPanel.this.getCurrentRegisterContentAndReset(),false);
-					//GUIPanel.this.setMark(register);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					doAction();
-				}
-			};
-
-
-			NamedGUIAction elementPasteCopyAction = new NamedGUIAction("paste copy)") {
-
-				@Override
-				public void doAction() {
-					GUIPanel.this.currentGUITab.insertGUIelement(GUIPanel.this.currentGUITab.getCurrentGUIElementIndex(),GUIPanel.this.getCurrentRegisterContentAndReset(),true);
-					//GUIPanel.this.setMark(register);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					doAction();
-				}
-			};
-
 			//ram.addRegisterAction("p", pasteAction);
 			Menu m = new Menu(GUIPanel.this, "Main menu", true);
 
 			this.mainMenu = m;
 			new BasicMotionsKeyboardShortcutPreparer().prepareShortcuts(this);
 			new FilteringAndSearchingKeyboardShortcutPreparer().prepareShortcuts(this);
+			new MarkMotionsKeyboardShortcutPreparer().prepareShortcuts(this);
+			new RegisterRelatedGlobalActionsPreparer().prepareShortcuts(this);
+			new MacroRelatedActionsPreparer().prepareShortcuts(this);
+
 			m.addAction(
 				":", enterExMode);
 			m.addAction(
 				"a", editComponentAction);
 
 
-
-			Menu setMarkMenu = new RegisterSelectionMenu(GUIPanel.this, "set mark", setMarkAction);
-			Menu jumpToMarkMenu = new RegisterSelectionMenu(GUIPanel.this, "jump to mark", jumpToMarkAction);
-
-			m.addSubMenu(
-				"m", setMarkMenu);
-			m.addSubMenu(
-				"'", jumpToMarkMenu);
-
-			startRecordingMacroMenu = new RegisterSelectionMenu(GUIPanel.this, "record macro", startRecordingMacroAction);
-
-			executeMacroMenu = new RegisterSelectionMenu(GUIPanel.this, "execute macro", executeMacroAction);
-
-			mainMenu.addSubMenu(
-				"q", PanelKeyEventHandler.this.startRecordingMacroMenu);
-			mainMenu.addSubMenu(
-				"v", PanelKeyEventHandler.this.executeMacroMenu);
-
-			yankMenu= new Menu(GUIPanel.this, "yank (copy)", false);
-			yankMenu.addAction("e", yankAction);
-			deleteMenu= new Menu(GUIPanel.this, "delete", false);
-			deleteMenu.addAction("e", deleteAction);
-			pasteMenu= new Menu(GUIPanel.this, "paste", false);
-			pasteMenu.addAction("l", elementPasteLinkAction);
-			pasteMenu.addAction("c", elementPasteCopyAction);
-			m.addSubMenu("y", yankMenu);
-			m.addSubMenu("d", deleteMenu);
-			m.addSubMenu("p", pasteMenu);
 			GUIPanel.this.setMenu(m);
-		}
-
-		private void startRecordingMacro(String register) {
-			this.isRecordingAMacro = true;
-			Macro m = new Macro();
-			this.currentMacro = m;
-			this.macroMap.put(register, m);
-		}
-
-		private void stopRecordingMacro() {
-			this.isRecordingAMacro = false;
-		}
-
-		private void executeMacro(String register) {
-			Macro m = this.macroMap.get(register);
-			if (m != null) {
-				System.out.println("executing macro");
-				m.execute(this);
-			}
 		}
 
 		public void escapeKeyPressed(KeyCode keyCode, Stage dialog) {
@@ -661,6 +476,25 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				vm.setProgram(c.getByteCodeAL());
 				vm.runProgram();
 			}
+		}
+	}
+
+	protected void startRecordingMacro(String register) {
+		this.isRecordingAMacro = true;
+		Macro m = new Macro();
+		this.currentMacro = m;
+		this.macroMap.put(register, m);
+	}
+
+	protected void stopRecordingMacro() {
+		this.isRecordingAMacro = false;
+	}
+
+	protected void executeMacro(String register) {
+		Macro m = this.macroMap.get(register);
+		if (m != null) {
+			System.out.println("executing macro");
+			m.execute(this.pkeh);
 		}
 	}
 
