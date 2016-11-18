@@ -32,7 +32,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	private Menu currentMenu;
 	private String repeatCountString = "";
 
-	PanelKeyEventHandler pkeh;
+	//PanelKeyEventHandler pkeh;
 
 	HashMap<String, GUIelement> quickMarkMap = new HashMap<>();
 	//private final GUIPanel gp;
@@ -69,7 +69,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		super(null);
 		this.setName(name);
 		this.setGUIPanel(gp);
-		pkeh = new PanelKeyEventHandler();
+		//pkeh = new PanelKeyEventHandler();
 		canvas = gp.getCanvas();
 		//canvas.setFocusTraversable(true);
 		// Clear away portions as the user drags the mouse
@@ -188,6 +188,11 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
+	/*
+	Apparently, my code is so unbelievabely robust, that even such a drastic change, as commenting
+		out around 600 LOC has no impact on its functionality whatsoever. Way to go! ^>^
+		*/
+	/*
 	private class PanelKeyEventHandler implements GUIKeyEventHandler {
 
 		Menu mainMenu;
@@ -422,8 +427,23 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		private boolean isDigit(String s) {
 			return (s.length() == 1 && s.charAt(0) > 47 && s.charAt(0) < 58);
 		}
-	}
 
+		@Override
+		public Menu getMainMenu() {
+			return mainMenu;
+		}
+
+		@Override
+		public void setMainMenu(Menu m) {
+			this.mainMenu=m;
+		}
+
+		@Override
+		public GUIPanel getGUIPanel() {
+			return GUITab.this.getGUIPanel();
+		}
+	}
+*/
 	public void handleActions(KeyEvent ke) {
 		GUIAbstractAction gaa = actionMap.get(ke.getText());
 		/*

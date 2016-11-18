@@ -62,6 +62,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private String currentRegister = "%";
 	public final static String UNNAMED_REGISTER = "%";
 
+	public GUITab getCurrentGUITab()
+	{
+		return this.currentGUITab;
+	}
+
 	public int getGUIElementIDByName(String name)
 	{
 		if(name.equals("CGE"))//short for "current gui element"
@@ -320,7 +325,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 
-	private void traverseTabs(boolean forward) {
+	protected void traverseTabs(boolean forward) {
 		if (forward) {
 			this.currentGUITabIndex++;
 		} else {
@@ -366,10 +371,24 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		Menu deleteMenu;
 		Menu pasteMenu;
 
+		@Override
+		public Menu getMainMenu() {
+			return mainMenu;
+		}
+
+		@Override
+		public void setMainMenu(Menu m) {
+			this.mainMenu=m;
+		}
+
+		@Override
+		public GUIPanel getGUIPanel() {
+			return GUIPanel.this;
+		}
+
 		private abstract class searchAction extends NamedGUIAction {
 
 			private int setOperation = RegexUtils.SET_ON_MATCH;
-
 			public searchAction(String name, int setOperation) {
 				super(name);
 				this.setOperation = setOperation;
@@ -502,95 +521,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				}
 			};
 
-			NamedGUIAction testAction = new NamedGUIAction("previous element") {
-				@Override
-				public void doAction() {
-					currentGUITab.traverseElements(true);
-				}
-			};
-			NamedGUIAction testAction2 = new NamedGUIAction("next element") {
 
-				@Override
-				public void doAction() {
-					currentGUITab.traverseElements(false);
-				}
-			};
-			NamedGUIAction jumpToPercent = new NamedGUIAction("jump to (n) % ") {
-
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					GUIPanel.this.currentGUITab.jumpToPercent(irc);
-				}
-			};
-			NamedGUIAction nextTab = new NamedGUIAction("next tab") {
-
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					GUIPanel.this.traverseTabs(true);
-				}
-			};
-			NamedGUIAction prevTab = new NamedGUIAction("previous tab") {
-
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					GUIPanel.this.traverseTabs(false);
-				}
-			};
-
-			NamedGUIAction jumpToBeginning = new NamedGUIAction("beginning") {
-
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					GUIPanel.this.currentGUITab.jumpToBeginning(irc);
-				}
-			};
-			NamedGUIAction jumpToEnd = new NamedGUIAction("end") {
-				@Override
-				public void doAction() {
-					//doAction(1);
-					//GUIList.get(selectedElementIndex).setFocused(false);
-					//selectedElementIndex = 0;//GUIList.size() - 1;
-					//traverseElements(true);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
-					GUIPanel.this.currentGUITab.jumpToEnd(irc);
-				}
-			};
-
+		
 			NamedGUIAction enterExMode = new NamedGUIAction("execute command") {
 				@Override
 				public void doAction() {
@@ -744,33 +676,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			Menu m = new Menu(GUIPanel.this, "Main menu", true);
 
 			this.mainMenu = m;
-			m.addAction(
-				"j", testAction);
-			m.addAction(
-				"k", testAction2);
+			BasicMotionsKeyboardShortcutPreparer.prepareShortcuts(this);
 			m.addAction(
 				"/", new regexSearchAction("search using regex", RegexUtils.SET_ON_MATCH));
 			m.addAction(
 				":", enterExMode);
 			m.addAction(
 				"a", editComponentAction);
-			m.addAction(
-				"%", jumpToPercent);
 
-			Menu goMenu = new Menu(GUIPanel.this, "Go to", false);
-
-			goMenu.addAction(
-				"g", jumpToBeginning);
-			goMenu.addAction(
-				"G", jumpToEnd);
-			goMenu.addAction(
-				"t", nextTab);
-			goMenu.addAction(
-				"T", prevTab);
-			m.addAction(
-				"G", jumpToEnd);
-			m.addSubMenu(
-				"g", goMenu);
 
 			/**
 			 * Search related stuff below
