@@ -9,9 +9,9 @@ package chartadvancedpie;
  *
  * @author thegoodhen
  */
-public class BasicMotionsKeyboardShortcutPreparer {
+public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {
 
-	public static void prepareShortcuts(GUIKeyEventHandler gkeh) {
+	public void prepareShortcuts(GUIKeyEventHandler gkeh) {
 
 		GUIPanel gp = gkeh.getGUIPanel();
 
