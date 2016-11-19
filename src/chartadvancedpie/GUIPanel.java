@@ -68,6 +68,35 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private Macro currentMacro;
 
 	private boolean vFlag = false;
+	private boolean nFlag = false;
+	private boolean lFlag = false;
+	private boolean uniqueNames = false;
+
+	private RegisterAction pickRegisterAction = new RegisterAction() {
+		@Override
+		public void doAction(String register) {
+			System.out.println("weeee, nastavuju wegistw na " + register);
+			setCurrentRegister(register);
+		}
+
+	};
+
+	private RegisterSelectionMenu pickRegisterMenu = new RegisterSelectionMenu(this, "pick register", pickRegisterAction);
+
+	public String getCurrentRegisterLetter() {
+		return this.currentRegister;
+	}
+
+	public String getCurrentRegisterLetterAndReset() {
+		String s = this.getCurrentRegisterLetter();
+		this.currentRegister = UNNAMED_REGISTER;
+		this.lFlag=false;
+		return s;
+	}
+
+	protected void setCurrentRegister(String register) {
+		this.currentRegister = register;
+	}
 
 	public Position getCurrentPosition() {
 		Position returnPosition = new Position(this.currentGUITab, this.currentGUITab.getFocusedGUIElement());
@@ -163,12 +192,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	public void setCurrentRegisterContentAndReset(String content) {
 		setRegisterContent(this.currentRegister, content);
+		this.lFlag=false;
 		this.currentRegister = UNNAMED_REGISTER;
 	}
 
 	public String getCurrentRegisterContentAndReset() {
 		String returnString = getRegisterContent(this.currentRegister);
 		this.currentRegister = UNNAMED_REGISTER;
+		this.lFlag=false;
 		return returnString;
 	}
 
@@ -195,6 +226,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	public void resetRepeatCount() {
 		this.repeatCountString = "";
+		this.nFlag = false;
 	}
 
 	void setMark(String mark) {
@@ -355,6 +387,21 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 
+	public void traverseTabs(int count) {
+		boolean forward = true;
+		if (count > 0) {
+			forward = true;
+			count -= 1;
+		}
+		if (count < 0) {
+			forward = false;
+			count += 1;
+		}
+		this.currentGUITabIndex += count;
+		traverseTabs(forward);
+
+	}
+
 	protected void traverseTabs(boolean forward) {
 		if (forward) {
 			this.currentGUITabIndex++;
@@ -390,6 +437,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	protected TextField getCmdLine() {
 		return this.cmdLine;
+	}
+
+	public boolean showUniqueNames() {
+		return uniqueNames;
+	}
+
+	public void setUniqueNames(boolean set) {
+		this.uniqueNames = set;
 	}
 
 	private class PanelKeyEventHandler implements GUIKeyEventHandler {
@@ -452,6 +507,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			new MarkMotionsKeyboardShortcutPreparer().prepareShortcuts(this);
 			new RegisterRelatedGlobalActionsPreparer().prepareShortcuts(this);
 			new MacroRelatedActionsPreparer().prepareShortcuts(this);
+			new TagKeyboardShortcutPreparer().prepareShortcuts(this);
 
 			m.addAction(
 				":", enterExMode);
@@ -488,11 +544,15 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			if (eventText.equals("V")) {
 				vFlag = !vFlag;
 				System.out.println("V is now:" + (vFlag ? "on" : "off"));
-			}
-			if (isDigit(eventText)) {
+			} else if (eventText.equals("\"")) {
+				GUIPanel.this.pickRegisterMenu.setSuperMenu(GUIPanel.this.currentMenu);
+				GUIPanel.this.currentMenu = (GUIPanel.this.pickRegisterMenu);
+				lFlag=true;
+			} else if (isDigit(eventText)) {
 				System.out.println("pressed num: " + eventText);
 				GUIPanel.this.repeatCountString += eventText;
 				System.out.println("Current num: " + GUIPanel.this.repeatCountString);
+				nFlag = true;
 			} else {
 
 				GUIPanel.this.currentMenu.handle(eventText);
@@ -537,6 +597,16 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	public boolean getVFlag() {
 		return this.vFlag;
+	}
+
+	public boolean getNFlag() {
+
+		return this.nFlag;
+	}
+
+	public boolean getLFlag()
+	{
+		return this.lFlag;
 	}
 
 	protected void startRecordingMacro(String register) {

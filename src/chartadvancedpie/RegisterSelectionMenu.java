@@ -48,7 +48,7 @@ public class RegisterSelectionMenu extends Menu {
 				//close();
 				this.ra.doAction(keystroke);
 
-					//this.suggestClosing();
+					this.suggestClosing();
 
 			}
 		}

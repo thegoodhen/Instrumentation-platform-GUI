@@ -15,41 +15,57 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 
 		GUIPanel gp = gkeh.getGUIPanel();
 
-		JumpAction testAction = new JumpAction("previous element") {
+		JumpAction testAction2 = new JumpAction("previous element") {
 			@Override
 			public void doAction() {
 				GUITab currentGUITab = gp.getCurrentGUITab();
-				currentGUITab.traverseElements(true);
+				//currentGUITab.traverseElements(true);
+				currentGUITab.traverseElements(-this.getCount());
 			}
 		};
-		JumpAction testAction2 = new JumpAction("next element") {
+		JumpAction testAction = new JumpAction("next element") {
 
 			@Override
 			public void doAction() {
 				GUITab currentGUITab = gp.getCurrentGUITab();
-				currentGUITab.traverseElements(false);
+				//currentGUITab.traverseElements(false);
+				currentGUITab.traverseElements(this.getCount());
 			}
 		};
 
-
-		NamedGUIAction jumpToOlderPosition= new NamedGUIAction("previously visited element") {
+		NamedGUIAction jumpToOlderPosition = new NamedGUIAction("previously visited element") {
 
 			@Override
 			public void doAction() {
-				Position p=JumpHistoryManager.get(gp).getPreviousPosition();
+				Position p = JumpHistoryManager.get(gp).getPreviousPosition();
 				gp.setCurrentPosition(p);
 			}
 		};
 
-		NamedGUIAction jumpToNewerPosition= new NamedGUIAction("next visited element") {
+		NamedGUIAction jumpToNewerPosition = new NamedGUIAction("next visited element") {
 
 			@Override
 			public void doAction() {
-				Position p=JumpHistoryManager.get(gp).getNextPosition();
+				Position p = JumpHistoryManager.get(gp).getNextPosition();
 				gp.setCurrentPosition(p);
 			}
 		};
 
+		NamedGUIAction repeatLastJump = new NamedGUIAction("repeat last jump") {
+
+			@Override
+			public void doAction() {
+				JumpHistoryManager.get(gp).repeatLastJump();
+			}
+		};
+
+		NamedGUIAction repeatInverseOfLastJump = new NamedGUIAction("repeat inverse of last jump") {
+
+			@Override
+			public void doAction() {
+				JumpHistoryManager.get(gp).repeatInverseOfLastJump();
+			}
+		};
 
 		NamedGUIAction jumpToPercent = new NamedGUIAction("jump to (n) % ") {
 
@@ -68,49 +84,66 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 			}
 		};
 
-		NamedGUIAction jumpToBeginning = new NamedGUIAction("beginning") {
+		JumpAction jumpToBeginning = new JumpAction("beginning") {
 
 			@Override
-			public void doAction(IRepetitionCounter irc) {
-				gp.getCurrentGUITab().jumpToBeginning(irc);
+			public void doAction() {
+				if (gp.getNFlag())//number specified
+				{
+					gp.getCurrentGUITab().focusGUIelement(this.getCount());
+				}
+				else
+				{
+					
+					gp.getCurrentGUITab().focusGUIelement(0);
+				}
 			}
 		};
-		NamedGUIAction jumpToEnd = new NamedGUIAction("end") {
+
+
+		EditAction toggleUnique= new EditAction("toggle type of names displayed") {
 
 			@Override
-			public void doAction(IRepetitionCounter irc) {
-				gp.getCurrentGUITab().jumpToEnd(irc);
+			public void doAction() {
+				gp.setUniqueNames(!(gp.showUniqueNames()));
+			}
+
+			@Override
+			public void undoAction() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+		};
+
+
+		JumpAction jumpToEnd = new JumpAction("end") {
+
+			@Override
+			public void doAction() {
+				if (gp.getNFlag())//number specified
+				{
+					gp.getCurrentGUITab().focusGUIelement(this.getCount());
+				}
+				else
+				{
+					
+					gp.getCurrentGUITab().focusGUIelement(gp.getCurrentGUITab().getGUIListSize()-1);
+				}
 			}
 		};
 
 		NamedGUIAction nextTab = new NamedGUIAction("next tab") {
 
-			@Override
-			public void doAction() {
-					//doAction(1);
-				//GUIList.get(selectedElementIndex).setFocused(false);
-				//selectedElementIndex = 0;//GUIList.size() - 1;
-				//traverseElements(true);
-			}
 
 			@Override
-			public void doAction(IRepetitionCounter irc) {
-				gp.traverseTabs(true);
+			public void doAction() {
+				gp.traverseTabs(this.getCount());
 			}
 		};
 		NamedGUIAction prevTab = new NamedGUIAction("previous tab") {
 
 			@Override
 			public void doAction() {
-					//doAction(1);
-				//GUIList.get(selectedElementIndex).setFocused(false);
-				//selectedElementIndex = 0;//GUIList.size() - 1;
-				//traverseElements(true);
-			}
-
-			@Override
-			public void doAction(IRepetitionCounter irc) {
-				gp.traverseTabs(false);
+				gp.traverseTabs(-this.getCount());
 			}
 		};
 
@@ -121,6 +154,8 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 			"k", testAction2);
 		m.addAction("o", jumpToOlderPosition);
 		m.addAction("i", jumpToNewerPosition);
+		m.addAction(";", repeatLastJump);
+		m.addAction(",", repeatInverseOfLastJump);
 		m.addAction(
 			"%", jumpToPercent);
 		m.addAction(
@@ -129,6 +164,8 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 		Menu goMenu = new Menu(gp, "Go to", false);
 		goMenu.addAction(
 			"g", jumpToBeginning);
+		goMenu.addAction(
+			"u", toggleUnique);
 		goMenu.addAction(
 			"G", jumpToEnd);
 

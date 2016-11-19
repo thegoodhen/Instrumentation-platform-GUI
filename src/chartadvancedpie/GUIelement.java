@@ -40,6 +40,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	private boolean matchedLastSearch = true;
 	private String name = "Generic GUI Element";
 	private String uniqueName;
+	private String tags="";
 
 	public void addProperty(int id, String name, Property p) {
 		name2IdMap.put(name, id);
@@ -257,10 +258,8 @@ public abstract class GUIelement extends Container implements Subscriber {
 		if (isSelected()) {
 			if (this.getGUIPanel().getVFlag()) {
 				gc.setFill(Color.YELLOW);
-			}
-			else
-			{
-				gc.setFill(Color.rgb(153,153,0));
+			} else {
+				gc.setFill(Color.rgb(153, 153, 0));
 			}
 		}
 
@@ -292,16 +291,61 @@ public abstract class GUIelement extends Container implements Subscriber {
 		return uniqueName;
 	}
 
-	public String getContextDependantName()
-	{
-		if(this.getGUIPanel().showUniqueNames())
-		{
+	public String getContextDependantName() {
+		if (this.getGUIPanel().showUniqueNames()) {
 			return this.getUniqueName();
-		}
-		else
-		{
+		} else {
 			return this.getName();
 		}
+	}
+
+	public String getTags() {
+		return tags;
+	}
+
+	public void removeAllTags()
+	{
+		this.tags="";
+	}
+
+	public void addTags(String t) {
+		for (int i = 0; i < t.length(); i++) {
+			char c = t.charAt(i);
+			if (tags.indexOf(c) == -1)//doesn't contain char
+			{
+				tags += c;
+			}
+		}
+	}
+
+	public void removeTags(String t) {
+
+		for (int i = 0; i < t.length(); i++) {
+			char c = t.charAt(i);
+			if (tags.indexOf(c)== -1)//doesn't contain char
+			{
+				tags=tags.replaceAll(""+c, "");
+			}
+		}
+	}
+
+	/**
+	 * Whether or not does the GUI element have AT LEAST one of the tags
+	 * listed as letters in the string t.
+	 *
+	 * @param t the string containing the possible tags
+	 * @return true if it cotains at least one of the tags listen in t,
+	 * false otherwise
+	 */
+	public boolean hasTag(String t) {
+		for (int i = 0; i < t.length(); i++) {
+			char c = t.charAt(i);
+			if (tags.indexOf(c) != -1)//contains char
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public String getGUIelementName() {
@@ -450,4 +494,5 @@ public abstract class GUIelement extends Container implements Subscriber {
 		}
 
 	}
+
 }

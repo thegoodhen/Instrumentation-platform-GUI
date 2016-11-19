@@ -47,7 +47,7 @@ public class GUIAction extends GUIAbstractAction{
 		this.gp=gp;
 		count=gp.getRepeatCount(false);
 		doAction();
-		gp.resetRepeatCount();
+		//gp.resetRepeatCount();
 		//gp.resetRepeatCount();
 	}
 

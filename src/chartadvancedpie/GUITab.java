@@ -572,25 +572,35 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
 
 
-	public void jumpToBeginning(IRepetitionCounter irc) {
 
-		int newIndex = irc.getRepeatCount();
-		focusGUIelement(newIndex - 1);
-	}
-
-	public void jumpToEnd(IRepetitionCounter irc) {
-		int newIndex = irc.getRepeatCount();
-		if (irc.getRepeatCount() == 1) {
-			focusGUIelement(GUIList.size() - 1);
-		} else {
-			jumpToBeginning(irc);
-		}
+	public int getGUIListSize()
+	{
+		return this.GUIList.size();
 	}
 
 	public void jumpToPercent(IRepetitionCounter irc) {
 		int percent = irc.getRepeatCount();
 		int newIndex = (int) Math.round(((float) GUIList.size() / 100) * percent);
 		focusGUIelement(newIndex);
+	}
+
+
+	public void traverseElements(int steps)
+	{
+		GUIList.get(selectedElementIndex).setFocused(false);
+		boolean forward=true;
+		if(steps>0)
+		{
+			forward=true;
+			steps-=1;
+		}
+		if(steps<0)
+		{
+			forward=false;
+			steps+=1;
+		}
+		selectedElementIndex+=steps;
+		traverseElements(forward);
 	}
 
 	public void traverseElements(boolean forward) {

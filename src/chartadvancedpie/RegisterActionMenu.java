@@ -45,7 +45,7 @@ public class RegisterActionMenu extends Menu {
 	public void handleAction(String keystroke) {
 		RegisterAction ra = (RegisterAction)this.getAction(keystroke);
 		if (ra != null) {
-			ra.doActionWithCounterHandling(register, this.getGUIPanel());
+			ra.doAction(register);
 		}
 		this.suggestClosing();
 	}

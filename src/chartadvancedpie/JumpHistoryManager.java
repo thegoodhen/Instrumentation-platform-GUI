@@ -19,6 +19,7 @@ public class JumpHistoryManager {
 	private static JumpHistoryManager instance=null;
 	private GUIPanel gp;
 	private static int listIndex=0;
+	private static JumpAction lastJump=null;
 
 	private JumpHistoryManager(GUIPanel gp)
 	{
@@ -68,8 +69,25 @@ public class JumpHistoryManager {
 
 	public void addAction(JumpAction ea)
 	{
+		lastJump=ea;
 		historyList.add(gp.getCurrentPosition());
 		listIndex=historyList.size()-1;
+	}
+
+	public void repeatLastJump()
+	{
+		if(lastJump!=null)
+		{
+			lastJump.doAction();
+		}
+	}
+
+	public void repeatInverseOfLastJump()
+	{
+		if(lastJump!=null)
+		{
+			lastJump.doInverseAction();
+		}
 	}
 	
 }
