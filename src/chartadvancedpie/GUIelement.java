@@ -273,7 +273,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 			gc.fillOval(x - 15, y, 10, 10);
 		}
 
-		gc.strokeText(getUniqueName(), x + 100, y + 10);
+		gc.strokeText(getContextDependantName(), x + 100, y + 10);
 	}
 
 	public void setValue(int value) {
@@ -290,6 +290,18 @@ public abstract class GUIelement extends Container implements Subscriber {
 
 	public String getUniqueName() {
 		return uniqueName;
+	}
+
+	public String getContextDependantName()
+	{
+		if(this.getGUIPanel().showUniqueNames())
+		{
+			return this.getUniqueName();
+		}
+		else
+		{
+			return this.getName();
+		}
 	}
 
 	public String getGUIelementName() {
@@ -358,7 +370,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 			}
 			Pattern pattern = Pattern.compile(regex);
 
-			Matcher matcher = pattern.matcher(this.getName());
+			Matcher matcher = pattern.matcher(this.getContextDependantName());
 			boolean matched = matcher.find();
 			if (RegexUtils.isMismatchOperation(setOperation)) {
 				matched = !matched;
@@ -383,7 +395,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 			}
 			Pattern pattern = Pattern.compile(regex);
 
-			Matcher matcher = pattern.matcher(this.getName());
+			Matcher matcher = pattern.matcher(this.getContextDependantName());
 			boolean matched = matcher.find();
 			if (RegexUtils.isMismatchOperation(setOperation)) {
 				matched = !matched;
