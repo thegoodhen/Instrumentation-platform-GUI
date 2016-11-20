@@ -30,7 +30,8 @@ public class JumpHistoryManager {
 	{
 		if(instance==null)
 		{
-		return new JumpHistoryManager(gp);
+			instance=new JumpHistoryManager(gp);
+		return instance;
 		}
 		else
 		{

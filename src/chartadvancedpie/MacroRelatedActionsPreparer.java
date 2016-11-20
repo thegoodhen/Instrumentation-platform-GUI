@@ -61,7 +61,7 @@ public class MacroRelatedActionsPreparer implements IKeyboardShortcutPreparer {
 			m.addSubMenu(
 				"q", startRecordingMacroMenu);
 			m.addSubMenu(
-				"v", executeMacroMenu);
+				"@", executeMacroMenu);
 
 	}
 

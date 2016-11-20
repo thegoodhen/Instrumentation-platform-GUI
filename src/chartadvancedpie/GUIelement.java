@@ -5,6 +5,7 @@
  */
 package chartadvancedpie;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +13,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import shuntingyard.Token;
 
 /**
  *
@@ -33,6 +35,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	private HashMap<Integer, String> id2NameMap = new HashMap<>();
 	private HashMap<Integer, Property> id2PropertyMap = new HashMap<>();
 	private HashMap<Property, Integer> property2idMap = new HashMap<>();
+	private HashMap<String, GUIAction> callbackMap = new HashMap<>();
 	private boolean focused;
 	private boolean enabled = true;
 	private boolean selected = false;
@@ -40,28 +43,98 @@ public abstract class GUIelement extends Container implements Subscriber {
 	private boolean matchedLastSearch = true;
 	private String name = "Generic GUI Element";
 	private String uniqueName;
-	private String tags="";
+	//private String tags = "";
 
-	public void addProperty(int id, String name, Property p) {
-		name2IdMap.put(name, id);
-		id2NameMap.put(id, name);
-		id2PropertyMap.put(id, p);
-		property2idMap.put(p, id);
+
+
+	public void addProperty(Property p) {
+		name2IdMap.put(p.getName(), p.getId());
+		id2NameMap.put(p.getId(), p.getName());
+		id2PropertyMap.put(p.getId(), p);
+		property2idMap.put(p, p.getId());
+	}
+
+	public void addProperty(Property p, GUIAction ga) {
+		this.addProperty(p);
+		this.callbackMap.put(p.getName(), ga);
 	}
 
 	public void addIntegerProperty(int id, String name, int value) {
-		Property p = new IntegerProperty(value);
-		this.addProperty(id, name, p);
+		Property p = new IntegerProperty(id, name, value);
+		this.addProperty(p);
 	}
 
 	public void addFloatProperty(int id, String name, float value) {
-		Property p = new FloatProperty(value);
-		this.addProperty(id, name, p);
+		Property p = new FloatProperty(id, name, value);
+		this.addProperty(p);
 	}
 
 	public void addStringProperty(int id, String name, String value) {
-		Property p = new StringProperty(value);
-		this.addProperty(id, name, p);
+		Property p = new StringProperty(id, name, value);
+		this.addProperty(p);
+	}
+
+	public void setIntegerProperty(String name, int value, boolean undoable) {
+		if (!undoable) {
+			((IntegerProperty) (this.getPropertyByName(name))).setValue(value);
+		} else {
+
+			Property oldP = this.getPropertyByName(name);
+			IntegerProperty ip = new IntegerProperty(oldP.getId(), oldP.getName(), value);
+			setPropertyAction spa = new setPropertyAction(ip);
+			spa.doActionWithHandling(this.gup);
+		}
+	}
+
+	public void setFloatProperty(String name, float value, boolean undoable) {
+		if (!undoable) {
+			((FloatProperty) (this.getPropertyByName(name))).setValue(value);
+		} else {
+
+			Property oldP = this.getPropertyByName(name);
+			FloatProperty ip = new FloatProperty(oldP.getId(), oldP.getName(), value);
+			setPropertyAction spa = new setPropertyAction(ip);
+			spa.doActionWithHandling(this.gup);
+		}
+	}
+
+	public void setStringProperty(String name, String value, boolean undoable) {
+		if (!undoable) {
+			((StringProperty) (this.getPropertyByName(name))).setValue(value);
+		} else {
+
+			Property oldP = this.getPropertyByName(name);
+			StringProperty ip = new StringProperty(oldP.getId(), oldP.getName(), value);
+			setPropertyAction spa = new setPropertyAction(ip);
+			spa.doActionWithHandling(this.gup);
+		}
+	}
+
+	private class setPropertyAction extends EditAction {
+
+		private Property originalProperty;
+		private Property newProperty;
+
+		public setPropertyAction(Property p) {
+			super("set " + p.getName());
+			this.newProperty = p;
+			this.originalProperty = GUIelement.this.getPropertyByName(p.getName());
+		}
+
+		@Override
+		public void doAction() {
+			GUIelement.this.addProperty(newProperty);//overwrite the old one
+			GUIAction ge = GUIelement.this.callbackMap.get(newProperty.getName());
+			if (ge != null) {
+				ge.doActionWithHandling(gup);
+			}
+		}
+
+		@Override
+		public void undoAction() {
+			GUIelement.this.addProperty(originalProperty);//overwrite the old one
+		}
+
 	}
 
 	public HashMap<String, Integer> getName2IdMap() {
@@ -106,11 +179,12 @@ public abstract class GUIelement extends Container implements Subscriber {
 	}
 
 	public boolean isVisible() {
-		return visible;
+		return ((IntegerProperty) this.getPropertyByName("Visible")).getValue() != 0;
 	}
 
 	public void setVisible(boolean visible) {
-		this.visible = visible;
+		value = visible ? 1 : 0;
+		this.setIntegerProperty("Visible", value, true);
 	}
 	private Register reg;
 	private int value;
@@ -139,6 +213,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 		this.addIntegerProperty(11, "Selected", 0);
 		this.addIntegerProperty(12, "Visible", 1);
 		this.addIntegerProperty(13, "Highlighted", 0);
+		this.addStringProperty(14, "Tags", "");
 	}
 
 	public GUIelement(GUITab gut) {
@@ -154,11 +229,12 @@ public abstract class GUIelement extends Container implements Subscriber {
 	}
 
 	public boolean isSelected() {
-		return selected;
+		return ((IntegerProperty) this.getPropertyByName("Selected")).getValue() != 0;
 	}
 
 	public void setSelected(boolean selected) {
-		this.selected = selected;
+		value = selected ? 1 : 0;
+		this.setIntegerProperty("Selected", value, true);
 	}
 
 	public void setRegister(Register reg) {
@@ -275,12 +351,13 @@ public abstract class GUIelement extends Container implements Subscriber {
 		gc.strokeText(getContextDependantName(), x + 100, y + 10);
 	}
 
-	public void setValue(int value) {
-		this.value = value;
+	public void setValue(float value) {
+		this.setFloatProperty("Value", value, true);
+		//this.value = value;
 	}
 
-	public int getValue() {
-		return this.value;
+	public float getValue() {
+		return ((FloatProperty) this.getPropertyByName("Value")).getValue();
 	}
 
 	public String getName() {
@@ -300,15 +377,15 @@ public abstract class GUIelement extends Container implements Subscriber {
 	}
 
 	public String getTags() {
-		return tags;
+		return ((StringProperty)(this.getPropertyByName("Tags"))).getValue();
 	}
 
-	public void removeAllTags()
-	{
-		this.tags="";
+	public void removeAllTags() {
+		this.setStringProperty("Tags","", true);
 	}
 
 	public void addTags(String t) {
+			String tags=getTags();
 		for (int i = 0; i < t.length(); i++) {
 			char c = t.charAt(i);
 			if (tags.indexOf(c) == -1)//doesn't contain char
@@ -316,17 +393,21 @@ public abstract class GUIelement extends Container implements Subscriber {
 				tags += c;
 			}
 		}
+		this.setStringProperty("Tags",tags, true);
+
 	}
 
 	public void removeTags(String t) {
 
+				String tags=getTags();
 		for (int i = 0; i < t.length(); i++) {
 			char c = t.charAt(i);
-			if (tags.indexOf(c)== -1)//doesn't contain char
+			if (tags.indexOf(c) == -1)//doesn't contain char
 			{
-				tags=tags.replaceAll(""+c, "");
+				tags = tags.replaceAll("" + c, "");
 			}
 		}
+		this.setStringProperty("Tags",tags, true);
 	}
 
 	/**
@@ -340,6 +421,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	public boolean hasTag(String t) {
 		for (int i = 0; i < t.length(); i++) {
 			char c = t.charAt(i);
+			String tags=getTags();
 			if (tags.indexOf(c) != -1)//contains char
 			{
 				return true;

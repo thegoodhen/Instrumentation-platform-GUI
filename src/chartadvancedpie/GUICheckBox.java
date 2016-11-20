@@ -28,7 +28,8 @@ public GUICheckBox()
 	}
 
 	//private int value=50;
-	public void setValue(int value)//TODO: change this to like IntegerProperty or something and make it generic! :3
+@Override
+	public void setValue(float value)//TODO: change this to like IntegerProperty or something and make it generic! :3
 	{
 		super.setValue(value);
 		super.update();

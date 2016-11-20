@@ -11,14 +11,21 @@ package chartadvancedpie;
  */
 public class IntegerProperty extends Property<Integer>{
 
-	public IntegerProperty(Integer initializer) {
-		super(initializer);
+	public IntegerProperty(int id, String name, Integer initializer) {
+		super(id, name, initializer);
 	}
+
+	IntegerProperty(Property<Integer> origP) {
+		super(origP);
+	}
+
+	
 
 	@Override
 	public String getTypeName() {
 		return "int";
 	}
+
 
 	
 }

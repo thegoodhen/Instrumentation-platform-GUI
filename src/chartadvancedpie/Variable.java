@@ -100,9 +100,9 @@ public abstract class Variable {
 		return value;
 	}
 
-	public void setValue(int value) //TODO: make the return type generic
+	public void setValue(float value) //TODO: make the return type generic
 	{
-		this.value = value;
+		this.value = (int)value;//boo
 	}
 
 	public boolean getWrite() {

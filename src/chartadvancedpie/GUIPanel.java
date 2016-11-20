@@ -482,10 +482,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 					//GUIList.get(selectedElementIndex).setFocused(false);
 					//selectedElementIndex = 0;//GUIList.size() - 1;
 					//traverseElements(true);
-				}
-
-				@Override
-				public void doAction(IRepetitionCounter irc) {
 					cmdLine.requestFocus();
 
 					GUIPanel.this.enterPressAction = new NamedGUIAction("Run command") {
@@ -495,6 +491,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 						}
 					};
 					//cmdLine.setOnKeyPressed(event -> pkeh.runCommand(event.getCode(), null));
+				}
+
+				@Override
+				public void doAction(IRepetitionCounter irc) {
 				}
 			};
 
@@ -508,6 +508,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			new RegisterRelatedGlobalActionsPreparer().prepareShortcuts(this);
 			new MacroRelatedActionsPreparer().prepareShortcuts(this);
 			new TagKeyboardShortcutPreparer().prepareShortcuts(this);
+			new EditHistoryKeyboardShortcutPreparer().prepareShortcuts(this);
 
 			m.addAction(
 				":", enterExMode);

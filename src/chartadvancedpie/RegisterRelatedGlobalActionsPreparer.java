@@ -50,10 +50,15 @@ public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPr
 
 		};
 
-		NamedGUIAction deleteAction = new NamedGUIAction("delete") {
+		EditAction deleteAction = new EditAction("delete current element") {
+
+			GUITab gt;
+			ArrayList<GUIelement> currentList = new ArrayList<>();
 
 			@Override
 			public void doAction() {
+				gt = gp.getCurrentGUITab();
+				currentList = (ArrayList<GUIelement>) gp.getCurrentGUITab().GUIList.clone();
 				removeOrCopyGUIElements(true);
 				//gp.getCurrentGUITab().removeGUIelement(gp.getCurrentGUITab().getFocusedGUIElementIndex());
 				//GUIPanel.this.setMark(register);
@@ -62,6 +67,11 @@ public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPr
 			@Override
 			public void doAction(IRepetitionCounter irc) {
 				doAction();
+			}
+
+			@Override
+			public void undoAction() {
+				gt.GUIList = currentList;
 			}
 		};
 

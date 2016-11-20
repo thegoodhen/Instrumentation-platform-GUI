@@ -5,8 +5,10 @@
  */
 package chartadvancedpie;
 
+import java.util.ArrayList;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import shuntingyard.Token;
 
 /**
  *
@@ -25,6 +27,39 @@ public class GUISlider extends GUIelement {
 		//super(r);
 		//actionMap.put("l", testAction);
 		//actionMap.put("h", testAction2);
+	}
+
+
+	private class setValueFromTextAction extends NamedGUIAction {
+
+
+		public setValueFromTextAction(String name) {
+			super(name);
+		}
+
+		public void doAction() {
+			getGUIPanel().getCmdLine().requestFocus();
+			/*getGUIPanel().addCmdLineListener((observable, oldValue, newValue) -> {
+				performSearch(modifyInputString(newValue));
+			});*/
+			getGUIPanel().enterPressAction = new NamedGUIAction("confirm query") {
+				@Override
+				public void doAction() {
+					confirmSetValueAction();
+				}
+			};
+			System.out.println("searching");
+
+		}
+
+
+		public void confirmSetValueAction() {
+			String program="CGE.setValue("+getGUIPanel().getCmdLine().getText()+");\n";
+			getGUIPanel().getGUICompiler().compile(program);
+			ArrayList<Token> programList=getGUIPanel().getGUICompiler().getByteCodeAL();
+			getGUIPanel().handleCallBack(programList);
+		}
+
 	}
 
 	//private int value=50;
@@ -46,14 +81,14 @@ public class GUISlider extends GUIelement {
 		NamedGUIAction testAction = new NamedGUIAction("increase value") {
 			@Override
 			public void doAction() {
-				increaseValue(true, false);
+				increaseValue(this.getCount());
 			}
 		};
 
 		NamedGUIAction testAction2 = new NamedGUIAction("decrease value") {
 			@Override
 			public void doAction() {
-				increaseValue(false, false);
+				increaseValue(-this.getCount());
 			}
 		};
 
@@ -138,6 +173,7 @@ public class GUISlider extends GUIelement {
 		this.setMenu(new Menu(gut.getGUIPanel(), "slider menu", true));
 		this.getMenu().addAction("l", testAction);
 		this.getMenu().addAction("h", testAction2);
+		this.getMenu().addAction("c", new setValueFromTextAction("set value to"));
 		this.getMenu().addAction("y", unnamedRegisterYankAction);
 		this.getMenu().addAction("p", unnamedRegisterPasteAction);
 		Menu gotoMenu = new Menu(this.getGUIPanel(), "set", false);
@@ -149,6 +185,12 @@ public class GUISlider extends GUIelement {
 
 	public String getName() {
 		return "gs";
+	}
+
+	public void increaseValue(float step)
+	{
+		this.setValue(this.getValue()+step);
+		super.update();
 	}
 
 	public void increaseValue(boolean forward, boolean fast) {

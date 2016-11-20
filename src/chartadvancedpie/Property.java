@@ -11,6 +11,8 @@ package chartadvancedpie;
  */
 public abstract class Property<T> {
 private T value;
+private int id;
+private String name;
 public T getValue()
 {
 	return this.value;
@@ -19,9 +21,29 @@ public void setValue(T newValue)
 {
 	this.value=newValue;
 }
-public Property(T initializer){
 
+public Property(int id, String name, T initializer){
+
+	this.id=id;
+	this.name=name;
 	this.value=initializer;
+}
+
+public Property(Property<T> source)
+{
+	this.id=source.getId();
+	this.name=source.getName();
+	this.value=source.getValue();
+}
+
+public int getId()
+{
+	return this.id;
+}
+
+public String getName()
+{
+	return this.name;
 }
 
 /**

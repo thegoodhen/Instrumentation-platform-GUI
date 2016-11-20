@@ -131,7 +131,7 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 			}
 		};
 
-		NamedGUIAction nextTab = new NamedGUIAction("next tab") {
+		JumpAction nextTab = new JumpAction("next tab") {
 
 
 			@Override
@@ -139,7 +139,7 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 				gp.traverseTabs(this.getCount());
 			}
 		};
-		NamedGUIAction prevTab = new NamedGUIAction("previous tab") {
+		JumpAction prevTab = new JumpAction("previous tab") {
 
 			@Override
 			public void doAction() {

@@ -11,14 +11,16 @@ package chartadvancedpie;
  */
 public class FloatProperty extends Property<Float>{
 
-	public FloatProperty(Float initializer) {
-		super(initializer);
+	public FloatProperty(int id, String name, Float initializer) {
+		super(id, name, initializer);
 	}
+
 
 	@Override
 	public String getTypeName() {
 		return "float";
 	}
+
 
 	
 }

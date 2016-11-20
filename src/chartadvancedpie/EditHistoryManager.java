@@ -9,40 +9,36 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
- * A class that manages undo, redo, undo tree and other aspects of editing history.
+ * A class that manages undo, redo, undo tree and other aspects of editing
+ * history.
+ *
  * @author thegoodhen
  */
 public class EditHistoryManager {
 
+	private LinkedList<EditAction> historyList = new LinkedList<>();//TODO: add tree
+	private static EditHistoryManager instance = null;
 
-	private LinkedList<EditAction> historyList=new LinkedList<>();//TODO: add tree
-	private static EditHistoryManager instance=null;
-
-	private EditHistoryManager()
-	{
+	private EditHistoryManager() {
 
 	}
 
-	public static EditHistoryManager get()
-	{
-		if(instance==null)
-		{
-		return new EditHistoryManager();
-		}
-		else
-		{
+	public static EditHistoryManager get() {
+		if (instance == null) {
+			instance = new EditHistoryManager();
+			return instance;
+		} else {
 			return instance;
 		}
 	}
 
-	public void addAction(EditAction ea)
-	{
+	public void addAction(EditAction ea) {
 		historyList.push(ea);
 	}
-	public void undoLastAction()
-	{
-		EditAction ea=historyList.pop();
+
+	public void undoLastAction() {
+		EditAction ea = historyList.pop();
 		ea.undoAction();
 	}
-	
+
 }
