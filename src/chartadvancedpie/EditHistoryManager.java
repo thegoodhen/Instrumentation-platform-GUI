@@ -18,6 +18,36 @@ public class EditHistoryManager {
 
 	private LinkedList<EditAction> historyList = new LinkedList<>();//TODO: add tree
 	private static EditHistoryManager instance = null;
+	private static boolean undoGroupOpen = false;
+	private static compositeEditAction currentCompositeAction = null;
+
+	private class compositeEditAction extends EditAction {
+
+		ArrayList<EditAction> eaList = new ArrayList<>();
+
+		public compositeEditAction() {
+			super("");
+		}
+
+		public void addAction(EditAction ea) {
+			eaList.add(ea);
+		}
+
+		public void doAction() {
+			for (EditAction ea : eaList) {
+				ea.doAction();
+			}
+		}
+
+		@Override
+		public void undoAction() {
+			for (int i = eaList.size() - 1; i >= 0; i--) {
+				EditAction ea = eaList.get(i);
+				ea.undoAction();
+			}
+		}
+
+	}
 
 	private EditHistoryManager() {
 
@@ -32,8 +62,22 @@ public class EditHistoryManager {
 		}
 	}
 
+	public void startUndoGroup() {
+		undoGroupOpen = true;
+		currentCompositeAction = new compositeEditAction();
+	}
+
+	public void endUndoGroup() {
+		undoGroupOpen = false;
+		historyList.push(currentCompositeAction);
+	}
+
 	public void addAction(EditAction ea) {
-		historyList.push(ea);
+		if (undoGroupOpen) {
+			currentCompositeAction.addAction(ea);
+		} else {
+			historyList.push(ea);
+		}
 	}
 
 	public void undoLastAction() {
