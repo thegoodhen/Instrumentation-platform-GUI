@@ -90,7 +90,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	public String getCurrentRegisterLetterAndReset() {
 		String s = this.getCurrentRegisterLetter();
 		this.currentRegister = UNNAMED_REGISTER;
-		this.lFlag=false;
+		this.lFlag = false;
 		return s;
 	}
 
@@ -192,14 +192,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	public void setCurrentRegisterContentAndReset(String content) {
 		setRegisterContent(this.currentRegister, content);
-		this.lFlag=false;
+		this.lFlag = false;
 		this.currentRegister = UNNAMED_REGISTER;
 	}
 
 	public String getCurrentRegisterContentAndReset() {
 		String returnString = getRegisterContent(this.currentRegister);
 		this.currentRegister = UNNAMED_REGISTER;
-		this.lFlag=false;
+		this.lFlag = false;
 		return returnString;
 	}
 
@@ -299,31 +299,42 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		 }
 		 );
 		 */
-		canvas.addEventHandler(KeyEvent.KEY_TYPED,
-			new EventHandler<KeyEvent>() {
+		EventHandler<KeyEvent> theHandler = new EventHandler<KeyEvent>() {
 
-				@Override
-				public void handle(KeyEvent ke) {
-					//gs.paint(gc, 10, 10);
-					System.out.println(ke.getCharacter());
-					//createLetter(ke.getText());
-					pkeh.handle(ke);
-					GraphicsContext gc = canvas.getGraphicsContext2D();
-					currentGUITab.paintGUIelements();
-					gc.setStroke(Color.GRAY);
-					for (int i = 0; i < tabList.size(); i++) {
-						if (i == currentGUITabIndex) {
-
-							gc.setStroke(Color.WHITE);
-						} else {
-
-							gc.setStroke(Color.GRAY);
-						}
-						gc.strokeText(tabList.get(i).getName(), 60 * i, 10);
-					}
-					ke.consume();
+			@Override
+			public void handle(KeyEvent ke) {
+				//gs.paint(gc, 10, 10);
+				/*
+				 System.out.println(ke.getCharacter());
+				 System.out.println(ke.toString());
+				 System.out.println(ke.getText());
+				 */
+				String eventString = KeyProcessingUtils.createStringFromKeyEvent(ke);
+				System.out.println(eventString);
+				//createLetter(ke.getText());
+				if (!eventString.isEmpty()) {
+					pkeh.handle(eventString);
 				}
-			});
+				GraphicsContext gc = canvas.getGraphicsContext2D();
+				currentGUITab.paintGUIelements();
+				gc.setStroke(Color.GRAY);
+				for (int i = 0; i < tabList.size(); i++) {
+					if (i == currentGUITabIndex) {
+
+						gc.setStroke(Color.WHITE);
+					} else {
+
+						gc.setStroke(Color.GRAY);
+					}
+					gc.strokeText(tabList.get(i).getName(), 60 * i, 10);
+				}
+				ke.consume();
+			}
+		};
+		canvas.addEventHandler(KeyEvent.KEY_TYPED,
+			theHandler);
+		canvas.addEventHandler(KeyEvent.KEY_PRESSED,
+			theHandler);
 		// Fill the Canvas with a Blue rectnagle when the user double-clicks
 		canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 			@Override
@@ -535,11 +546,18 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			}
 		}
 
-		public void handle(KeyEvent ke) {
-			String eventText = ke.getCharacter();//ke.getText();
+		public void handle(String eventText) {
+			//String eventText = ke.getCharacter();//ke.getText();
+			
+			 if(eventText.equals("<ESCAPE>"))
+			 {
+			 GUIPanel.this.currentMenu.close();
+			 return;
+			 }
+			 
 			if (isRecordingAMacro && eventText.equals("q")) {
 				if (currentMacro != null) {
-					currentMacro.addKeyEvent(ke);
+					//currentMacro.addKeyEvent(ke);
 				}
 			}
 			if (eventText.equals("V")) {
@@ -548,7 +566,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			} else if (eventText.equals("\"")) {
 				GUIPanel.this.pickRegisterMenu.setSuperMenu(GUIPanel.this.currentMenu);
 				GUIPanel.this.currentMenu = (GUIPanel.this.pickRegisterMenu);
-				lFlag=true;
+				lFlag = true;
 			} else if (isDigit(eventText)) {
 				System.out.println("pressed num: " + eventText);
 				GUIPanel.this.repeatCountString += eventText;
@@ -605,8 +623,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		return this.nFlag;
 	}
 
-	public boolean getLFlag()
-	{
+	public boolean getLFlag() {
 		return this.lFlag;
 	}
 

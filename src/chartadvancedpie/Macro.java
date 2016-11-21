@@ -30,7 +30,7 @@ public class Macro {
 	{
 		for(KeyEvent ke:buttonList)
 		{
-		keh.handle(ke);
+		//keh.handle(ke);
 		ke.consume();
 		}
 			

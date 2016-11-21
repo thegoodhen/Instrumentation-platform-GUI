@@ -12,7 +12,7 @@ import javafx.scene.input.KeyEvent;
  * @author thegoodhen
  */
 public interface GUIKeyEventHandler {
-	public void handle(KeyEvent ke);
+	public void handle(String s);
 	public Menu getMainMenu();
 	public void setMainMenu(Menu m);
 	public GUIPanel getGUIPanel();
