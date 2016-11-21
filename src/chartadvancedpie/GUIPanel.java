@@ -62,10 +62,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private String currentRegister = "%";
 	public final static String UNNAMED_REGISTER = "%";
 
-	private HashMap<String, Macro> macroMap = new HashMap<>();
-
+	//private HashMap<String, Macro> macroMap = new HashMap<>();
 	private boolean isRecordingAMacro = false;
-	private Macro currentMacro;
+	private KeySequence currentMacro;
+	private String currentMacroRegister="";
 
 	private boolean vFlag = false;
 	private boolean nFlag = false;
@@ -73,10 +73,18 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private boolean uniqueNames = false;
 
 	MappingManager globalMapManager = new MappingManager(this);
-	private GUIelement currentlyEditedGUIelement=null;
+	private GUIelement currentlyEditedGUIelement = null;
 
 	public void handle(String s) {
 		this.pkeh.handle(s, false);
+	}
+
+	public GUIelement getCurrentlyEditedGUIelement() {
+		return this.currentlyEditedGUIelement;
+	}
+
+	public void setCurrentlyEditedGUIelement(GUIelement ge) {
+		this.currentlyEditedGUIelement = ge;
 	}
 
 	private RegisterAction pickRegisterAction = new RegisterAction() {
@@ -557,6 +565,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			canvas.requestFocus();
 			GUIPanel.this.enterPressAction.doAction();
 			GUIPanel.this.resetCmdLineListeners();
+			if(isRecordingAMacro)
+			{
+				currentMacro.append(GUIPanel.this.getCmdLine().getText()+"<ENTER>");
+			}
 			//cmdLine.setDisable(true);
 
 		}
@@ -577,7 +589,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				}
 			} else {
 				if (respectMappings) {
-					GUIPanel.this.globalMapManager.notifyAboutKeyPress(eventText);
+					GUIelement cge = GUIPanel.this.getCurrentlyEditedGUIelement();
+					if (cge != null) {
+						cge.notifyAboutKeyPress(eventText, true);
+					} else {
+						GUIPanel.this.globalMapManager.notifyAboutKeyPress(eventText, true);
+					}
 				} else {
 					handle(eventText);
 				}
@@ -597,8 +614,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				return;
 			}
 
-			if (isRecordingAMacro && eventText.equals("q")) {
+			if (isRecordingAMacro && !eventText.equals("q")) {
 				if (currentMacro != null) {
+					currentMacro.append(eventText);
 					//currentMacro.addKeyEvent(ke);
 				}
 			}
@@ -671,21 +689,24 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	protected void startRecordingMacro(String register) {
 		this.isRecordingAMacro = true;
-		Macro m = new Macro();
-		this.currentMacro = m;
-		this.macroMap.put(register, m);
+		this.currentMacroRegister=register;
+		//Macro m = new Macro();
+		this.currentMacro = new KeySequence("");
+		//this.macroMap.put(register, m);
 	}
 
 	protected void stopRecordingMacro() {
+		this.setRegisterContent(currentMacroRegister, currentMacro.toString());
 		this.isRecordingAMacro = false;
 	}
 
-	protected void executeMacro(String register) {
-		Macro m = this.macroMap.get(register);
-		if (m != null) {
-			System.out.println("executing macro");
-			m.execute(this.pkeh);
-		}
+	protected void executeMacro(String sequenceOfKeys) {
+		//Macro m = this.macroMap.get(register);
+		KeySequence macro = new KeySequence(sequenceOfKeys);
+		this.setMenu(pkeh.getMainMenu());
+		System.out.println("executing macro");
+		System.out.println(sequenceOfKeys);
+		macro.execute(this);
 	}
 
 	public void handleActions(KeyEvent ke) {
@@ -742,6 +763,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 
 	public void setMenu(Menu m) {
+		if (pkeh != null && m != null) {
+			if (m.equals(pkeh.getMainMenu())) {
+				setCurrentlyEditedGUIelement(null);//when we end editing the component, we are
+				//in the "normal mode"
+			}
+		}
 		this.currentMenu = m;
 		m.showMenu();
 	}

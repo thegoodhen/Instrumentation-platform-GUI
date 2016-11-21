@@ -27,7 +27,18 @@ public class MappingManager {
 	mappingsMap.put(new KeySequence(source), new KeySequence(target));
     }
 
-    public void notifyAboutKeyPress(String keyString) {
+    /**
+     * Notify the mapping manager that a key was pressed and let it decide,
+     * whether it is a part of mapping.
+     *
+     * @param keyString the string of the key pressed, as returned by
+     * KeyProcessingUtils.createStringFromKeyEvent
+     * @param runLiteralWhenNoMatch when no mapping was found, run the "raw"
+     * input sequence?
+     * @return whether or not a mapping was found (no matter if it was already
+     * executed or not)
+     */
+    public boolean notifyAboutKeyPress(String keyString, boolean runLiteralWhenNoMatch) {
 	this.currentKeySequence.append(keyString);
 	boolean someSequenceFound = false;
 	for (Map.Entry<KeySequence, KeySequence> e : mappingsMap.entrySet()) {
@@ -37,17 +48,21 @@ public class MappingManager {
 		if (ks.equals(currentKeySequence)) {
 		    mappingsMap.get(ks).execute(gp);
 		    currentKeySequence = new KeySequence("");
-		    return;
+		    return true;
 		} else {
 		    someSequenceFound = true;
 		}
 	    }
 	}
 	if (!someSequenceFound) {
-	    currentKeySequence.execute(gp);
+	    if (runLiteralWhenNoMatch) {
+		currentKeySequence.execute(gp);
+	    }
 	    currentKeySequence = new KeySequence("");
+	    return false;
 	}
 
+	return someSequenceFound;
     }
 
 }

@@ -35,7 +35,7 @@ public class SetGEValUserFunctionToken extends AbstractBuiltInFunctionToken{
 		float val=vm.popFloatFromStack();
 		int index=vm.popIntFromStack();
 		
-		(((GUIVirtualMachine)vm).getGUIPanel().ID2GUIMap.get(index)).setValue((int)val);//TODO:change to float! 
+		(((GUIVirtualMachine)vm).getGUIPanel().ID2GUIMap.get(index)).setValue(val);//TODO:change to float! 
 		vm.pushByteOnStack((byte)0);
 	}
 
