@@ -545,7 +545,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	 m.showMenu();
 	 }
 	 */
-	public void editCurrentComponent() {
+	public void editCurrentComponent(boolean interactive) {
 		GUIelement currentElement = GUITab.this.getFocusedGUIElement();
 		currentElement.getMenu().setSuperMenu(getGUIPanel().getMenu());
 		GUITab.this.getGUIPanel().setMenu(currentElement.getMenu());

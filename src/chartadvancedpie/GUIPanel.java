@@ -72,6 +72,13 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private boolean lFlag = false;
 	private boolean uniqueNames = false;
 
+	MappingManager globalMapManager = new MappingManager(this);
+	private GUIelement currentlyEditedGUIelement=null;
+
+	public void handle(String s) {
+		this.pkeh.handle(s, false);
+	}
+
 	private RegisterAction pickRegisterAction = new RegisterAction() {
 		@Override
 		public void doAction(String register) {
@@ -313,7 +320,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 				System.out.println(eventString);
 				//createLetter(ke.getText());
 				if (!eventString.isEmpty()) {
-					pkeh.handle(eventString);
+					pkeh.handle(eventString, true);
 				}
 				GraphicsContext gc = canvas.getGraphicsContext2D();
 				currentGUITab.paintGUIelements();
@@ -374,6 +381,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		//vm.setProgram(c.getByteCodeAL());
 		//vm.runProgram();
 
+		this.globalMapManager.addMapping("j", "k");
+		this.globalMapManager.addMapping("k", "j");
+		this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
 	}
 
 	public Canvas getCanvas() {
@@ -482,7 +492,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 			NamedGUIAction editComponentAction = new NamedGUIAction("edit component") {
 				@Override
 				public void doAction() {
-					currentGUITab.editCurrentComponent();
+					currentGUITab.editCurrentComponent(true);
 				}
 			};
 
@@ -539,22 +549,54 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 		public void enterKeyPressed(KeyEvent keyEvent, Stage dialog) {
 			if (keyEvent.getCode() == KeyCode.ENTER && !keyEvent.isShiftDown()) {
-				canvas.requestFocus();
-				GUIPanel.this.enterPressAction.doAction();
-				GUIPanel.this.resetCmdLineListeners();
-				//cmdLine.setDisable(true);
+				sendEnterPressForCmdLine();
 			}
 		}
 
+		public void sendEnterPressForCmdLine() {
+			canvas.requestFocus();
+			GUIPanel.this.enterPressAction.doAction();
+			GUIPanel.this.resetCmdLineListeners();
+			//cmdLine.setDisable(true);
+
+		}
+
+		public void handle(String eventText, boolean respectMappings) {
+			if (GUIPanel.this.getCmdLine().isFocused()) {
+				if (eventText.equals("<ENTER>")) {
+					sendEnterPressForCmdLine();
+					return;
+				} else {
+					String currentText;
+					if (!GUIPanel.this.getCmdLine().getSelectedText().isEmpty()) {
+						currentText = "";
+					} else {
+						currentText = GUIPanel.this.getCmdLine().getText();
+					}
+					GUIPanel.this.getCmdLine().setText(currentText + eventText);
+				}
+			} else {
+				if (respectMappings) {
+					GUIPanel.this.globalMapManager.notifyAboutKeyPress(eventText);
+				} else {
+					handle(eventText);
+				}
+			}
+		}
+
+		/**
+		 * rename this!
+		 *
+		 * @param eventText
+		 */
 		public void handle(String eventText) {
 			//String eventText = ke.getCharacter();//ke.getText();
-			
-			 if(eventText.equals("<ESCAPE>"))
-			 {
-			 GUIPanel.this.currentMenu.close();
-			 return;
-			 }
-			 
+
+			if (eventText.equals("<ESCAPE>")) {
+				GUIPanel.this.currentMenu.close();
+				return;
+			}
+
 			if (isRecordingAMacro && eventText.equals("q")) {
 				if (currentMacro != null) {
 					//currentMacro.addKeyEvent(ke);
