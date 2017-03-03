@@ -10,6 +10,7 @@ package chartadvancedpie;
  * @author thegoodhen
  */
 public abstract class EditAction extends NamedGUIAction{
+    private Position pos=null;
 
 
 
@@ -17,11 +18,17 @@ public abstract class EditAction extends NamedGUIAction{
 		super(name);
 	}
 
+	public Position getPosition()
+	{
+	    return this.pos;
+	}
+
 	@Override
 	public void doActionWithHandling(GUIPanel gp)
 	{
 		this.setCount(gp.getRepeatCount(false));
-		EditHistoryManager.get().addAction(this);
+		this.pos=gp.getCurrentPosition();
+		EditHistoryManager.get(gp).addAction(this);
 		doAction();
 		gp.resetRepeatCount();
 	}

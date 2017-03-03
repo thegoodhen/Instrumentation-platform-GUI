@@ -16,73 +16,78 @@ import java.util.LinkedList;
  */
 public class EditHistoryManager {
 
-	private LinkedList<EditAction> historyList = new LinkedList<>();//TODO: add tree
-	private static EditHistoryManager instance = null;
-	private static boolean undoGroupOpen = false;
-	private static compositeEditAction currentCompositeAction = null;
+    private LinkedList<EditAction> historyList = new LinkedList<>();//TODO: add tree
+    private static EditHistoryManager instance = null;
+    private static boolean undoGroupOpen = false;
+    private static compositeEditAction currentCompositeAction = null;
+    private final GUIPanel gp;
 
-	private class compositeEditAction extends EditAction {
+    private class compositeEditAction extends EditAction {
 
-		ArrayList<EditAction> eaList = new ArrayList<>();
+	ArrayList<EditAction> eaList = new ArrayList<>();
 
-		public compositeEditAction() {
-			super("");
-		}
-
-		public void addAction(EditAction ea) {
-			eaList.add(ea);
-		}
-
-		public void doAction() {
-			for (EditAction ea : eaList) {
-				ea.doAction();
-			}
-		}
-
-		@Override
-		public void undoAction() {
-			for (int i = eaList.size() - 1; i >= 0; i--) {
-				EditAction ea = eaList.get(i);
-				ea.undoAction();
-			}
-		}
-
-	}
-
-	private EditHistoryManager() {
-
-	}
-
-	public static EditHistoryManager get() {
-		if (instance == null) {
-			instance = new EditHistoryManager();
-			return instance;
-		} else {
-			return instance;
-		}
-	}
-
-	public void startUndoGroup() {
-		undoGroupOpen = true;
-		currentCompositeAction = new compositeEditAction();
-	}
-
-	public void endUndoGroup() {
-		undoGroupOpen = false;
-		historyList.push(currentCompositeAction);
+	public compositeEditAction() {
+	    super("");
 	}
 
 	public void addAction(EditAction ea) {
-		if (undoGroupOpen) {
-			currentCompositeAction.addAction(ea);
-		} else {
-			historyList.push(ea);
-		}
+	    eaList.add(ea);
 	}
 
-	public void undoLastAction() {
-		EditAction ea = historyList.pop();
-		ea.undoAction();
+	public void doAction() {
+	    for (EditAction ea : eaList) {
+		ea.doAction();
+	    }
 	}
+
+	@Override
+	public void undoAction() {
+	    for (int i = eaList.size() - 1; i >= 0; i--) {
+		EditAction ea = eaList.get(i);
+		ea.undoAction();
+	    }
+	}
+
+    }
+
+    private EditHistoryManager(GUIPanel gp) {
+	this.gp=gp;
+    }
+
+    public static EditHistoryManager get(GUIPanel gp) {
+	if (instance == null) {
+	    instance = new EditHistoryManager(gp);
+	    return instance;
+	} else {
+	    return instance;
+	}
+    }
+
+    public void startUndoGroup() {
+	undoGroupOpen = true;
+	currentCompositeAction = new compositeEditAction();
+    }
+
+    public void endUndoGroup() {
+	undoGroupOpen = false;
+	historyList.push(currentCompositeAction);
+    }
+
+    public void addAction(EditAction ea) {
+	if (undoGroupOpen) {
+	    currentCompositeAction.addAction(ea);
+	} else {
+	    historyList.push(ea);
+	}
+    }
+
+    public void undoLastAction() {
+	EditAction ea = historyList.pop();
+	ea.undoAction();
+	Position p=ea.getPosition();
+	if (p!=null) {
+	    this.gp.setCurrentPosition(p);
+	}
+    }
 
 }

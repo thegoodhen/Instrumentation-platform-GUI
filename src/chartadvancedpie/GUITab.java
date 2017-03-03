@@ -123,6 +123,8 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		 */
 		//actionMap.put("j", testAction);
 		//actionMap.put("k", testAction2);
+		GUIChart gc = new GUIChart(this);
+		addGUIelement(gc);
 		GUISlider gs = new GUISlider(this);
 		addGUIelement(gs);
 		GUISlider gs2 = new GUISlider(this);
@@ -523,6 +525,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 
 	public void paintGUIelements() {
 		int offset = 50;
+		int fixedOffset= 10;
 
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(Color.BLACK);//clear everything
@@ -530,7 +533,8 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		for (GUIelement ge : GUIList) {
 			if (ge.isVisible()) {
 				ge.paint(canvas.getGraphicsContext2D(), 10, offset);
-				offset += 20;//TODO: let the ge return the needed offset
+				offset += ge.getHeight();//TODO: let the ge return the needed offset
+				offset+=fixedOffset;
 			}
 		}
 	}

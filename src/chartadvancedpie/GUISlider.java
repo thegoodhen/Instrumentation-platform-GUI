@@ -218,9 +218,9 @@ public class GUISlider extends GUIelement {
 		 gc.strokeText(getRegister().getName().toString(), x, y + 20);
 		 }
 		 */
-		gc.fillRect(x, y, 100, 10);
+		gc.fillRect(x, y, 100, this.getHeight());
 		gc.setFill(Color.WHITE);
-		gc.fillRect(x, y, this.getValue(), 10);
+		gc.fillRect(x, y, this.getValue(), this.getHeight());
 	}
 
 	@Override

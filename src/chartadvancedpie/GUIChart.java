@@ -46,20 +46,21 @@ public class GUIChart extends GUIelement {
 	this.currentLineChar = c;
     }
 
-    void selectNextLine(boolean forward, boolean onlyThoseContainingData) {
-	int dir = 0;
-	if (forward) {
+    void selectNextLine(int nth, boolean onlyThoseContainingData) {
+	int dir = nth;
+
+	if (nth > 0) {
 	    dir = 1;
 	} else {
 	    dir = -1;
 	}
 
-	this.currentLineChar += dir;
-	if (this.currentLineChar > 122) {
-	    this.currentLineChar = 97;
+	this.currentLineChar += nth;
+	if (this.currentLineChar > 'z') {
+	    this.currentLineChar = 'a';
 	}
-	if (this.currentLineChar < 97) {
-	    this.currentLineChar = 122;
+	if (this.currentLineChar < 'a') {
+	    this.currentLineChar = 'z';
 	}
 
 	if (onlyThoseContainingData) {
@@ -68,7 +69,7 @@ public class GUIChart extends GUIelement {
 	    }
 	    PlotLine pl = this.linesList.get(currentLineChar);
 	    while (pl == null || (!this.linesList.get(currentLineChar).isVisible()) || (pl.getPointCount() == 0)) {
-		selectNextLine(forward, false);
+		selectNextLine(dir, false);
 		pl = this.linesList.get(currentLineChar);
 	    }
 	}
@@ -110,7 +111,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction scaleXUpAction = new NamedGUIAction("hscale++") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.scaleAlongOrigin(1.01, 1, 200, 50);
+		GUIChart.this.scaleAlongOrigin(1 + (0.01 * this.getCount()), 1, 200, 50);
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 1.01F);
 		System.out.println("kokodak");
 		GUIChart.super.update();
@@ -121,7 +122,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction scaleXDownAction = new NamedGUIAction("hscale--") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.scaleAlongOrigin(0.99, 1, 200, 50);
+		GUIChart.this.scaleAlongOrigin(1 - (0.01 * this.getCount()), 1, 200, 50);
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
 		System.out.println("kokodak");
 		GUIChart.super.update();
@@ -155,7 +156,7 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(true, true);
+		GUIChart.this.selectNextLine(this.getCount(), true);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
@@ -165,7 +166,7 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(false, true);
+		GUIChart.this.selectNextLine(-this.getCount(), true);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
@@ -175,7 +176,7 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(true, false);
+		GUIChart.this.selectNextLine(this.getCount(), false);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
@@ -186,7 +187,7 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(false, false);
+		GUIChart.this.selectNextLine(-this.getCount(), false);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
@@ -198,13 +199,24 @@ public class GUIChart extends GUIelement {
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
 
-		PlotLine pl = GUIChart.this.linesList.get(GUIChart.this.currentLineChar);
-		if (pl == null) {
-		    pl = new PlotLine(GUIChart.this.currentLineChar);
-		    GUIChart.this.addLine(pl);
-		}
+		boolean vflag = GUIChart.this.getGUIPanel().getVFlag();
+		if (vflag) {
 
-		pl.sample();
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+			if (pl.isSelected()) {
+			    pl.sample();
+			}
+		    }
+		} else {
+		    PlotLine pl = GUIChart.this.linesList.get(GUIChart.this.currentLineChar);
+		    if (pl == null) {
+			pl = new PlotLine(GUIChart.this.currentLineChar);
+			GUIChart.this.addLine(pl);
+		    }
+
+		    pl.sample();
+		}
 
 		GUIChart.super.update();
 
@@ -214,12 +226,81 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction yankAction = new NamedGUIAction("yank (copy) current line") {
 	    @Override
 	    public void doAction() {
-		PlotLine currentLine = GUIChart.this.linesList.get(GUIChart.this.currentLineChar);
-		if (currentLine != null) {
-		    GUIChart.this.getGUIPanel().setCurrentRegisterContentAndReset(currentLine.toString());
+		boolean vflag = GUIChart.this.getGUIPanel().getVFlag();
+		if (vflag) {
+
+		    StringBuilder sb = new StringBuilder();
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+			if (pl != null && pl.isSelected()) {
+			    sb.append(pl.toString());
+			    sb.append("\n");
+			}
+			GUIChart.this.getGUIPanel().setCurrentRegisterContentAndReset(sb.toString());
+		    }
+		} else {
+		    PlotLine currentLine = GUIChart.this.linesList.get(GUIChart.this.currentLineChar);
+		    if (currentLine != null) {
+			GUIChart.this.getGUIPanel().setCurrentRegisterContentAndReset(currentLine.toString());
+		    }
 		}
 	    }
 	};
+
+	NamedGUIAction selectOneAction = new NamedGUIAction("select current line") {
+	    @Override
+	    public void doAction() {
+		char c = GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0);
+
+		PlotLine currentLine = GUIChart.this.getPlotLineByChar(c);
+		if (currentLine != null) {
+		    if (!currentLine.isSelected()) {
+			currentLine.setSelected(true);
+		    } else {
+			currentLine.setSelected(false);
+		    }
+		}
+	    }
+	};
+
+	NamedGUIAction selectAllAction = new NamedGUIAction("select/deselect all") {
+	    @Override
+	    public void doAction() {
+
+		boolean atLeastOneWasSelected = false;
+		for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+		    PlotLine pl = entry.getValue();
+		    if (pl.isSelected()) {
+			pl.setSelected(false);
+			atLeastOneWasSelected = true;
+		    }
+		}
+		if (!atLeastOneWasSelected) {
+
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+			pl.setSelected(true);
+		    }
+		}
+	    }
+	};
+
+	NamedGUIAction invertSelectionAction = new NamedGUIAction("invertSelection") {
+	    @Override
+	    public void doAction() {
+
+		boolean atLeastOneWasSelected = false;
+		for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+		    PlotLine pl = entry.getValue();
+		    if (pl.isSelected()) {
+			pl.setSelected(false);
+		    } else {
+			pl.setSelected(true);
+		    }
+		}
+	    }
+	};
+
 	this.setMenu(new Menu(gut.getGUIPanel(), "slider menu", true));
 	this.getMenu().addAction("l", scaleXUpAction);
 	this.getMenu().addAction("h", scaleXDownAction);
@@ -235,6 +316,11 @@ public class GUIChart extends GUIelement {
 	Menu yankMenu = new Menu(gp, "yank (copy)", false);
 	yankMenu.addAction("y", yankAction);
 	this.getMenu().addSubMenu("y", yankMenu);
+	Menu selectionMenu = new Menu(gp, "visually select", false);
+	selectionMenu.addAction("v", selectOneAction);
+	selectionMenu.addAction("a", selectAllAction);
+	selectionMenu.addAction("i", invertSelectionAction);
+	this.getMenu().addSubMenu("v", selectionMenu);
 
     }
 
@@ -294,6 +380,7 @@ public class GUIChart extends GUIelement {
 	//gc.fillRect(x+this.getWidth(), y+this.getHeight()/3,this.getWidth()*(2/3), this.getHeight()*(2/3));
 	paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
 	paintTicks(gc, x, y, x + this.getWidth(), y + this.getHeight());
+	drawLegend(gc, x + this.getWidth() - 50, y + 50);
     }
 
     @Override
@@ -301,6 +388,14 @@ public class GUIChart extends GUIelement {
 	GUIChart cb = new GUIChart();
 	this.copyPropertiesTo(cb);
 	return cb;
+    }
+
+    public PlotLine getPlotLineByChar(char c) {
+	if (c == '%') {
+	    return this.linesList.get(this.currentLineChar);
+	} else {
+	    return this.linesList.get(c);
+	}
     }
 
     private void strokeBorderedLine(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double maxX, double minY, double maxY) {
@@ -407,6 +502,19 @@ public class GUIChart extends GUIelement {
 		    fp1 = fp;
 		}
 	    }
+	}
+    }
+
+    public void drawLegend(GraphicsContext gc, double x, double y) {
+	int i = 0;
+	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
+	    PlotLine pl = entry.getValue();
+	    gc.strokeText((pl.getCharacter() == this.currentLineChar ? ">" : "") + pl.getCharacter() + ": " + ((pl.isVisible()) ? "" : "(H)") + (pl.isSelected() ? "(V)" : ""), x, y + i);
+	    i += 10;
+	}
+	if (this.linesList.get(this.currentLineChar) == null)//currently selected is a ghost
+	{
+	    gc.strokeText(">" + this.currentLineChar + "(G): (ghost)", x, y + i);
 	}
     }
 

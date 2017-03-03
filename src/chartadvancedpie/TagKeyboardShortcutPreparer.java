@@ -51,7 +51,7 @@ public class TagKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {
 			@Override
 			public void doAction() {
 				ArrayList<GUIelement> geList = gp.getCurrentGUITab().GUIList;
-				EditHistoryManager.get().startUndoGroup();
+				EditHistoryManager.get(gp).startUndoGroup();
 				boolean lFlag = gp.getLFlag();
 				String letter = gp.getCurrentRegisterLetterAndReset();
 				if (lFlag) {
@@ -63,7 +63,7 @@ public class TagKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {
 					}
 				}
 
-				EditHistoryManager.get().endUndoGroup();
+				EditHistoryManager.get(gp).endUndoGroup();
 			}
 
 			@Override

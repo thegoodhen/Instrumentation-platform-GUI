@@ -18,7 +18,7 @@ public class EditHistoryKeyboardShortcutPreparer implements IKeyboardShortcutPre
 		NamedGUIAction undoAction= new NamedGUIAction("undo") {
 			@Override
 			public void doAction() {
-				EditHistoryManager.get().undoLastAction();
+				EditHistoryManager.get(gp).undoLastAction();
 			}
 		};
 

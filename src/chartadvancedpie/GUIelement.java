@@ -231,7 +231,9 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.addIntegerProperty(11, "Selected", 0);
 	this.addIntegerProperty(12, "Visible", 1);
 	this.addIntegerProperty(13, "Highlighted", 0);
-	this.addStringProperty(14, "Tags", "");
+	this.addIntegerProperty(14, "Width", 100);
+	this.addIntegerProperty(15, "Height", 20);
+	this.addStringProperty(16, "Tags", "");
     }
 
     public GUIelement(GUITab gut) {
@@ -423,6 +425,16 @@ public abstract class GUIelement extends Container implements Subscriber {
 
     public float getValue() {
 	return ((FloatProperty) this.getPropertyByName("Value")).getValue();
+    }
+
+    public int getHeight()
+    {
+	return ((IntegerProperty) this.getPropertyByName("Height")).getValue();
+    }
+
+    public int getWidth()
+    {
+	return ((IntegerProperty) this.getPropertyByName("Width")).getValue();
     }
 
     public String getName() {

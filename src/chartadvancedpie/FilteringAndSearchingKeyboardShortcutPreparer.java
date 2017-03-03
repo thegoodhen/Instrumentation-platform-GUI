@@ -28,7 +28,7 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 		 */
 		public void doAction() {
 			ArrayList<GUIelement> tempList = gp.getSelectedGUIelementsList(false);
-			EditHistoryManager.get().startUndoGroup();
+			EditHistoryManager.get(gp).startUndoGroup();
 			if (tempList.size() <= 1) {
 				for (GUIelement ge : gp.getCurrentGUITab().GUIList) {
 					ge.setSelected(true);
@@ -39,7 +39,7 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 				}
 
 			}
-			EditHistoryManager.get().endUndoGroup();
+			EditHistoryManager.get(gp).endUndoGroup();
 		}
 
 	}
@@ -75,9 +75,9 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 		}
 
 		public void confirmSearchAction() {
-			EditHistoryManager.get().startUndoGroup();
+			EditHistoryManager.get(gp).startUndoGroup();
 			gp.getCurrentGUITab().applySearch(setOperation);
-			EditHistoryManager.get().endUndoGroup();
+			EditHistoryManager.get(gp).endUndoGroup();
 		}
 
 		public int getSetOperation() {
@@ -93,9 +93,9 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 		}
 
 		public void confirmSearchAction() {
-			EditHistoryManager.get().startUndoGroup();
+			EditHistoryManager.get(gp).startUndoGroup();
 			gp.getCurrentGUITab().applyFilter(this.getSetOperation());
-			EditHistoryManager.get().endUndoGroup();
+			EditHistoryManager.get(gp).endUndoGroup();
 		}
 
 	}

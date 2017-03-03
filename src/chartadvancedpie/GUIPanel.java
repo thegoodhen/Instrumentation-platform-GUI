@@ -205,12 +205,22 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		}
 	}
 
+	/**
+	 * Sets the content on the current register (unnamed register, or a named register if specified by the user); then resets the "current register"
+	 * to default (unnamed register).
+	 * @param content 
+	 */
 	public void setCurrentRegisterContentAndReset(String content) {
 		setRegisterContent(this.currentRegister, content);
 		this.lFlag = false;
 		this.currentRegister = UNNAMED_REGISTER;
 	}
 
+	/**
+	 * Returns the content on the current register (unnamed register, or a named register if specified by the user); then resets the "current register"
+	 * to default (unnamed register).
+     * @return the content of current register
+	 */
 	public String getCurrentRegisterContentAndReset() {
 		String returnString = getRegisterContent(this.currentRegister);
 		this.currentRegister = UNNAMED_REGISTER;
