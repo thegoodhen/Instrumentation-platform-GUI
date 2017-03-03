@@ -23,6 +23,8 @@ public class PlotLine {
     private boolean showPoints = false;
     private boolean showLine = true;
     private char lineChar;
+    private double histogramMin=0;
+    private double histogramMax=100;
 
     public PlotLine(char ch)//TODO: this is just a test constructor
     {
