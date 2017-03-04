@@ -8,6 +8,8 @@ package chartadvancedpie;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
@@ -247,6 +249,18 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	NamedGUIAction pasteOverwriteAction = new NamedGUIAction("paste with overwriting") {
+	    @Override
+	    public void doAction() {
+		ArrayList<String> test = GUIChart.this.parseDoublesFromString("1.2,\t 2.3, \t 3.4,  kokon slepice   4.5 10e05, 		50.35, 10.3e10");
+		ArrayList<String> test2 = GUIChart.this.parseDoublesFromString("2, 3, 4");
+		ArrayList<String> test3 = GUIChart.this.parseDoublesFromString("2,3,4e05");
+		ArrayList<String> test4 = GUIChart.this.parseDoublesFromString("1 000, 2 000, 3 000");
+		ArrayList<String> test5 = GUIChart.this.parseDoublesFromString("1, 000, 000; 2, 000, 000; 3, 000; 5e04");
+		ArrayList<String> test6 = GUIChart.this.parseDoublesFromString("1,2, 2,3, 3,4, 5,6");
+		System.out.println("kdak");
+	    }
+	};
 	NamedGUIAction selectOneAction = new NamedGUIAction("select current line") {
 	    @Override
 	    public void doAction() {
@@ -322,6 +336,89 @@ public class GUIChart extends GUIelement {
 	selectionMenu.addAction("i", invertSelectionAction);
 	this.getMenu().addSubMenu("v", selectionMenu);
 
+	Menu pasteMenu = new Menu(gp, "paste", false);
+	pasteMenu.addAction("p", pasteOverwriteAction);
+	this.getMenu().addSubMenu("p", pasteMenu);
+
+    }
+
+    private ArrayList<String> parseDoublesFromString(String s) {
+	Matcher m1 = Pattern.compile("^([^0-9.,])*(.*?)(([^0-9e.,]))*$").matcher(s);
+	String nonNumericCharsRegex = "[^0-9.,e\\s]";
+
+	String prefix = "";
+	String body = "";
+	String postfix = "";
+
+	ArrayList<String> returnList = new ArrayList<>();
+	if (m1.find()) {
+	    prefix = m1.group(1); //characters before the numbers themselves
+	    body = m1.group(2); //the numbers
+	    postfix = m1.group(3); //characters after the numbers
+	}
+
+	boolean containsDot = body.contains(".");
+	boolean containsComma = body.contains(",");
+
+	Matcher m = Pattern.compile(",\\s+").matcher(body);
+	Matcher m2 = Pattern.compile("[^\\s,.e0-9]").matcher(body);
+
+	boolean containsCommaSpace = m.find();
+	boolean containsOtherChars = m2.find();
+
+	if (containsDot) { //1.2;2.3;3.4 or 1.2, 2.3, 3.4, 2e03, 150e3, 12, 28 or 1.2 something 2.3 something else - numbers with an optional decimal dot; separated by whatever
+	    Matcher m3 = Pattern.compile("[0-9]*\\.?[0-9]+e?[0-9]*").matcher(body);
+	    while (m3.find()) {
+		returnList.add(m3.group(0));
+	    }
+	} else {
+	    if (containsComma) {
+		if (containsCommaSpace) {
+		    if (containsOtherChars) {// 1, 000; 2, 000; 
+			body = body.replaceAll(",\\s*", "");
+			Matcher m3 = Pattern.compile("[0-9]*\\.?[0-9]+e?[0-9]*").matcher(body);
+			while (m3.find()) {
+			    returnList.add(m3.group(0));
+			}
+
+		    } else { //1, 2, 3 or 1e02, 1e05, 2e03 - no decimal dots or commas in the input; just a bunch of numbers separated by commas, followed by blank space
+			body = body.replaceAll(",\\s+", "xxx");
+			body = body.replaceAll("\\s+", "");
+			Matcher m3 = Pattern.compile("[0-9]*,?[0-9]+e?[0-9]*").matcher(body);
+			while (m3.find()) {
+			    returnList.add(m3.group(0));
+			}
+		    }
+		} else //contains comma, but it's not followed by a space; doesn't contain any dots.
+		{
+		    if (containsOtherChars) {
+			body = body.replaceAll(",", "");//remove all commas
+			Matcher m3 = Pattern.compile("[0-9]*e?[0-9]*").matcher(body);
+			while (m3.find()) {
+			    returnList.add(m3.group(0));
+			}
+		    } else {
+
+			Matcher m3 = Pattern.compile("\\s+").matcher(body);
+			if (m3.find())//contains spaces, so it's like 1,2 3,4 5,6
+			{
+
+			    Matcher m4 = Pattern.compile("[0-9]*,?[0-9]+e?[0-9]*").matcher(body);
+			    while (m4.find()) {
+				returnList.add(m4.group(0));
+			    }
+			} else//no spaces, no dots, no other characters, just numbers and commas, so it's like: 1,2,3,4,5,1e05,2e03
+			{
+			    Matcher m4 = Pattern.compile("[0-9]+e?[0-9]*").matcher(body);
+			    while (m4.find()) {
+				returnList.add(m4.group(0));
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	return returnList;
     }
 
     public void increaseValue(boolean forward, boolean fast) {
@@ -378,7 +475,8 @@ public class GUIChart extends GUIelement {
 	gc.setFill(Color.RED);
 	gc.fillRect(x, y, this.getWidth(), this.getHeight());
 	//gc.fillRect(x+this.getWidth(), y+this.getHeight()/3,this.getWidth()*(2/3), this.getHeight()*(2/3));
-	paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	//paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	paintHistograms(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
 	paintTicks(gc, x, y, x + this.getWidth(), y + this.getHeight());
 	drawLegend(gc, x + this.getWidth() - 50, y + 50);
     }
@@ -396,6 +494,31 @@ public class GUIChart extends GUIelement {
 	} else {
 	    return this.linesList.get(c);
 	}
+    }
+
+    private void strokeBorderedRectangle(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double minY, double maxX, double maxY) {
+	FloatPoint p1 = new FloatPoint(x1, y1);
+	FloatPoint p2 = new FloatPoint(x2, y2);
+
+	FloatPoint topLeftCorner = new FloatPoint(minX, minY);
+	FloatPoint bottomRightCorner = new FloatPoint(maxX, maxY);
+
+	FloatPoint leftPoint = FloatPoint.getLeftMostPoint(p1, p2);
+	FloatPoint rightPoint = FloatPoint.getRightMostPoint(p1, p2);
+	FloatPoint upPoint = FloatPoint.getUpMostPoint(p1, p2);
+	FloatPoint downPoint = FloatPoint.getDownMostPoint(p1, p2);
+
+	leftPoint = FloatPoint.getRightMostPoint(leftPoint, topLeftCorner);
+	rightPoint = FloatPoint.getLeftMostPoint(rightPoint, bottomRightCorner);
+
+	upPoint = FloatPoint.getDownMostPoint(upPoint, topLeftCorner);
+	downPoint = FloatPoint.getUpMostPoint(downPoint, bottomRightCorner);
+
+	gc.setFill(Color.FUCHSIA);
+	gc.fillRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
+	gc.strokeRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
+	//gc.strokeRect(200,100,-200,200);
+
     }
 
     private void strokeBorderedLine(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double maxX, double minY, double maxY) {
@@ -500,6 +623,28 @@ public class GUIChart extends GUIelement {
 		for (FloatPoint fp : pl.getPoints()) {
 		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x - 100 + getPlotX(), fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x - 100 + getPlotX(), fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
 		    fp1 = fp;
+		}
+	    }
+	}
+    }
+
+    public void paintHistograms(GraphicsContext gc, double x, double y, double maxX, double maxY) {
+
+	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
+	    PlotLine pl = entry.getValue();
+	    gc.setStroke(pl.getColor());
+	    if (!pl.getHistogramBins().isEmpty()) {
+		double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
+		//FloatPoint fp1 = pl.getPoints().get(0);
+		double currentRectangleStart = pl.getHistogramMin();
+		for (int i : pl.getHistogramBins()) {
+		    double x1 = x - 100 + getPlotX() + currentRectangleStart * this.getPlotScaleX();
+		    double x2 = x1+binWidth*this.getPlotScaleX();
+		    double y1=getPlotY()+y;
+		    double y2=y1-i*getPlotScaleY();
+		    strokeBorderedRectangle(gc,x1,y1,x2,y2, x, y, maxX, maxY);
+
+		    currentRectangleStart+=binWidth;
 		}
 	    }
 	}
