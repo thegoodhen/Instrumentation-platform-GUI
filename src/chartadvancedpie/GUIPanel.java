@@ -388,7 +388,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 		//gt.addGUIelement(gs4);
 		String prog = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
-		String prog2 = "byte test(byte n)\nprintNumber(n+10);\nRETURN 0;\nENDFUNCTION\n";
+		String prog2 = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
+		//String prog2 = "byte test(byte n)\nprintNumber(n+10);\nRETURN 0;\nENDFUNCTION\n";
 
 		String prog3 = "byte step()\nTAB1_GD_DISPLAY0.setValue(TAB1_GS_SLIDER4.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
 		c = InterpreterFacade.prepareCompiler(this);
