@@ -31,6 +31,7 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new GetPropertyIDByNameUserFunctionTokenFactory());
 		this.addSubFactory(new GetIntPropertyUserFunctionTokenFactory());
 		this.addSubFactory(new GetFloatPropertyUserFunctionTokenFactory());
+		this.addSubFactory(new SetFloatPropertyUserFunctionTokenFactory());
 		this.addSubFactory(new AllocBytesOnStackUserFunctionTokenFactory());
 		this.addSubFactory(new StackByteUserFunctionTokenFactory());
 		this.addSubFactory(new SetStackByteUserFunctionTokenFactory());

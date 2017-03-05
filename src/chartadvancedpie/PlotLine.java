@@ -6,6 +6,7 @@
 package chartadvancedpie;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import javafx.scene.paint.Color;
 
 /**
@@ -23,24 +24,51 @@ public class PlotLine {
     private boolean showPoints = false;
     private boolean showLine = true;
     private char lineChar;
-    private double histogramMin=0;
-    private double histogramMax=100;
+    private double histogramMin = 0;
+    private double histogramMax = 10;
+    private double dataMin=0;
+    private double dataMax=10;
+    private int histogramBinsCount = 10;
+
+    public int getHistogramBinsCount() {
+	return histogramBinsCount;
+    }
+
+    public void setHistogramBinsCount(int histogramBinsCount) {
+	this.histogramBinsCount = histogramBinsCount;
+    }
+    private ArrayList<Integer> histogramBins;
+
+    public double getHistogramMin() {
+	return histogramMin;
+    }
+
+    public double getHistogramMax() {
+	return histogramMax;
+    }
+
+    public ArrayList<Integer> getHistogramBins() {
+	return histogramBins;
+    }
 
     public PlotLine(char ch)//TODO: this is just a test constructor
     {
 	this.lineChar = ch;
-	/*
-	 for (double i = 0; i < 20 * 3.14159265358979323846; i += 0.1) {
-	 double x = (i * 100);
-	 double y = (Math.sin(i) * 80);
-	 FloatPoint fp = new FloatPoint(x / 10, y + 40);
-	 this.addPoint(fp);
-	 }
-	 */
+	histogramBins = new ArrayList<Integer>();
+	
+	for (double i = 0; i < 20 * 3.14159265358979323846; i += 0.1) {
+	    double x = (i * 100);
+	    double y = (Math.sin(i) * 80);
+	    FloatPoint fp = new FloatPoint(x / 10, y + 40);
+	    this.addPoint(fp);
+	}
+		
+	System.out.println("gek gek");
     }
 
     public void addPoint(FloatPoint fp) {
 	this.pointList.add(fp);
+	updateHistogram(fp);
     }
 
     public ArrayList<FloatPoint> getPoints() {
@@ -112,5 +140,37 @@ public class PlotLine {
 	//TODO: Following is just for debug purposes
 	cursor.x += 10;
 	cursor.y = Math.random() * 200 - 100;
+    }
+
+    private void updateHistogram(FloatPoint fp) {
+	boolean updatedRange = false;
+	if (fp.y > dataMax) {
+	    updatedRange = true;
+	    dataMax=fp.y;
+	    histogramMax = fp.y;
+	}
+	if (fp.y < dataMin) {
+	    updatedRange = true;
+	    dataMin=fp.y;
+	    histogramMin = fp.y;
+	}
+	if (updatedRange) {
+	    if(histogramMax>138)
+	    {
+		System.out.println("kdak");
+	    }
+	    double y = Math.max(Math.floor(Math.log10(Math.abs(dataMax))), Math.floor(Math.log10(Math.abs(dataMin))));//we get the highest order of magnitude present in the data first...
+	    histogramMin = (Math.floor(dataMin / Math.pow(10, y))) * Math.pow(10, y);
+	    histogramMax = (Math.floor(dataMax / Math.pow(10, y))+1) * Math.pow(10, y);
+	    histogramBins = new ArrayList<>(Collections.nCopies(histogramBinsCount, 0));
+	    for (FloatPoint fp2 : pointList) {
+		int binIndex = (int) (Math.floor(((fp2.y - histogramMin) / (histogramMax - histogramMin)) * histogramBinsCount));
+		histogramBins.set(binIndex, histogramBins.get(binIndex) + 1);
+
+	    }
+	} else {
+	    int binIndex = (int) (Math.floor(((fp.y - histogramMin) / (histogramMax - histogramMin)) * histogramBinsCount));
+	    histogramBins.set(binIndex, histogramBins.get(binIndex) + 1);
+	}
     }
 }

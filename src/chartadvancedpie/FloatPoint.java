@@ -19,6 +19,11 @@ public class FloatPoint {
 	this.y = y;
     }
 
+    /**
+     * Given some number of FloatPoints as vararg, return the one most to the left.
+     * @param fpa
+     * @return 
+     */
     public static FloatPoint getLeftMostPoint(FloatPoint... fpa) {
 	double minX=Double.POSITIVE_INFINITY;
 	FloatPoint returnPoint=null;
@@ -33,6 +38,10 @@ public class FloatPoint {
     }
 
 
+    /**
+     * Given some number of FloatPoints as vararg, return the one most to the right.
+     * 
+     */
     public static FloatPoint getRightMostPoint(FloatPoint... fpa) {
 	double maxX=Double.NEGATIVE_INFINITY;
 	FloatPoint returnPoint=null;
@@ -47,6 +56,10 @@ public class FloatPoint {
     }
 
 
+    /**
+     * Given some number of FloatPoints as vararg, return the upmost one.
+     * 
+     */
     public static FloatPoint getUpMostPoint(FloatPoint... fpa) {
 	double minY=Double.POSITIVE_INFINITY;
 	FloatPoint returnPoint=null;
@@ -60,6 +73,11 @@ public class FloatPoint {
 	return returnPoint;
     }
 
+
+    /**
+     * Given some number of FloatPoints as vararg, return the downmost one.
+     * 
+     */
 
     public static FloatPoint getDownMostPoint(FloatPoint... fpa) {
 	double maxY=Double.NEGATIVE_INFINITY;
