@@ -13,17 +13,17 @@ import shuntingyard.TokenFactory;
  *
  * @author thegoodhen
  */
-public class GetIntPropertyUserFunctionTokenFactory_1 extends TokenFactory {
+public class SetIntPropertyUserFunctionTokenFactory extends TokenFactory {
 
 
 	@Override
 	public String getRegex() {
-		return "getIntProperty";
+		return "setIntProperty";
 	}
 
 	@Override
 	public Token generateInstance(String tokenString) {
-		return new GetIntPropertyUserFunctionToken(tokenString);
+		return new SetIntPropertyUserFunctionToken(tokenString);
 	}
 
 

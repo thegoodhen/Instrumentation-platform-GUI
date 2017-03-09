@@ -583,6 +583,11 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		return this.GUIList.size();
 	}
 
+	public ArrayList<GUIelement> getGUIList()
+	{
+	    return this.GUIList;
+	}
+
 	public void jumpToPercent(IRepetitionCounter irc) {
 		int percent = irc.getRepeatCount();
 		int newIndex = (int) Math.round(((float) GUIList.size() / 100) * percent);

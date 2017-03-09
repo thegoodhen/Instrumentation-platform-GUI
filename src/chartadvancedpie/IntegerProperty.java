@@ -11,8 +11,8 @@ package chartadvancedpie;
  */
 public class IntegerProperty extends Property<Integer>{
 
-	public IntegerProperty(int id, String name, Integer initializer) {
-		super(id, name, initializer);
+	public IntegerProperty(int id, String name, Integer initializer, GUIelement ge) {
+		super(id, name, initializer, ge);
 	}
 
 	IntegerProperty(Property<Integer> origP) {

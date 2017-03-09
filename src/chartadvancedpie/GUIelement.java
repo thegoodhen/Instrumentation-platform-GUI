@@ -61,17 +61,17 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     public void addIntegerProperty(int id, String name, int value) {
-	Property p = new IntegerProperty(id, name, value);
+	Property p = new IntegerProperty(id, name, value, this);
 	this.addProperty(p);
     }
 
     public void addFloatProperty(int id, String name, float value) {
-	Property p = new FloatProperty(id, name, value);
+	Property p = new FloatProperty(id, name, value, this);
 	this.addProperty(p);
     }
 
     public void addStringProperty(int id, String name, String value) {
-	Property p = new StringProperty(id, name, value);
+	Property p = new StringProperty(id, name, value, this);
 	this.addProperty(p);
     }
 
@@ -81,7 +81,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	} else {
 
 	    Property oldP = this.getPropertyByName(name);
-	    IntegerProperty ip = new IntegerProperty(oldP.getId(), oldP.getName(), value);
+	    IntegerProperty ip = new IntegerProperty(oldP.getId(), oldP.getName(), value, this);
 	    setPropertyAction spa = new setPropertyAction(ip);
 	    spa.doActionWithHandling(this.gup);
 	}
@@ -93,7 +93,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	} else {
 
 	    Property oldP = this.getPropertyByName(name);
-	    FloatProperty ip = new FloatProperty(oldP.getId(), oldP.getName(), value);
+	    FloatProperty ip = new FloatProperty(oldP.getId(), oldP.getName(), value, this);
 	    setPropertyAction spa = new setPropertyAction(ip);
 	    spa.doActionWithHandling(this.gup);
 	}
@@ -105,7 +105,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	} else {
 
 	    Property oldP = this.getPropertyByName(name);
-	    StringProperty ip = new StringProperty(oldP.getId(), oldP.getName(), value);
+	    StringProperty ip = new StringProperty(oldP.getId(), oldP.getName(), value, this);
 	    setPropertyAction spa = new setPropertyAction(ip);
 	    spa.doActionWithHandling(this.gup);
 	}
@@ -126,8 +126,13 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return true;
     }
 
-    
+    public void recompilePropertyEvents() {
+	for (Property p : this.property2idMap.keySet()) {
+	    p.recompile();
+	}
+    }
 
+    @Deprecated
     private class setPropertyAction extends EditAction {
 
 	private Property originalProperty;
@@ -179,6 +184,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.id2PropertyMap = id2PropertyMap;
     }
 
+    @Deprecated
     public HashMap<Property, Integer> getProperty2idMap() {
 	return property2idMap;
     }
@@ -312,19 +318,15 @@ public abstract class GUIelement extends Container implements Subscriber {
 	thisInstanceMappingManager = new MappingManager(gup);
     }
 
-    public void addMapping(String source, String target)
-    {
+    public void addMapping(String source, String target) {
 	this.thisInstanceMappingManager.addMapping(source, target);
     }
 
-    public static void addElementTypeMapping(String source, String target)
-    {
+    public static void addElementTypeMapping(String source, String target) {
 	elementTypeMappingManager.addMapping(source, target);
     }
 
-
-    public static void addGlobalElementMapping(String source, String target)
-    {
+    public static void addGlobalElementMapping(String source, String target) {
 	globalElementMappingManager.addMapping(source, target);
     }
 
@@ -427,13 +429,11 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return ((FloatProperty) this.getPropertyByName("Value")).getValue();
     }
 
-    public int getHeight()
-    {
+    public int getHeight() {
 	return ((IntegerProperty) this.getPropertyByName("Height")).getValue();
     }
 
-    public int getWidth()
-    {
+    public int getWidth() {
 	return ((IntegerProperty) this.getPropertyByName("Width")).getValue();
     }
 

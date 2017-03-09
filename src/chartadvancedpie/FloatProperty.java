@@ -11,8 +11,8 @@ package chartadvancedpie;
  */
 public class FloatProperty extends Property<Float>{
 
-	public FloatProperty(int id, String name, Float initializer) {
-		super(id, name, initializer);
+	public FloatProperty(int id, String name, Float initializer, GUIelement ge) {
+		super(id, name, initializer,ge);
 	}
 
 

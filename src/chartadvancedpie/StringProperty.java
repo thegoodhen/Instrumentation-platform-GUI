@@ -11,8 +11,8 @@ package chartadvancedpie;
  */
 public class StringProperty extends Property<String>{
 
-	public StringProperty(int id, String name, String initializer) {
-		super(id, name, initializer);
+	public StringProperty(int id, String name, String initializer, GUIelement ge) {
+		super(id, name, initializer, ge);
 	}
 
 

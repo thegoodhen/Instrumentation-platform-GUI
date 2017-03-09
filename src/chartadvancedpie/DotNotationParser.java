@@ -40,8 +40,10 @@ public class DotNotationParser extends ExpressionParser {
 	    String GEFunction = m2.group(2);
 	    String GEFunctionParams = m2.group(3);
 	    replacement = GEFunction + "(findGE(\"" + GEName + "\"), " + GEFunctionParams + ")";
+	    String wholeCall=m2.group(0);
+	    wholeCall=removeTrailingParenthesis(wholeCall);
 	    replacement = removeTrailingParenthesis(replacement);//hotfix
-	    s = s.replaceAll("\\Q" + m2.group(0) + "\\E", replacement);//woah, this will be buggy! TODO: FIX THIS! NOW! This will fail when the same method is called multiple times on one line!
+	    s = s.replaceAll("\\Q" + wholeCall + "\\E", replacement);//woah, this will be buggy! TODO: FIX THIS! NOW! This will fail when the same method is called multiple times on one line!
 	    m2 = argumentFunctionPattern.matcher(s);
 	}
 
