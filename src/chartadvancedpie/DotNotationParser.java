@@ -58,13 +58,15 @@ public class DotNotationParser extends ExpressionParser {
 	Matcher setPropertyMatcher = setPropertyPattern.matcher(s);
 
 	while (getPropertyMatcher.find()) {
+	    String slepice=getPropertyMatcher.group(0);
 	    getterCallString = this.removeTrailingParenthesis(getPropertyMatcher.group(0));
 	    propertyName = getPropertyMatcher.group(1);
 	    if (propertyName.contains("Property"))//the thingy is "getProperty" already
 	    {
 		continue;
 	    } else {
-		arguments = this.removeTrailingParenthesis(getPropertyMatcher.group(2));
+		//arguments = this.removeTrailingParenthesis(getPropertyMatcher.group(2));
+		arguments =getArgs(getterCallString);// this.removeTrailingParenthesis(setPropertyMatcher.group(2));
 		String typeString = PropertyManager.get().getPropertyTypeString(propertyName);
 
 		if (typeString == null) {
@@ -84,7 +86,7 @@ public class DotNotationParser extends ExpressionParser {
 		continue;
 	    } else {
 		String slepice = setPropertyMatcher.group(2);
-		arguments = this.removeTrailingParenthesis(setPropertyMatcher.group(2));
+		arguments =getArgs(setterCallString);// this.removeTrailingParenthesis(setPropertyMatcher.group(2));
 		String typeString = PropertyManager.get().getPropertyTypeString(propertyName);
 
 		if (typeString == null) {
@@ -117,8 +119,8 @@ public class DotNotationParser extends ExpressionParser {
 	    }
 	    if (originalString.charAt(i) == ')') {
 		rightParenCount++;
-		if (rightParenCount > leftParenCount) {
-		    finalIndex=i;
+		if (rightParenCount >= leftParenCount) {
+		    finalIndex=i+1;
 		    break;
 		}
 	    }
@@ -129,5 +131,17 @@ public class DotNotationParser extends ExpressionParser {
 	}
 	return originalString.substring(0, finalIndex);
     }
+
+private String getArgs(String getterOrSetterString)
+{
+   Pattern p=Pattern.compile("\\((.*)\\)");
+   Matcher m=p.matcher(getterOrSetterString);
+   if(m.find())
+   {
+       return m.group(1);
+   }
+   return "";
+
+}
 
 }

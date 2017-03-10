@@ -399,10 +399,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//String eventTest="byte slepice()\nTAB2_GS_SLIDER0.setValue(30);\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nprintText(\"kdak\");\nprintText(\"ptak\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nprintText(\"kodak\");\nprintNumber(setFloatProperty(findGE(\"CGE\"), 50, getPropertyIdByName(\"Value\")));\nprintText(\"kdak\");\nprintText(\"ptak\");\nRETURN 0;\nENDFUNCTION\n";
-	String eventTest="byte slepice()\nsetFloatProperty(findGE(\"CGE\"), 50, getPropertyIdByName(\"Value\"));\nRETURN 0;\nENDFUNCTION\n";
+	//String eventTest="byte slepice()\nsetFloatProperty(findGE(\"CGE\"), 50, getPropertyIdByName(\"Value\"));\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest = "printText(\"Koroptev\");\n";
 	//String eventTest2 = "printText(\"Koroptev\");\n";
-	//String eventTest="byte slepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
+	String eventTest="byte slepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
 	String eventTest2="byte sklepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nprintText(\"Kokodak\");\nprintText(\"Kokodak\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nfindGE(\"CGE\");\nRETURN 0;\nENDFUNCTION\n";
@@ -423,10 +423,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	String prog2 = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
 	//String prog2 = "byte test(byte n)\nprintNumber(n+10);\nRETURN 0;\nENDFUNCTION\n";
 
-	String prog3 = "byte step()\nTAB1_GD_DISPLAY0.setValue(TAB1_GS_SLIDER4.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
+	String prog3 = "byte step()\nTAB1_GS_SLIDER0.setValue(TAB2_GS_SLIDER0.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
+	String prog4 = "byte TAB1_GS_SLIDER0_Value_S()\nprintNumber(15);\nRETURN 0;\nENDFUNCTION\n";
 	c.compile(prog);
 	c.compile(prog2);
 	c.compile(prog3);
+	c.compile(prog4);
 	vm = new GUIVirtualMachine(this);
 		//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();

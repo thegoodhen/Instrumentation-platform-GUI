@@ -79,7 +79,7 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 	@Override
 	public Token create(String tokenString, int position)
 	{
-		Pattern p=Pattern.compile("([A-Za-z][A-Za-z0-9]*)\\(",0);
+		Pattern p=Pattern.compile("([A-Za-z][A-Za-z_0-9]*)\\(",0);
 		//Pattern p=Pattern.compile("(.*?)\\s*\\r?\\n");
 		Matcher m=p.matcher(tokenString);
 		

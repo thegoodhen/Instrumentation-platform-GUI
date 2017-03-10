@@ -42,10 +42,10 @@ public class SetFloatPropertyUserFunctionToken extends AbstractBuiltInFunctionTo
 		Property p = (((GUIVirtualMachine) vm).getGUIPanel().ID2GUIMap.get(guiElementID)).getPropertyById(propertyId);
 
 		if (!(p instanceof FloatProperty)) {
-	//		vm.pushFloatOnStack((float)-1);
+			vm.pushFloatOnStack((float)-1);
 		} else {
 		    p.setValue(targetValue);
-		//	vm.pushFloatOnStack(((FloatProperty) p).getValue());
+			vm.pushFloatOnStack((float)targetValue);
 		}
 	}
 

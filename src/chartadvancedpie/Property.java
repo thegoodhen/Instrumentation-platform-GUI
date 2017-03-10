@@ -25,6 +25,7 @@ public abstract class Property<T> {
     private GUIelement ge;
 
     public void recompile() {
+	/*
 	try {
 	GUICompiler c = ge.getGUIPanel().getGUICompiler();
 	    c.compile(getGetEventString());
@@ -43,6 +44,7 @@ public abstract class Property<T> {
 	} catch (Exception ex) {
 	    //Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
 	}
+	*/
     }
 
     private String getGetEventString() {
@@ -64,7 +66,7 @@ public abstract class Property<T> {
     public void setValue(T newValue) {
 	this.value = newValue;
 	if (setEvent != null) {
-	    ge.getGUIPanel().handleCallBack(setEvent);
+	    //ge.getGUIPanel().handleCallBack(setEvent);
 	}
     }
 
