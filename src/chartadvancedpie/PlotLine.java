@@ -7,6 +7,7 @@ package chartadvancedpie;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import javafx.scene.paint.Color;
 
 /**
@@ -17,7 +18,7 @@ public class PlotLine {
 
     ArrayList<FloatPoint> pointList = new ArrayList<>();
     Color lineColor = Color.CHARTREUSE;//such a pun, because I reused it in chart! :3
-    FloatPoint cursor = new FloatPoint(0, 0);
+    //FloatPoint cursor = new FloatPoint(0, 0);
     private boolean recorded = false;
     private boolean selected = false;
     private boolean visible = true;
@@ -26,9 +27,15 @@ public class PlotLine {
     private char lineChar;
     private double histogramMin = 0;
     private double histogramMax = 10;
-    private double dataMin=0;
-    private double dataMax=10;
+    private double dataMin = 0;
+    private double dataMax = 10;
     private int histogramBinsCount = 10;
+    private GUIChart theChart;
+
+    private HashMap<String, Integer> name2IdMap = new HashMap<>();
+    private HashMap<Integer, String> id2NameMap = new HashMap<>();
+    private HashMap<Integer, FloatProperty> id2PropertyMap = new HashMap<>();
+    private HashMap<FloatProperty, Integer> property2idMap = new HashMap<>();
 
     public int getHistogramBinsCount() {
 	return histogramBinsCount;
@@ -51,18 +58,21 @@ public class PlotLine {
 	return histogramBins;
     }
 
-    public PlotLine(char ch)//TODO: this is just a test constructor
+    public PlotLine(char ch, GUIChart gc)//TODO: this is just a test constructor
     {
+	this.theChart=gc;
+	this.addProperty(new FloatProperty(104,"LineX",0.0F,gc));
+	this.addProperty(new FloatProperty(105,"LineY",0.0F,gc));
 	this.lineChar = ch;
 	histogramBins = new ArrayList<Integer>();
-	
+
 	for (double i = 0; i < 20 * 3.14159265358979323846; i += 0.1) {
 	    double x = (i * 100);
 	    double y = (Math.sin(i) * 80);
 	    FloatPoint fp = new FloatPoint(x / 10, y + 40);
 	    this.addPoint(fp);
 	}
-		
+
 	System.out.println("gek gek");
     }
 
@@ -80,19 +90,19 @@ public class PlotLine {
     }
 
     public double getCursorX() {
-	return this.cursor.x;
+	return this.getPropertyByName("LineX").getValue();
     }
 
     public double getCursorY() {
-	return this.cursor.y;
+	return this.getPropertyByName("LineY").getValue();
     }
 
     public void setCursorX(double x) {
-	this.cursor.x = x;
+	this.setProperty(this.name2IdMap.get("LineX"), (float)x);
     }
 
     public void setCursorY(double y) {
-	this.cursor.y = y;
+	this.setProperty(this.name2IdMap.get("LineY"), (float)y);
     }
 
     public void setRecorded(boolean rec) {
@@ -136,32 +146,31 @@ public class PlotLine {
     }
 
     public void sample() {
-	this.addPoint(new FloatPoint(this.cursor));
+	this.addPoint(new FloatPoint(this.getPropertyByName("LineX").getValue(),this.getPropertyByName("LineY").getValue()));
 	//TODO: Following is just for debug purposes
-	cursor.x += 10;
-	cursor.y = Math.random() * 200 - 100;
+	//cursor.x += 10;
+	//cursor.y = Math.random() * 200 - 100;
     }
 
     private void updateHistogram(FloatPoint fp) {
 	boolean updatedRange = false;
 	if (fp.y > dataMax) {
 	    updatedRange = true;
-	    dataMax=fp.y;
+	    dataMax = fp.y;
 	    histogramMax = fp.y;
 	}
 	if (fp.y < dataMin) {
 	    updatedRange = true;
-	    dataMin=fp.y;
+	    dataMin = fp.y;
 	    histogramMin = fp.y;
 	}
 	if (updatedRange) {
-	    if(histogramMax>138)
-	    {
+	    if (histogramMax > 138) {
 		System.out.println("kdak");
 	    }
 	    double y = Math.max(Math.floor(Math.log10(Math.abs(dataMax))), Math.floor(Math.log10(Math.abs(dataMin))));//we get the highest order of magnitude present in the data first...
 	    histogramMin = (Math.floor(dataMin / Math.pow(10, y))) * Math.pow(10, y);
-	    histogramMax = (Math.floor(dataMax / Math.pow(10, y))+1) * Math.pow(10, y);
+	    histogramMax = (Math.floor(dataMax / Math.pow(10, y)) + 1) * Math.pow(10, y);
 	    histogramBins = new ArrayList<>(Collections.nCopies(histogramBinsCount, 0));
 	    for (FloatPoint fp2 : pointList) {
 		int binIndex = (int) (Math.floor(((fp2.y - histogramMin) / (histogramMax - histogramMin)) * histogramBinsCount));
@@ -172,5 +181,38 @@ public class PlotLine {
 	    int binIndex = (int) (Math.floor(((fp.y - histogramMin) / (histogramMax - histogramMin)) * histogramBinsCount));
 	    histogramBins.set(binIndex, histogramBins.get(binIndex) + 1);
 	}
+    }
+
+ 	public FloatProperty getPropertyByName(String name)   
+	{
+	    Integer id=this.name2IdMap.get(name);
+	    if(id!=null)
+	    {
+		FloatProperty fp=this.id2PropertyMap.get(id);
+		return fp;
+	    }
+	    return null;
+	}
+
+    public boolean setProperty(int propertyId, float value) {
+	FloatProperty fp = id2PropertyMap.get(propertyId);
+	if (fp != null) {
+	    System.out.println("setting " + fp.getName() + " to " + value + "!");
+	    fp.setValue(value);
+	return true;
+	}
+	else
+	{
+	    System.err.println("Error: No property with the following ID: "+propertyId);
+	    return false;
+	}
+    }
+
+    public void addProperty(FloatProperty p) {
+	name2IdMap.put(p.getName(), p.getId());
+	id2NameMap.put(p.getId(), p.getName());
+	id2PropertyMap.put(p.getId(), p);
+	property2idMap.put(p, p.getId());
+
     }
 }

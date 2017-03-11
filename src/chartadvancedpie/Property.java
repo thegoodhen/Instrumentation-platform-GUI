@@ -25,7 +25,7 @@ public abstract class Property<T> {
     private GUIelement ge;
 
     public void recompile() {
-	/*
+	
 	try {
 	GUICompiler c = ge.getGUIPanel().getGUICompiler();
 	    c.compile(getGetEventString());
@@ -44,29 +44,30 @@ public abstract class Property<T> {
 	} catch (Exception ex) {
 	    //Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
 	}
-	*/
+	
     }
 
     private String getGetEventString() {
-	return "EVENT_" + this.ge.getUniqueName() + "_G" + name + "();\n";
+	return  this.ge.getUniqueName() +"_"+name + "_G"+"();\n";
     }
 
     private String getSetEventString() {
-	return "slepice();\n";
+	return  this.ge.getUniqueName() +"_"+name + "_S"+"();\n";
+	//return "slepice();\n";
 	//return "EVENT_" + this.ge.getUniqueName() + "_S" + name + "();\n";
     }
 
-    public T getValue() {
+    synchronized public T getValue() {
 	if (getEvent != null) {
 	    ge.getGUIPanel().handleCallBack(getEvent);
 	}
 	return this.value;
     }
 
-    public void setValue(T newValue) {
+    synchronized public void setValue(T newValue) {
 	this.value = newValue;
 	if (setEvent != null) {
-	    //ge.getGUIPanel().handleCallBack(setEvent);
+	    ge.getGUIPanel().handleCallBack(setEvent);
 	}
     }
 

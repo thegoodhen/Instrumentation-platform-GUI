@@ -198,7 +198,7 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     public Property getPropertyByName(String name) {
-	int id = name2IdMap.get(name);
+	Integer id = name2IdMap.get(name);
 	return id2PropertyMap.get(id);
     }
 

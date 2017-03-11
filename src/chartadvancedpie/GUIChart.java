@@ -7,6 +7,8 @@ package chartadvancedpie;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,9 +29,13 @@ public class GUIChart extends GUIelement {
     int maxYPixelTickSize = 50;
     double currentXTickSize = 5;
     double currentYTickSize = 5;
+    Timer sampleTimer = null;
+    boolean isRecording = false;
 
     public GUIChart() {
 
+	this.addFloatProperty(104, "LineX", 0);
+	this.addFloatProperty(105, "LineY", 0);
     }
 
     public GUIChart(GUITab gut) {
@@ -42,6 +48,25 @@ public class GUIChart extends GUIelement {
 
     public void addLine(PlotLine pl) {
 	this.linesList.put(pl.getCharacter(), pl);
+    }
+
+    public void startRecording() {
+	if (isRecording) {
+	    return;
+	} else {
+
+	    isRecording = true;
+	}
+	if (sampleTimer == null) {
+	    sampleTimer = new Timer();
+	}
+	sampleTimer.schedule(
+		new TimerTask() {
+		    @Override
+		    public void run() {
+			System.out.println("kokodak");
+		    }
+		}, 0, 1000);
     }
 
     public void setCurrentLineChar(char c) {
@@ -99,7 +124,7 @@ public class GUIChart extends GUIelement {
 	this.addFloatProperty(101, "PlotScaleY", 1);
 	this.addFloatProperty(102, "PlotX", 0);
 	this.addFloatProperty(103, "PlotY", 0);
-	this.addLine(new PlotLine('a'));
+	this.addLine(new PlotLine('a', this));
 	this.setPlotY((50));
 	this.setPlotScaleX((2F));
 	this.setPlotScaleY((0.1F));
@@ -213,7 +238,7 @@ public class GUIChart extends GUIelement {
 		} else {
 		    PlotLine pl = GUIChart.this.linesList.get(GUIChart.this.currentLineChar);
 		    if (pl == null) {
-			pl = new PlotLine(GUIChart.this.currentLineChar);
+			pl = new PlotLine(GUIChart.this.currentLineChar, GUIChart.this);
 			GUIChart.this.addLine(pl);
 		    }
 
@@ -303,7 +328,6 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 
-		boolean atLeastOneWasSelected = false;
 		for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
 		    PlotLine pl = entry.getValue();
 		    if (pl.isSelected()) {
@@ -313,6 +337,26 @@ public class GUIChart extends GUIelement {
 		    }
 		}
 	    }
+	};
+
+	NamedGUIAction startRecordingAction = new NamedGUIAction("Start recording") {
+	    @Override
+	    public void doAction() {
+
+		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+			if (pl.isSelected()) {
+			    pl.setRecorded(true);
+			}
+		    }
+		} else {
+		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
+		    pl.setRecorded(true);
+		}
+	    GUIChart.this.startRecording ();
+	    }
+
 	};
 
 	this.setMenu(new Menu(gut.getGUIPanel(), "slider menu", true));
@@ -325,6 +369,7 @@ public class GUIChart extends GUIelement {
 	this.getMenu().addAction("k", prevExistingLine);
 	this.getMenu().addAction("J", nextLine);
 	this.getMenu().addAction("K", prevLine);
+	this.getMenu().addAction("r", startRecordingAction);
 	this.getMenu().addAction("s", sampleAction);
 	GUIPanel gp = gut.getGUIPanel();
 	Menu yankMenu = new Menu(gp, "yank (copy)", false);
@@ -639,12 +684,12 @@ public class GUIChart extends GUIelement {
 		double currentRectangleStart = pl.getHistogramMin();
 		for (int i : pl.getHistogramBins()) {
 		    double x1 = x - 100 + getPlotX() + currentRectangleStart * this.getPlotScaleX();
-		    double x2 = x1+binWidth*this.getPlotScaleX();
-		    double y1=getPlotY()+y;
-		    double y2=y1-i*getPlotScaleY();
-		    strokeBorderedRectangle(gc,x1,y1,x2,y2, x, y, maxX, maxY);
+		    double x2 = x1 + binWidth * this.getPlotScaleX();
+		    double y1 = getPlotY() + y;
+		    double y2 = y1 - i * getPlotScaleY();
+		    strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
 
-		    currentRectangleStart+=binWidth;
+		    currentRectangleStart += binWidth;
 		}
 	    }
 	}
@@ -736,5 +781,19 @@ public class GUIChart extends GUIelement {
 	    }
 
 	}
+    }
+
+    public PlotLine getLine(String letter) {
+	char ch;
+	if (letter.equals("%")) {
+	    ch = this.currentLineChar;
+	} else {
+	    ch = letter.charAt(0);
+	}
+	return this.linesList.get(ch);
+    }
+
+    public boolean setLineProperty(String lineLetter, int propertyId, float value) {
+	return this.getLine(lineLetter).setProperty(propertyId, value);
     }
 }

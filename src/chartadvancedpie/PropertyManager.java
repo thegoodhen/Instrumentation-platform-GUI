@@ -14,91 +14,91 @@ import java.util.ArrayList;
  */
 public class PropertyManager {
 
-	private static ArrayList<GUIelement> elementList = new ArrayList<>();
-	private static boolean setup = false;
-	private static PropertyManager pm = null;
+    private static ArrayList<GUIelement> elementList = new ArrayList<>();
+    private static boolean setup = false;
+    private static PropertyManager pm = null;
 
-	private PropertyManager() {
-		initialize();
+    private PropertyManager() {
+	initialize();
+    }
+
+    public static PropertyManager get() {
+
+	if (pm == null) {
+	    return new PropertyManager();
+	} else {
+	    return pm;
 	}
+    }
 
-	public static PropertyManager get() {
-
-		if (pm == null) {
-			return new PropertyManager();
-		}
-		else
-		{
-			return pm;
-		}
+    /**
+     * This method needs to be called before anything else.
+     */
+    private void initialize() {
+	if (setup == false) {
+	    elementList.add(new GUISlider());
+	    elementList.add(new GUIChart());
+	    setup = true;
 	}
+    }
 
-	/**
-	 * This method needs to be called before anything else.
-	 */
-	private void initialize() {
-		if (setup == false) {
-			elementList.add(new GUISlider());
-			//TODO: add chart once done
-			setup = true;
-		}
+    /**
+     * Returns the type, with the first letter capitalised (for instance, "Int")
+     * of the property, given its name.
+     *
+     * @param name
+     * @return
+     */
+    public String getPropertyTypeString(String name) {
+	//initialize();
+	Property p = getProperty(name);
+	if (p == null) {
+	    return null;
+	} else {
+	    if (name.toLowerCase().contains("line")) {
+		return "Line";
+	    }
+	    String typeString = p.getTypeName();
+	    typeString = typeString.substring(0, 1).toUpperCase() + typeString.substring(1).toLowerCase();
+	    return typeString;
 	}
+    }
 
-	/**
-	 * Returns the type, with the first letter capitalised (for instance,
-	 * "Int") of the property, given its name.
-	 *
-	 * @param name
-	 * @return
-	 */
-	public String getPropertyTypeString(String name) {
-		initialize();
-		Property p = getProperty(name);
-		if (p == null) {
-			return null;
-		} else {
-			String typeString = p.getTypeName();
-			typeString = typeString.substring(0, 1).toUpperCase() + typeString.substring(1).toLowerCase();
-			return typeString;
-		}
+    public Property getProperty(int id) {
+	Property returnProperty = null;
+	for (GUIelement ge : elementList) {
+	    returnProperty = ge.getPropertyById(id);
+	    if (returnProperty != null) {
+		break;
+	    }
 	}
+	return returnProperty;
+    }
 
-	public Property getProperty(int id) {
-		Property returnProperty = null;
-		for (GUIelement ge : elementList) {
-			returnProperty = ge.getPropertyById(id);
-			if (returnProperty != null) {
-				break;
-			}
-		}
-		return returnProperty;
+    public Property getProperty(String name) {
+	Property returnProperty = null;
+	for (GUIelement ge : elementList) {
+	    returnProperty = ge.getPropertyByName(name);
+	    if (returnProperty != null) {
+		break;
+	    }
 	}
+	return returnProperty;
 
-	public Property getProperty(String name) {
-		Property returnProperty = null;
-		for (GUIelement ge : elementList) {
-			returnProperty = ge.getPropertyByName(name);
-			if (returnProperty != null) {
-				break;
-			}
-		}
-		return returnProperty;
+    }
 
+    public int getPropertyIDByName(String name) {
+	Property p = this.getProperty(name);
+	Integer id = -1;
+
+	for (GUIelement ge : elementList) {
+	    id = ge.getProperty2idMap().get(p);
+	    if (id != null) {
+		break;
+	    }
 	}
+	return id;
 
-	public int getPropertyIDByName(String name)
-	{
-		Property p=this.getProperty(name);
-		Integer id=-1;
-
-		for (GUIelement ge : elementList) {
-			id=ge.getProperty2idMap().get(p);
-			if (id != null) {
-				break;
-			}
-		}
-		return id;
-		
-	}
+    }
 
 }
