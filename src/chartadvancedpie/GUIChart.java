@@ -584,6 +584,19 @@ public class GUIChart extends GUIelement {
 
     }
 
+    @Override
+    public int getHeight() {
+	int preferredHeight= ((IntegerProperty) this.getPropertyByName("Height")).getValue();
+	int preferredWidth=((IntegerProperty) this.getPropertyByName("Width")).getValue();
+	return (int)(((double)getWidth()/preferredWidth)*preferredHeight);
+    }
+
+    @Override
+    public int getWidth() {
+	int preferredWidth=((IntegerProperty) this.getPropertyByName("Width")).getValue();
+	return Math.max(preferredWidth, (int)(this.getGUIPanel().getCanvas().getWidth()*0.8));
+    }
+
     private void strokeBorderedLine(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double maxX, double minY, double maxY) {
 	double xSmaller = Math.min(x1, x2);
 	double xBigger = Math.max(x1, x2);

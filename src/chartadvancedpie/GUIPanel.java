@@ -289,8 +289,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
-    public CanvasPane getCanvasPane()
-    {
+    public CanvasPane getCanvasPane() {
 	return this.canvasPane;
     }
 
@@ -298,8 +297,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	super(null);
 
 	pkeh = new PanelKeyEventHandler();
-	canvasPane=new CanvasPane(400,200);
+	canvasPane = new CanvasPane(400, 200);
 	canvas = canvasPane.getCanvas();//new Canvas(400, 200);
+	canvas.widthProperty().addListener(observable -> this.getCurrentGUITab().paintGUIelements());
+	canvas.widthProperty().addListener(observable -> this.getCurrentGUITab().paintGUIelements());
 
 	vb = new VBox(8);
 	//vb.getChildren().add(canvas);
@@ -351,7 +352,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	    @Override
 	    public void handle(KeyEvent ke) {
-				//gs.paint(gc, 10, 10);
+		//gs.paint(gc, 10, 10);
 				/*
 		 System.out.println(ke.getCharacter());
 		 System.out.println(ke.toString());
@@ -392,7 +393,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		}
 	    }
 	});
-		//actionMap.put("j", testAction);
+	//actionMap.put("j", testAction);
 	//actionMap.put("k", testAction2);
 
 	GUITab gt = new GUITab(this, "tab1");
@@ -402,7 +403,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	currentGUITab = gt2;
 
 	c = InterpreterFacade.prepareCompiler(this);
-		//String eventTest="byte EVENT_TAB1_GS_SLIDER0_SHeight()\nprintText(\"kokodak\");\nRETURN 0;\nENDFUNCTION\n";
+	//String eventTest="byte EVENT_TAB1_GS_SLIDER0_SHeight()\nprintText(\"kokodak\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nprintText(\"kokonkdak\");\nCGE.setValue(30);\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nCGE.setValue(30);\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nTAB2_GS_SLIDER0.setValue(30);\nRETURN 0;\nENDFUNCTION\n";
@@ -411,8 +412,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//String eventTest="byte slepice()\nsetFloatProperty(findGE(\"CGE\"), 50, getPropertyIdByName(\"Value\"));\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest = "printText(\"Koroptev\");\n";
 	//String eventTest2 = "printText(\"Koroptev\");\n";
-	String eventTest="byte slepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
-	String eventTest2="byte sklepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
+	String eventTest = "byte slepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
+	String eventTest2 = "byte sklepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nprintText(\"Kokodak\");\nprintText(\"Kokodak\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nfindGE(\"CGE\");\nRETURN 0;\nENDFUNCTION\n";
 	c.compile(eventTest);
@@ -434,7 +435,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	String prog3 = "byte step()\nTAB1_GS_SLIDER0.setValue(TAB2_GS_SLIDER0.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
 	String prog4 = "byte TAB1_GS_SLIDER0_Value_S()\nprintNumber(15);\nRETURN 0;\nENDFUNCTION\n";
-	String prog5="byte TAB2_GENERIC_GUI_ELEMENT_GENERIC0_Sample()\nprintText(\"kokodak\");\nTAB2_GENERIC_GUI_ELEMENT_GENERIC0.setLineY(\"a\",TAB2_GS_SLIDER0.getValue()*10);\nRETURN 0;\nENDFUNCTION\n";
+	String prog5 = "byte TAB2_GENERIC_GUI_ELEMENT_GENERIC0_Sample()\nprintText(\"kokodak\");\nTAB2_GENERIC_GUI_ELEMENT_GENERIC0.setLineY(\"a\",TAB2_GS_SLIDER0.getValue()*10);\nRETURN 0;\nENDFUNCTION\n";
 	c.compile(prog);
 	c.compile(prog2);
 	c.compile(prog3);
@@ -448,7 +449,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//c.compile(funcCall);
 	//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();
-
 	this.globalMapManager.addMapping("j", "k");
 	this.globalMapManager.addMapping("k", "j");
 	this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
@@ -568,7 +568,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    NamedGUIAction enterExMode = new NamedGUIAction("execute command") {
 		@Override
 		public void doAction() {
-					//doAction(1);
+		    //doAction(1);
 		    //GUIList.get(selectedElementIndex).setFocused(false);
 		    //selectedElementIndex = 0;//GUIList.size() - 1;
 		    //traverseElements(true);
@@ -832,30 +832,31 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.currentMenu = m;
 	m.showMenu();
     }
-  private static class CanvasPane extends Pane {
 
-        private final Canvas canvas;
+    private static class CanvasPane extends Pane {
 
-        public CanvasPane(double width, double height) {
-            canvas = new Canvas(width, height);
-            getChildren().add(canvas);
-        }
+	private final Canvas canvas;
 
-        public Canvas getCanvas() {
-            return canvas;
-        }
+	public CanvasPane(double width, double height) {
+	    canvas = new Canvas(width, height);
+	    getChildren().add(canvas);
+	}
 
-        @Override
-        protected void layoutChildren() {
-            final double x = snappedLeftInset();
-            final double y = snappedTopInset();
-            final double w = snapSize(getWidth()) - x - snappedRightInset();
-            final double h = snapSize(getHeight()) - y - snappedBottomInset();
-            canvas.setLayoutX(x);
-            canvas.setLayoutY(y);
-            canvas.setWidth(w);
-            canvas.setHeight(h);
-        }
+	public Canvas getCanvas() {
+	    return canvas;
+	}
+
+	@Override
+	protected void layoutChildren() {
+	    final double x = snappedLeftInset();
+	    final double y = snappedTopInset();
+	    final double w = snapSize(getWidth()) - x - snappedRightInset();
+	    final double h = snapSize(getHeight()) - y - snappedBottomInset();
+	    canvas.setLayoutX(x);
+	    canvas.setLayoutY(y);
+	    canvas.setWidth(w);
+	    canvas.setHeight(h);
+	}
     }
 
 }
