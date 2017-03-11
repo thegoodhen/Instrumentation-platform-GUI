@@ -47,6 +47,7 @@ public abstract class GUIelement extends Container implements Subscriber {
     private static MappingManager globalElementMappingManager = null;
     private static MappingManager elementTypeMappingManager = null;
     private MappingManager thisInstanceMappingManager = null;
+    private FloatPoint lastPositionDrawnTo=null;
 
     public void addProperty(Property p) {
 	name2IdMap.put(p.getName(), p.getId());
@@ -388,7 +389,13 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.focused = selected;
     }
 
+    public FloatPoint getLastPositionDrawnTo()
+    {
+	return this.lastPositionDrawnTo;
+    }
+
     public void paint(GraphicsContext gc, double x, double y) {
+	this.lastPositionDrawnTo=new FloatPoint(x,y);
 	gc.setFill(Color.BLUE);
 	gc.setStroke(Color.WHITE);
 
