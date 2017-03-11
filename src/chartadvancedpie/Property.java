@@ -57,14 +57,14 @@ public abstract class Property<T> {
 	//return "EVENT_" + this.ge.getUniqueName() + "_S" + name + "();\n";
     }
 
-    synchronized public T getValue() {
+    public T getValue() {
 	if (getEvent != null) {
 	    ge.getGUIPanel().handleCallBack(getEvent);
 	}
 	return this.value;
     }
 
-    synchronized public void setValue(T newValue) {
+    public void setValue(T newValue) {
 	this.value = newValue;
 	if (setEvent != null) {
 	    ge.getGUIPanel().handleCallBack(setEvent);

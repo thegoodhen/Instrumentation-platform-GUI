@@ -139,9 +139,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return this.currentGUITab;
     }
 
-    public void recompileEvents() {
+    public void recompileEventsForAll() {
 	for (GUIelement ge : this.GUIIDMap.keySet()) {
-	    ge.recompilePropertyEvents();
+	    ge.recompileEvents();
 	}
     }
 
@@ -425,10 +425,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	String prog3 = "byte step()\nTAB1_GS_SLIDER0.setValue(TAB2_GS_SLIDER0.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
 	String prog4 = "byte TAB1_GS_SLIDER0_Value_S()\nprintNumber(15);\nRETURN 0;\nENDFUNCTION\n";
+	String prog5="byte TAB2_GENERIC_GUI_ELEMENT_GENERIC0_Sample()\nprintText(\"kokodak\");\nTAB2_GENERIC_GUI_ELEMENT_GENERIC0.setLineY(\"a\",TAB2_GS_SLIDER0.getValue()*10);\nRETURN 0;\nENDFUNCTION\n";
 	c.compile(prog);
 	c.compile(prog2);
 	c.compile(prog3);
 	c.compile(prog4);
+	c.compile(prog5);
 	vm = new GUIVirtualMachine(this);
 		//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();
@@ -441,7 +443,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.globalMapManager.addMapping("j", "k");
 	this.globalMapManager.addMapping("k", "j");
 	this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
-	this.recompileEvents();
+	this.recompileEventsForAll();
     }
 
     public Canvas getCanvas() {

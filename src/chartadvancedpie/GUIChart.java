@@ -12,8 +12,10 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import shuntingyard.Token;
 
 /**
  *
@@ -31,6 +33,7 @@ public class GUIChart extends GUIelement {
     double currentYTickSize = 5;
     Timer sampleTimer = null;
     boolean isRecording = false;
+    ArrayList<Token> sampleEvent = null;
 
     public GUIChart() {
 
@@ -65,8 +68,14 @@ public class GUIChart extends GUIelement {
 		    @Override
 		    public void run() {
 			System.out.println("kokodak");
+			if (sampleEvent != null) {
+			    Platform.runLater(() -> {//TODO: only surround the necessary stuff in runLater!
+				GUIChart.this.getGUIPanel().handleCallBack(sampleEvent);//call the user event
+			    });
+			    GUIChart.this.sampleAllRelevant();
+			}
 		    }
-		}, 0, 1000);
+		}, 0, 100);
     }
 
     public void setCurrentLineChar(char c) {
@@ -354,7 +363,7 @@ public class GUIChart extends GUIelement {
 		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
 		    pl.setRecorded(true);
 		}
-	    GUIChart.this.startRecording ();
+		GUIChart.this.startRecording();
 	    }
 
 	};
@@ -385,6 +394,15 @@ public class GUIChart extends GUIelement {
 	pasteMenu.addAction("p", pasteOverwriteAction);
 	this.getMenu().addSubMenu("p", pasteMenu);
 
+    }
+
+    public void sampleAllRelevant() {
+	for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+	    PlotLine pl = entry.getValue();
+	    if (pl.isBeingRecorded()) {
+		pl.sample();
+	    }
+	}
     }
 
     private ArrayList<String> parseDoublesFromString(String s) {
@@ -783,6 +801,21 @@ public class GUIChart extends GUIelement {
 	}
     }
 
+    @Override
+    public void recompileEvents() {
+	super.recompileEvents();
+
+	try {
+	    GUICompiler c = this.getGUIPanel().getGUICompiler();
+	    c.compile(getSampleEventString());
+	    sampleEvent = c.getByteCodeAL();
+	    System.out.println("SUCCESS");
+	} catch (Exception ex) {
+	    //Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
+
+	}
+    }
+
     public PlotLine getLine(String letter) {
 	char ch;
 	if (letter.equals("%")) {
@@ -796,4 +829,9 @@ public class GUIChart extends GUIelement {
     public boolean setLineProperty(String lineLetter, int propertyId, float value) {
 	return this.getLine(lineLetter).setProperty(propertyId, value);
     }
+
+    public String getSampleEventString() {
+	return this.getUniqueName() + "_Sample();\n";
+    }
+
 }

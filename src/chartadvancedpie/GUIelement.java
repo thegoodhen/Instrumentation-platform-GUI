@@ -126,7 +126,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return true;
     }
 
-    public void recompilePropertyEvents() {
+    public void recompileEvents() {
 	for (Property p : this.property2idMap.keySet()) {
 	    p.recompile();
 	}

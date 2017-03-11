@@ -8,6 +8,7 @@ package chartadvancedpie;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 /**
@@ -60,13 +61,13 @@ public class PlotLine {
 
     public PlotLine(char ch, GUIChart gc)//TODO: this is just a test constructor
     {
-	this.theChart=gc;
-	this.addProperty(new FloatProperty(104,"LineX",0.0F,gc));
-	this.addProperty(new FloatProperty(105,"LineY",0.0F,gc));
+	this.theChart = gc;
+	this.addProperty(new FloatProperty(104, "LineX", 0.0F, gc));
+	this.addProperty(new FloatProperty(105, "LineY", 0.0F, gc));
 	this.lineChar = ch;
 	histogramBins = new ArrayList<Integer>();
 
-	for (double i = 0; i < 20 * 3.14159265358979323846; i += 0.1) {
+	for (double i = 0; i < 2 * 3.14159265358979323846; i += 0.5) {
 	    double x = (i * 100);
 	    double y = (Math.sin(i) * 80);
 	    FloatPoint fp = new FloatPoint(x / 10, y + 40);
@@ -78,6 +79,19 @@ public class PlotLine {
 
     public void addPoint(FloatPoint fp) {
 	this.pointList.add(fp);
+	theChart.update();
+	GUIPanel gp = theChart.getGUIPanel();
+	if (gp != null) {
+	    GUITab gt = gp.getCurrentGUITab();
+	    if (gt != null) {
+
+		Platform.runLater(() -> {
+		    gt.paintGUIelements();
+		}
+		);
+	    } 
+	}
+	System.out.println("updating chart");
 	updateHistogram(fp);
     }
 
@@ -98,11 +112,11 @@ public class PlotLine {
     }
 
     public void setCursorX(double x) {
-	this.setProperty(this.name2IdMap.get("LineX"), (float)x);
+	this.setProperty(this.name2IdMap.get("LineX"), (float) x);
     }
 
     public void setCursorY(double y) {
-	this.setProperty(this.name2IdMap.get("LineY"), (float)y);
+	this.setProperty(this.name2IdMap.get("LineY"), (float) y);
     }
 
     public void setRecorded(boolean rec) {
@@ -146,7 +160,7 @@ public class PlotLine {
     }
 
     public void sample() {
-	this.addPoint(new FloatPoint(this.getPropertyByName("LineX").getValue(),this.getPropertyByName("LineY").getValue()));
+	this.addPoint(new FloatPoint(this.getPropertyByName("LineX").getValue(), this.getPropertyByName("LineY").getValue()));
 	//TODO: Following is just for debug purposes
 	//cursor.x += 10;
 	//cursor.y = Math.random() * 200 - 100;
@@ -183,27 +197,23 @@ public class PlotLine {
 	}
     }
 
- 	public FloatProperty getPropertyByName(String name)   
-	{
-	    Integer id=this.name2IdMap.get(name);
-	    if(id!=null)
-	    {
-		FloatProperty fp=this.id2PropertyMap.get(id);
-		return fp;
-	    }
-	    return null;
+    public FloatProperty getPropertyByName(String name) {
+	Integer id = this.name2IdMap.get(name);
+	if (id != null) {
+	    FloatProperty fp = this.id2PropertyMap.get(id);
+	    return fp;
 	}
+	return null;
+    }
 
     public boolean setProperty(int propertyId, float value) {
 	FloatProperty fp = id2PropertyMap.get(propertyId);
 	if (fp != null) {
 	    System.out.println("setting " + fp.getName() + " to " + value + "!");
 	    fp.setValue(value);
-	return true;
-	}
-	else
-	{
-	    System.err.println("Error: No property with the following ID: "+propertyId);
+	    return true;
+	} else {
+	    System.err.println("Error: No property with the following ID: " + propertyId);
 	    return false;
 	}
     }
