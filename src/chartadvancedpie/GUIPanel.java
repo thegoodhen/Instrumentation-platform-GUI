@@ -24,6 +24,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -74,6 +75,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     MappingManager globalMapManager = new MappingManager(this);
     private GUIelement currentlyEditedGUIelement = null;
+    private final CanvasPane canvasPane;
 
     public void handle(String s) {
 	this.pkeh.handle(s, false);
@@ -287,13 +289,20 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    public CanvasPane getCanvasPane()
+    {
+	return this.canvasPane;
+    }
+
     public GUIPanel() {
 	super(null);
 
 	pkeh = new PanelKeyEventHandler();
-	canvas = new Canvas(400, 200);
+	canvasPane=new CanvasPane(400,200);
+	canvas = canvasPane.getCanvas();//new Canvas(400, 200);
+
 	vb = new VBox(8);
-	vb.getChildren().add(canvas);
+	//vb.getChildren().add(canvas);
 	cmdLine = new TextField("Slepice");
 	statusLine = new TextArea("Kokodak");
 	cmdLine.setStyle("-fx-text-inner-color: gray;");
@@ -451,6 +460,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     }
 
     public VBox getVbox() {
+	vb.setFillWidth(true);
 	return vb;
     }
 
@@ -821,6 +831,31 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 	this.currentMenu = m;
 	m.showMenu();
+    }
+  private static class CanvasPane extends Pane {
+
+        private final Canvas canvas;
+
+        public CanvasPane(double width, double height) {
+            canvas = new Canvas(width, height);
+            getChildren().add(canvas);
+        }
+
+        public Canvas getCanvas() {
+            return canvas;
+        }
+
+        @Override
+        protected void layoutChildren() {
+            final double x = snappedLeftInset();
+            final double y = snappedTopInset();
+            final double w = snapSize(getWidth()) - x - snappedRightInset();
+            final double h = snapSize(getHeight()) - y - snappedBottomInset();
+            canvas.setLayoutX(x);
+            canvas.setLayoutY(y);
+            canvas.setWidth(w);
+            canvas.setHeight(h);
+        }
     }
 
 }

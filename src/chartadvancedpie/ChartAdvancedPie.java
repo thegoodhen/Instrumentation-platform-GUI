@@ -41,6 +41,7 @@ import javafx.collections.FXCollections;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -113,18 +114,23 @@ public class ChartAdvancedPie extends Application{
 		 */
 
 		primaryStage.setTitle("Canvas Doodle Test");
-		Group root = new Group();
+		//Group root = new Group();
 
 		// Draw background with gradient
-		Rectangle rect = new Rectangle(400, 400);
+		//Rectangle rect = new Rectangle(400, 400);
 		//drawBackground(rect);
-		root.getChildren().add(rect);
+		///root.getChildren().add(rect);
 
 		// Create the Canvas, filled in with Blue
 		//reset(canvas, Color.BLUE);
 		// Add the Canvas to the Scene, and show the Stage
 		GUIPanel gp = new GUIPanel();
-		root.getChildren().add(gp.getVbox());
+
+		BorderPane root=new BorderPane(gp.getCanvasPane());
+
+		//root.getChildren().add(gp.getVbox());
+		root.setBottom(gp.getVbox());
+		primaryStage.setResizable(true);
 		primaryStage.setScene(new Scene(root, 400, 400));
 		primaryStage.show();
 
