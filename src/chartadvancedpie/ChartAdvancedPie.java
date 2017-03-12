@@ -38,9 +38,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -126,12 +128,17 @@ public class ChartAdvancedPie extends Application{
 		// Add the Canvas to the Scene, and show the Stage
 		GUIPanel gp = new GUIPanel();
 
+		SplitPane sp=new SplitPane();
+
 		BorderPane root=new BorderPane(gp.getCanvasPane());
+		sp.getItems().add(root);
+		sp.getItems().add(gp.getVbox());
+		sp.setOrientation(Orientation.VERTICAL);
 
 		//root.getChildren().add(gp.getVbox());
-		root.setBottom(gp.getVbox());
+		//root.setBottom(gp.getVbox());
 		primaryStage.setResizable(true);
-		primaryStage.setScene(new Scene(root, 400, 400));
+		primaryStage.setScene(new Scene(sp, 400, 400));
 		primaryStage.show();
 
 		ModuleFactory mf = new ModuleFactory();

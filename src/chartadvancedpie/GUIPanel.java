@@ -305,21 +305,28 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	vb = new VBox(8);
 	//vb.getChildren().add(canvas);
 	cmdLine = new TextField("Slepice");
-	statusLine = new TextArea("Kokodak");
+	statusLine = new TextArea("Kokodak"){
+	@Override
+	public void requestFocus()
+	{
+
+
+	}
+	};
 	cmdLine.setStyle("-fx-text-inner-color: gray;");
-	cmdLine.setOnKeyPressed(event -> pkeh.escapeKeyPressed(event.getCode(), null));
+	//cmdLine.setOnKeyPressed(event -> pkeh.escapeKeyPressed(event.getCode(), null));
 	this.enterPressAction = new NamedGUIAction("confirm") {
 	    public void doAction() {
 
 	    }
 	};
 
-	cmdLine.setOnKeyPressed(event -> pkeh.enterKeyPressed(event, null));
+	cmdLine.setOnKeyPressed(event -> pkeh.keyPressed(event, null));
 		//cmdLine.setPrefRowCount(1);
 
 	//statusLine.setRotate(40);//wow, funky
 	statusLine.setEditable(false);
-	statusLine.setPrefRowCount(2);
+	statusLine.setPrefRowCount(200);
 	statusLine.setFocusTraversable(false);
 	vb.getChildren().addAll(cmdLine, statusLine);
 	canvas.setFocusTraversable(true);
@@ -517,7 +524,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	for (javafx.beans.value.ChangeListener cl : this.cmdLineListenerList) {
 	    this.cmdLine.textProperty().removeListener(cl);
 	}
-	GUIPanel.this.enterPressAction = new NamedGUIAction("do nothing");
+	//GUIPanel.this.enterPressAction = new NamedGUIAction("do nothing");
+
+		    GUIPanel.this.enterPressAction = new NamedGUIAction("Run command") {
+			@Override
+			public void doAction() {
+			    pkeh.runCommand(KeyCode.ENTER, null);
+			}
+		    };
     }
 
     @Override
@@ -616,7 +630,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    }
 	}
 
-	public void enterKeyPressed(KeyEvent keyEvent, Stage dialog) {
+	public void keyPressed(KeyEvent keyEvent, Stage dialog) {
+	    if(keyEvent.getCode()==KeyCode.ESCAPE)
+	    {
+		canvas.requestFocus();
+		GUIPanel.this.resetCmdLineListeners();
+	    }
 	    if (keyEvent.getCode() == KeyCode.ENTER && !keyEvent.isShiftDown()) {
 		sendEnterPressForCmdLine();
 	    }
