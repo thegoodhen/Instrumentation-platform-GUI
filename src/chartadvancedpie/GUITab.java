@@ -71,7 +71,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	this.setGUIPanel(gp);
 	//pkeh = new PanelKeyEventHandler();
 	canvas = gp.getCanvas();
-		//canvas.setFocusTraversable(true);
+	//canvas.setFocusTraversable(true);
 	// Clear away portions as the user drags the mouse
 	canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
 	    @Override
@@ -122,7 +122,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	 });
 
 	 */
-		//actionMap.put("j", testAction);
+	//actionMap.put("j", testAction);
 	//actionMap.put("k", testAction2);
 	GUIChart gc = new GUIChart(this);
 	addGUIelement(gc);
@@ -494,7 +494,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
     public String getUniqueName(int index) {
 
 	return GUIList.get(index).getUniqueName();
-		//this.getGUIPanel().setCurrentRegisterContentAndReset(elementUniqueName);
+	//this.getGUIPanel().setCurrentRegisterContentAndReset(elementUniqueName);
 	//this.getGUIPanel().registerMap.put(register, elementUniqueName);
     }
 
@@ -520,7 +520,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
     }
 
     public void paintGUIelements() {
-	int offset = 50+scrollOffset;
+	int offset = 50 + scrollOffset;
 	int fixedOffset = 10;
 
 	GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -627,16 +627,31 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	GUIList.get(selectedElementIndex).setFocused(true);
 	FloatPoint lastPos = GUIList.get(selectedElementIndex).getLastPositionDrawnTo();
 
-	double maxYpos=this.getGUIPanel().getCanvas().getHeight()*0.9;
-	double minYpos=this.getGUIPanel().getCanvas().getHeight()*0.1;
-	if(lastPos.y>maxYpos)
-	{
-	    this.scrollOffset-=(lastPos.y-maxYpos);
+	double maxYpos = this.getGUIPanel().getCanvas().getHeight() * 0.9;
+	double minYpos = this.getGUIPanel().getCanvas().getHeight() * 0.1;
+	if (lastPos.y > maxYpos) {
+	    this.scrollOffset -= (lastPos.y - maxYpos);
 	}
 
-	if(lastPos.y<minYpos)
-	{
-	    this.scrollOffset+=(minYpos-lastPos.y);
+	if (lastPos.y < minYpos) {
+	    this.scrollOffset += (minYpos - lastPos.y);
+	}
+    }
+
+    void sendMousePress(double sceneX, double sceneY) {
+	System.out.println("x: " + sceneX + " a y: " + sceneY);
+	for (GUIelement ge : this.GUIList) {
+	    FloatPoint fp = ge.getLastPositionDrawnTo();
+	    double h = ge.getHeight();
+	    double w = ge.getWidth();
+	    if (sceneX > fp.x && sceneX < fp.x + w && sceneY > fp.y && sceneY < fp.y + h)//we clicked on it!
+	    {
+		if (!ge.isFocused()) {
+		    this.focusGUIelement(ge);
+		}
+		this.paintGUIelements();
+		break;
+	    }
 	}
     }
 }

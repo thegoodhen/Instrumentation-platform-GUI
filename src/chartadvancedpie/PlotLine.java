@@ -8,6 +8,7 @@ package chartadvancedpie;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.TreeMap;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
@@ -17,7 +18,7 @@ import javafx.scene.paint.Color;
  */
 public class PlotLine {
 
-    ArrayList<FloatPoint> pointList = new ArrayList<>();
+    TreeMap<Double,FloatPoint> pointList = new TreeMap();
     Color lineColor = Color.CHARTREUSE;//such a pun, because I reused it in chart! :3
     //FloatPoint cursor = new FloatPoint(0, 0);
     private boolean recorded = false;
@@ -67,7 +68,7 @@ public class PlotLine {
 	this.lineChar = ch;
 	histogramBins = new ArrayList<Integer>();
 
-	for (double i = 0; i < 2 * 3.14159265358979323846; i += 0.5) {
+	for (double i = 0; i < 20 * 3.14159265358979323846; i += 0.5) {
 	    double x = (i * 100);
 	    double y = (Math.sin(i) * 80);
 	    FloatPoint fp = new FloatPoint(x / 10, y + 40);
@@ -77,8 +78,44 @@ public class PlotLine {
 	System.out.println("gek gek");
     }
 
+    /**
+     * Returns the FloatPoint, x value of which is the closest to the value provided, but smaller.
+     * @param value
+     * @return 
+     */
+    public FloatPoint getPointLeftTo(double value)
+    {
+	return this.pointList.floorEntry(value).getValue();
+    }
+
+    /**
+     * Returns the FloatPoint, x value of which is the closest to the value provided, but greater.
+     * @param value
+     * @return 
+     */
+    public FloatPoint getPointRightTo(double value)
+    {
+	return this.pointList.ceilingEntry(value).getValue();
+    }
+
+    /**
+     * Use linear interpolation to guess the value between 2 points; returns 0 if no such value exists.
+     * @param x
+     * @return 
+     */
+    public double evaluateYatX(double x)
+    {
+	FloatPoint leftPoint=getPointLeftTo(x);
+	FloatPoint rightPoint=getPointRightTo(x);
+	if(leftPoint!=null && rightPoint!=null)
+	{
+		return ((x-leftPoint.x)/(rightPoint.x-leftPoint.x))*(rightPoint.y-leftPoint.y)+leftPoint.y;
+	}
+	return 0;
+    }
+
     public void addPoint(FloatPoint fp) {
-	this.pointList.add(fp);
+	this.pointList.put(fp.x,fp);
 	theChart.update();
 	GUIPanel gp = theChart.getGUIPanel();
 	if (gp != null) {
@@ -95,7 +132,7 @@ public class PlotLine {
 	updateHistogram(fp);
     }
 
-    public ArrayList<FloatPoint> getPoints() {
+    public TreeMap<Double,FloatPoint> getPoints() {
 	return this.pointList;
     }
 
@@ -150,7 +187,7 @@ public class PlotLine {
     @Override
     public String toString() {
 	StringBuilder sb = new StringBuilder();
-	for (FloatPoint fp : this.pointList) {
+	for (FloatPoint fp : this.pointList.values()) {
 	    sb.append(fp.x);
 	    sb.append("\t");
 	    sb.append(fp.y);
@@ -186,7 +223,7 @@ public class PlotLine {
 	    histogramMin = (Math.floor(dataMin / Math.pow(10, y))) * Math.pow(10, y);
 	    histogramMax = (Math.floor(dataMax / Math.pow(10, y)) + 1) * Math.pow(10, y);
 	    histogramBins = new ArrayList<>(Collections.nCopies(histogramBinsCount, 0));
-	    for (FloatPoint fp2 : pointList) {
+	    for (FloatPoint fp2 : pointList.values()) {
 		int binIndex = (int) (Math.floor(((fp2.y - histogramMin) / (histogramMax - histogramMin)) * histogramBinsCount));
 		histogramBins.set(binIndex, histogramBins.get(binIndex) + 1);
 

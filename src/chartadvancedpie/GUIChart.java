@@ -6,6 +6,7 @@
 package chartadvancedpie;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,6 +35,7 @@ public class GUIChart extends GUIelement {
     Timer sampleTimer = null;
     boolean isRecording = false;
     ArrayList<Token> sampleEvent = null;
+    private float autoScalePaddingCoeff=0.8F;//a value between 0 and 1, determining how many % (normalized to 1) of the total space on the chart should be filled up by the chart once autoscale triggers
 
     public GUIChart() {
 
@@ -368,7 +370,27 @@ public class GUIChart extends GUIelement {
 
 	};
 
+	NamedGUIAction autoScaleAction = new NamedGUIAction("Autoscale seletion") {
+	    @Override
+	    public void doAction() {
+
+	double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
+	double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
+	GUIChart.this.autoScaleYForRange(GUIChart.this.linesList.values(), minDrawnX, maxDrawnX);
+		
+
+		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+		    }
+		} else {
+		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
+		}
+	    }
+
+	};
 	this.setMenu(new Menu(gut.getGUIPanel(), "slider menu", true));
+	this.getMenu().addAction("a", autoScaleAction);
 	this.getMenu().addAction("l", scaleXUpAction);
 	this.getMenu().addAction("h", scaleXDownAction);
 	//this.getMenu().addAction("j", scaleYUpAction);
@@ -538,8 +560,8 @@ public class GUIChart extends GUIelement {
 	gc.setFill(Color.RED);
 	gc.fillRect(x, y, this.getWidth(), this.getHeight());
 	//gc.fillRect(x+this.getWidth(), y+this.getHeight()/3,this.getWidth()*(2/3), this.getHeight()*(2/3));
-	//paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
-	paintHistograms(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	//paintHistograms(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
 	paintTicks(gc, x, y, x + this.getWidth(), y + this.getHeight());
 	drawLegend(gc, x + this.getWidth() - 50, y + 50);
     }
@@ -586,15 +608,15 @@ public class GUIChart extends GUIelement {
 
     @Override
     public int getHeight() {
-	int preferredHeight= ((IntegerProperty) this.getPropertyByName("Height")).getValue();
-	int preferredWidth=((IntegerProperty) this.getPropertyByName("Width")).getValue();
-	return (int)(((double)getWidth()/preferredWidth)*preferredHeight);
+	int preferredHeight = ((IntegerProperty) this.getPropertyByName("Height")).getValue();
+	int preferredWidth = ((IntegerProperty) this.getPropertyByName("Width")).getValue();
+	return (int) (((double) getWidth() / preferredWidth) * preferredHeight);
     }
 
     @Override
     public int getWidth() {
-	int preferredWidth=((IntegerProperty) this.getPropertyByName("Width")).getValue();
-	return Math.max(preferredWidth, (int)(this.getGUIPanel().getCanvas().getWidth()*0.8));
+	int preferredWidth = ((IntegerProperty) this.getPropertyByName("Width")).getValue();
+	return Math.max(preferredWidth, (int) (this.getGUIPanel().getCanvas().getWidth() * 0.8));
     }
 
     private void strokeBorderedLine(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double maxX, double minY, double maxY) {
@@ -690,14 +712,44 @@ public class GUIChart extends GUIelement {
 	this.getPropertyByName("PlotScaleY").setValue(y);
     }
 
+    void autoScaleYForRange(Collection<PlotLine> lines, double minX, double maxX) {
+	double maxY = Double.NEGATIVE_INFINITY;
+	double minY = Double.POSITIVE_INFINITY;
+	for (PlotLine pl : lines) {
+	    for (FloatPoint fp : pl.getPoints().values()) {
+		if (fp.x > maxX)//pl.getPoints returns an ordered treemap, so no need to iterate further
+		{
+		    break;
+		}
+		if (fp.x > minX && fp.x<maxX) {//technically, the "x<maxX" is duplicate; but I bet this will be optimized by javac. So it's kept for the sake of readability. 
+		    if (fp.y > maxY) {
+			maxY = fp.y;
+		    }
+		    if (fp.y < minY) {
+			minY = fp.y;
+		    }
+		}
+	    }
+	    //so now we found the local max and min in Y between minX and maxX
+
+		double currentPixelMinMaxSpan=(maxY-minY)*this.getPlotScaleY();//the distance in pixels between the min and max Y found between minX and maxX
+		double targetPixelMinMaxSpan=this.getHeight()*autoScalePaddingCoeff;
+		this.setPlotScaleY((float)(this.getPlotScaleY()*(targetPixelMinMaxSpan/currentPixelMinMaxSpan)));
+		double maxYOnChart=this.getPlotY()-(maxY*this.getPlotScaleY());//the y position of the local maximum, in pixels, relative to the chart coordinate system
+		this.setPlotY((float)(this.getPlotY() +((this.getHeight()*((1-autoScalePaddingCoeff)/2)-maxYOnChart))));
+	}
+
+	//double maxY=Double.NEGATIVE_INFINITY;
+    }
+
     public void paintLines(GraphicsContext gc, double x, double y, double maxX, double maxY) {
 	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
 	    PlotLine pl = entry.getValue();
 	    gc.setStroke(pl.getColor());
 	    if (!pl.getPoints().isEmpty()) {
-		FloatPoint fp1 = pl.getPoints().get(0);
-		for (FloatPoint fp : pl.getPoints()) {
-		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x - 100 + getPlotX(), fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x - 100 + getPlotX(), fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
+		FloatPoint fp1 = pl.getPoints().firstEntry().getValue();
+		for (FloatPoint fp : pl.getPoints().values()) {
+		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x - 100 + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x - 100 + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
 		    fp1 = fp;
 		}
 	    }

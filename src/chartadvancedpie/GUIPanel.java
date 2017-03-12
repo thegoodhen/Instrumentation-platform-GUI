@@ -305,13 +305,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	vb = new VBox(8);
 	//vb.getChildren().add(canvas);
 	cmdLine = new TextField("Slepice");
-	statusLine = new TextArea("Kokodak"){
-	@Override
-	public void requestFocus()
-	{
+	statusLine = new TextArea("Kokodak") {
+	    @Override
+	    public void requestFocus() {
 
-
-	}
+	    }
 	};
 	cmdLine.setStyle("-fx-text-inner-color: gray;");
 	//cmdLine.setOnKeyPressed(event -> pkeh.escapeKeyPressed(event.getCode(), null));
@@ -392,9 +390,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	canvas.addEventHandler(KeyEvent.KEY_PRESSED,
 		theHandler);
 	// Fill the Canvas with a Blue rectnagle when the user double-clicks
-	canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+	canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 	    @Override
 	    public void handle(MouseEvent t) {
+		GUIPanel.this.handleMousePress(t);
 		if (t.getClickCount() > 1) {
 		    reset(canvas, Color.BLUE);
 		}
@@ -462,6 +461,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.recompileEventsForAll();
     }
 
+    private void handleMousePress(MouseEvent me) {
+	if (currentGUITab != null) {
+		currentGUITab.sendMousePress(me.getSceneX(),me.getSceneY());
+	}
+    }
+
     public Canvas getCanvas() {
 	return canvas;
     }
@@ -526,12 +531,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 	//GUIPanel.this.enterPressAction = new NamedGUIAction("do nothing");
 
-		    GUIPanel.this.enterPressAction = new NamedGUIAction("Run command") {
-			@Override
-			public void doAction() {
-			    pkeh.runCommand(KeyCode.ENTER, null);
-			}
-		    };
+	GUIPanel.this.enterPressAction = new NamedGUIAction("Run command") {
+	    @Override
+	    public void doAction() {
+		pkeh.runCommand(KeyCode.ENTER, null);
+	    }
+	};
     }
 
     @Override
@@ -631,8 +636,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 
 	public void keyPressed(KeyEvent keyEvent, Stage dialog) {
-	    if(keyEvent.getCode()==KeyCode.ESCAPE)
-	    {
+	    if (keyEvent.getCode() == KeyCode.ESCAPE) {
 		canvas.requestFocus();
 		GUIPanel.this.resetCmdLineListeners();
 	    }
