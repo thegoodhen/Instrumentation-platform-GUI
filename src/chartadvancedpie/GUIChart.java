@@ -32,10 +32,15 @@ public class GUIChart extends GUIelement {
     int maxYPixelTickSize = 50;
     double currentXTickSize = 5;
     double currentYTickSize = 5;
+    //Following 2 represent a tick size, step of which is a decadic order of magnitude
+    double currentRoundXTickSize = 10;
+    double currentRoundYTickSize = 10;
     Timer sampleTimer = null;
     boolean isRecording = false;
     ArrayList<Token> sampleEvent = null;
-    private float autoScalePaddingCoeff=0.8F;//a value between 0 and 1, determining how many % (normalized to 1) of the total space on the chart should be filled up by the chart once autoscale triggers
+    private float autoScalePaddingCoeff = 0.8F;//a value between 0 and 1, determining how many % (normalized to 1) of the total space on the chart should be filled up by the chart once autoscale triggers
+    private double lastScaleXWhenTickSizeChanged = 0;
+    private double lastXTickSizeWhenTickSizeChanged = 0;
 
     public GUIChart() {
 
@@ -374,10 +379,9 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 
-	double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
-	double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
-	GUIChart.this.autoScaleYForRange(GUIChart.this.linesList.values(), minDrawnX, maxDrawnX);
-		
+		double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
+		double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
+		GUIChart.this.autoScaleYForRange(GUIChart.this.linesList.values(), minDrawnX, maxDrawnX);
 
 		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
 		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
@@ -721,7 +725,7 @@ public class GUIChart extends GUIelement {
 		{
 		    break;
 		}
-		if (fp.x > minX && fp.x<maxX) {//technically, the "x<maxX" is duplicate; but I bet this will be optimized by javac. So it's kept for the sake of readability. 
+		if (fp.x > minX && fp.x < maxX) {//technically, the "x<maxX" is duplicate; but I bet this will be optimized by javac. So it's kept for the sake of readability. 
 		    if (fp.y > maxY) {
 			maxY = fp.y;
 		    }
@@ -732,11 +736,11 @@ public class GUIChart extends GUIelement {
 	    }
 	    //so now we found the local max and min in Y between minX and maxX
 
-		double currentPixelMinMaxSpan=(maxY-minY)*this.getPlotScaleY();//the distance in pixels between the min and max Y found between minX and maxX
-		double targetPixelMinMaxSpan=this.getHeight()*autoScalePaddingCoeff;
-		this.setPlotScaleY((float)(this.getPlotScaleY()*(targetPixelMinMaxSpan/currentPixelMinMaxSpan)));
-		double maxYOnChart=this.getPlotY()-(maxY*this.getPlotScaleY());//the y position of the local maximum, in pixels, relative to the chart coordinate system
-		this.setPlotY((float)(this.getPlotY() +((this.getHeight()*((1-autoScalePaddingCoeff)/2)-maxYOnChart))));
+	    double currentPixelMinMaxSpan = (maxY - minY) * this.getPlotScaleY();//the distance in pixels between the min and max Y found between minX and maxX
+	    double targetPixelMinMaxSpan = this.getHeight() * autoScalePaddingCoeff;
+	    this.setPlotScaleY((float) (this.getPlotScaleY() * (targetPixelMinMaxSpan / currentPixelMinMaxSpan)));
+	    double maxYOnChart = this.getPlotY() - (maxY * this.getPlotScaleY());//the y position of the local maximum, in pixels, relative to the chart coordinate system
+	    this.setPlotY((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))));
 	}
 
 	//double maxY=Double.NEGATIVE_INFINITY;
@@ -793,30 +797,61 @@ public class GUIChart extends GUIelement {
 
     public void paintTicks(GraphicsContext gc, double x, double y, double maxX, double maxY) {
 
-	int pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
-	int pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
+	double pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
+	double pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
 
-	while (pixelXTickSize < minXPixelTickSize) {
-	    currentXTickSize *= 10;
-	    pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
-	    for (int i = 0; i < 2; i++) {
-		if (pixelXTickSize / 2 > minXPixelTickSize) {
-		    pixelXTickSize /= 2;
-		    currentXTickSize /= 2;
-		}
+	double currentScaleX = this.getPlotScaleX();
+
+	if (currentScaleX < this.lastScaleXWhenTickSizeChanged)//we scaled it down since last time checked
+	{
+
+	    //the ticks may be too close together, so we first sorta approximate the correct order of magnitude, putting them further apart
+	    while (currentRoundXTickSize*currentScaleX< minXPixelTickSize) {
+		currentRoundXTickSize *= 10;
+		pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+
 	    }
+
+	    currentXTickSize = currentRoundXTickSize;
+	    //...and then we actually correct for it if necessary!
+	    while ((currentXTickSize * currentScaleX) / 2 > minXPixelTickSize) {
+		currentXTickSize /= 2;
+		pixelXTickSize = (currentXTickSize * currentScaleX);
+	    }
+	    if (currentXTickSize > lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it further apart
+	    {
+		lastXTickSizeWhenTickSizeChanged = currentXTickSize;
+	    } else {
+		currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
+	    }
+	    lastScaleXWhenTickSizeChanged = currentScaleX;
 	}
 
-	while (pixelXTickSize > maxXPixelTickSize) {
-	    currentXTickSize /= 10;
-	    pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
-	    for (int i = 0; i < 2; i++) {
-		if (pixelXTickSize * 2 < maxXPixelTickSize) {
-		    pixelXTickSize *= 2;
-		    currentXTickSize *= 2;
-		}
+	if (currentScaleX > this.lastScaleXWhenTickSizeChanged)//we scaled it up since last time checked
+	{
+
+	    //the ticks may be too far apart, so we first sorta approximate the correct order of magnitude, putting them closer together
+	    while (currentRoundXTickSize*currentScaleX > maxXPixelTickSize) {
+		currentRoundXTickSize /= 10;
+		pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+
 	    }
+
+	    currentXTickSize = currentRoundXTickSize;
+	    //...and then we actually correct for it if necessary!
+	    while ((currentXTickSize * currentScaleX) * 2 < maxXPixelTickSize) {
+		currentXTickSize *= 2;
+		pixelXTickSize = (currentScaleX * currentXTickSize);
+	    }
+	    if (currentXTickSize < lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it closer together
+	    {
+		lastXTickSizeWhenTickSizeChanged = currentXTickSize;
+	    } else {
+		currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
+	    }
+	    lastScaleXWhenTickSizeChanged = currentScaleX;
 	}
+	//pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
 
 	while (pixelYTickSize < minYPixelTickSize) {
 	    currentYTickSize *= 10;
@@ -840,27 +875,30 @@ public class GUIChart extends GUIelement {
 	    }
 	}
 
-	pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
-	pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
+	pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
+	pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
 
+	double minNumberOnAxis=-(getPlotX()-100)*this.getPlotScaleX();
+	double maxNumberOnAxis=-(getPlotX()-100)*this.getPlotScaleX();
 	//draw max 100 ticks to the right of the origin
-	for (int i = 0; i < 100; i++) {
-	    if (x - 100 + getPlotX() + i * pixelXTickSize > maxX) {
+	int maxTicksDrawn = 100;
+	for (int i = 0; i < maxTicksDrawn; i++) {
+	    if (x - 100 + getPlotX() + (i - maxTicksDrawn / 2) * pixelXTickSize > maxX) {//too far to the right
 		break;
 	    } else {
-		gc.strokeLine(x - 100 + getPlotX() + i * pixelXTickSize, y + getHeight(), x - 100 + getPlotX() + i * pixelXTickSize, y + getHeight() + 5);
-		gc.strokeText(Float.toString((float) (i * currentXTickSize)), x - 100 + getPlotX() + i * pixelXTickSize, y + getHeight());
+		gc.strokeLine(x - 100 + getPlotX() + (i - maxTicksDrawn / 2) * pixelXTickSize, y + getHeight(), x - 100 + getPlotX() + (i - maxTicksDrawn / 2) * pixelXTickSize, y + getHeight() + 5);
+		gc.strokeText(Float.toString((float) ((i - maxTicksDrawn / 2) * currentXTickSize)), x - 100 + getPlotX() + (i - maxTicksDrawn / 2) * pixelXTickSize, y + getHeight());
 	    }
 
 	}
 
 	//draw max 100 ticks, down from the origin
-	for (int i = 0; i < 100; i++) {
-	    if (y + getPlotY() + i * pixelYTickSize > maxY) {
+	for (int i = 0; i < maxTicksDrawn; i++) {
+	    if (y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize > maxY) {
 		break;
-	    } else {
-		gc.strokeLine(x, y + getPlotY() + i * pixelYTickSize, x + 5, y + getPlotY() + i * pixelYTickSize);
-		gc.strokeText(Float.toString((float) (i * currentYTickSize)), x + 20, y + getPlotY() + i * pixelYTickSize);
+	    } else if (y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize > y) {
+		gc.strokeLine(x, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize, x + 5, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize);
+		gc.strokeText(Float.toString((float) -((i - maxTicksDrawn / 2) * currentYTickSize)), x + 20, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize);
 	    }
 
 	}
