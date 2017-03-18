@@ -18,7 +18,7 @@ import javafx.scene.paint.Color;
  */
 public class PlotLine {
 
-    TreeMap<Double,FloatPoint> pointList = new TreeMap();
+    TreeMap<Double, FloatPoint> pointList = new TreeMap();
     Color lineColor = Color.CHARTREUSE;//such a pun, because I reused it in chart! :3
     //FloatPoint cursor = new FloatPoint(0, 0);
     private boolean recorded = false;
@@ -60,11 +60,17 @@ public class PlotLine {
 	return histogramBins;
     }
 
+    public double getLineWidth() {
+	return this.getPropertyByName("LineWidth").getValue();
+    }
+
     public PlotLine(char ch, GUIChart gc)//TODO: this is just a test constructor
     {
 	this.theChart = gc;
 	this.addProperty(new FloatProperty(104, "LineX", 0.0F, gc));
 	this.addProperty(new FloatProperty(105, "LineY", 0.0F, gc));
+	this.addProperty(new FloatProperty(106, "LineWidth", 2.0F, gc));
+	this.addProperty(new FloatProperty(107, "LineSamples", 0.0F, gc));
 	this.lineChar = ch;
 	histogramBins = new ArrayList<Integer>();
 
@@ -79,43 +85,47 @@ public class PlotLine {
     }
 
     /**
-     * Returns the FloatPoint, x value of which is the closest to the value provided, but smaller.
+     * Returns the FloatPoint, x value of which is the closest to the value
+     * provided, but smaller.
+     *
      * @param value
-     * @return 
+     * @return
      */
-    public FloatPoint getPointLeftTo(double value)
-    {
+    public FloatPoint getPointLeftTo(double value) {
 	return this.pointList.floorEntry(value).getValue();
     }
 
     /**
-     * Returns the FloatPoint, x value of which is the closest to the value provided, but greater.
+     * Returns the FloatPoint, x value of which is the closest to the value
+     * provided, but greater.
+     *
      * @param value
-     * @return 
+     * @return
      */
-    public FloatPoint getPointRightTo(double value)
-    {
+    public FloatPoint getPointRightTo(double value) {
 	return this.pointList.ceilingEntry(value).getValue();
     }
 
     /**
-     * Use linear interpolation to guess the value between 2 points; returns 0 if no such value exists.
+     * Use linear interpolation to guess the value between 2 points; returns 0
+     * if no such value exists.
+     *
      * @param x
-     * @return 
+     * @return
      */
-    public double evaluateYatX(double x)
-    {
-	FloatPoint leftPoint=getPointLeftTo(x);
-	FloatPoint rightPoint=getPointRightTo(x);
-	if(leftPoint!=null && rightPoint!=null)
-	{
-		return ((x-leftPoint.x)/(rightPoint.x-leftPoint.x))*(rightPoint.y-leftPoint.y)+leftPoint.y;
+    public double evaluateYatX(double x) {
+	FloatPoint leftPoint = getPointLeftTo(x);
+	FloatPoint rightPoint = getPointRightTo(x);
+	if (leftPoint != null && rightPoint != null) {
+	    return ((x - leftPoint.x) / (rightPoint.x - leftPoint.x)) * (rightPoint.y - leftPoint.y) + leftPoint.y;
 	}
 	return 0;
     }
 
     public void addPoint(FloatPoint fp) {
-	this.pointList.put(fp.x,fp);
+	this.pointList.put(fp.x, fp);
+	float currentSamplesCount=this.getPropertyByName("LineSamples").getValue();
+	this.getPropertyByName("LineSamples").setValue(currentSamplesCount+1);
 	theChart.update();
 	GUIPanel gp = theChart.getGUIPanel();
 	if (gp != null) {
@@ -126,13 +136,13 @@ public class PlotLine {
 		    gt.paintGUIelements();
 		}
 		);
-	    } 
+	    }
 	}
 	System.out.println("updating chart");
 	updateHistogram(fp);
     }
 
-    public TreeMap<Double,FloatPoint> getPoints() {
+    public TreeMap<Double, FloatPoint> getPoints() {
 	return this.pointList;
     }
 
@@ -261,5 +271,9 @@ public class PlotLine {
 	id2PropertyMap.put(p.getId(), p);
 	property2idMap.put(p, p.getId());
 
+    }
+
+    FloatProperty getProperty(int propertyId) {
+	return id2PropertyMap.get(propertyId);
     }
 }

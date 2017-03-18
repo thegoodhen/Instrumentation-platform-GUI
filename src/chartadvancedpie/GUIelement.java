@@ -11,6 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import shuntingyard.Token;
@@ -48,6 +50,9 @@ public abstract class GUIelement extends Container implements Subscriber {
     private static MappingManager elementTypeMappingManager = null;
     private MappingManager thisInstanceMappingManager = null;
     private FloatPoint lastPositionDrawnTo=null;
+    double dragStartMouseX;
+    private double lastMousePressY;
+    double dragStartMouseY;
 
     public void addProperty(Property p) {
 	name2IdMap.put(p.getName(), p.getId());
@@ -131,6 +136,25 @@ public abstract class GUIelement extends Container implements Subscriber {
 	for (Property p : this.property2idMap.keySet()) {
 	    p.recompile();
 	}
+    }
+
+
+    void sendMouseScroll(ScrollEvent event) {
+
+    }
+
+    void sendMouseDrag(MouseEvent event) {
+
+    }
+
+    void sendMousePress(MouseEvent event) {
+	
+    }
+
+    public boolean isWithinBounds(double x, double y)
+    {
+	FloatPoint fp=this.getLastPositionDrawnTo();
+	return (x>fp.x && x<fp.x+this.getWidth() && y>fp.y && y<fp.y+this.getHeight());
     }
 
     @Deprecated
@@ -424,7 +448,9 @@ public abstract class GUIelement extends Container implements Subscriber {
 	    gc.fillOval(x - 15, y, 10, 10);
 	}
 
-	gc.strokeText(getContextDependantName(), x + 100, y + 10);
+	gc.strokeText(getContextDependantName(), x + this.getWidth()+10, y + 10);
+	gc.setStroke(Color.CRIMSON);
+	gc.strokeText(getTags(), x + this.getWidth()+10, y + 20);
     }
 
     public void setValue(float value) {
@@ -486,7 +512,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	String tags = getTags();
 	for (int i = 0; i < t.length(); i++) {
 	    char c = t.charAt(i);
-	    if (tags.indexOf(c) == -1)//doesn't contain char
+	    if (tags.indexOf(c) != -1)//contains char
 	    {
 		tags = tags.replaceAll("" + c, "");
 	    }

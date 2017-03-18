@@ -12,8 +12,10 @@ import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.sg.prism.NGNode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
@@ -24,9 +26,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import shuntingyard.Token;
 
@@ -76,6 +81,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     MappingManager globalMapManager = new MappingManager(this);
     private GUIelement currentlyEditedGUIelement = null;
     private final CanvasPane canvasPane;
+    private String userCode;
 
     public void handle(String s) {
 	this.pkeh.handle(s, false);
@@ -399,9 +405,18 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		}
 	    }
 	});
+	canvas.setOnScroll((ScrollEvent event) -> {
+	    double deltaY = event.getDeltaY();
+	    GUIPanel.this.getCurrentGUITab().sendMouseScroll(event);
+
+	});
+	canvas.setOnMouseDragged((MouseEvent event) -> {
+	    GUIPanel.this.getCurrentGUITab().sendMouseDrag(event);
+
+	});
+
 	//actionMap.put("j", testAction);
 	//actionMap.put("k", testAction2);
-
 	GUITab gt = new GUITab(this, "tab1");
 	GUITab gt2 = new GUITab(this, "tab2");
 	this.addGUITab(gt);
@@ -442,11 +457,13 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	String prog3 = "byte step()\nTAB1_GS_SLIDER0.setValue(TAB2_GS_SLIDER0.getValue()+20);\nRETURN 0;\nENDFUNCTION\n";
 	String prog4 = "byte TAB1_GS_SLIDER0_Value_S()\nprintNumber(15);\nRETURN 0;\nENDFUNCTION\n";
 	String prog5 = "byte TAB2_GENERIC_GUI_ELEMENT_GENERIC0_Sample()\nprintText(\"kokodak\");\nTAB2_GENERIC_GUI_ELEMENT_GENERIC0.setLineY(\"a\",TAB2_GS_SLIDER0.getValue()*10);\nRETURN 0;\nENDFUNCTION\n";
+	//String prog6 = "byte TAB1_GS_SLIDER3_Value_S()\nprintNumber(20);\nRETURN 0;\nENDFUNCTION\n";
 	c.compile(prog);
 	c.compile(prog2);
 	c.compile(prog3);
 	c.compile(prog4);
 	c.compile(prog5);
+	//c.compile(prog6);
 	vm = new GUIVirtualMachine(this);
 		//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();
@@ -455,15 +472,46 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//c.compile(funcCall);
 	//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();
+	String userCode="";
 	this.globalMapManager.addMapping("j", "k");
 	this.globalMapManager.addMapping("k", "j");
 	this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
+	this.recompileEventsForAll();
+
+	final Stage dialog = new Stage();
+	dialog.initModality(Modality.APPLICATION_MODAL);
+	//dialog.initOwner(primaryStage);
+	VBox dialogVbox = new VBox(20);
+	//dialogVbox.getChildren().add(new Text("This is a Dialog"));
+	TextArea editorTextArea = new TextArea("kokodak");
+	editorTextArea.setPrefRowCount(500);
+	dialogVbox.getChildren().add(editorTextArea);
+	Scene dialogScene = new Scene(dialogVbox, 500, 500);
+	dialog.setScene(dialogScene);
+
+	Button btn = new Button();
+	btn.setText("Save and recompile");
+	btn.setOnAction(
+		new EventHandler<ActionEvent>() {
+		    @Override
+		    public void handle(ActionEvent event) {
+			GUIPanel.this.userCode=editorTextArea.getText();
+			GUIPanel.this.recompileUserCode();
+		    }
+		});
+	dialogVbox.getChildren().add(btn);
+	dialog.show();
+    }
+
+    public void recompileUserCode()
+    {
+	c.compile(this.userCode);
 	this.recompileEventsForAll();
     }
 
     private void handleMousePress(MouseEvent me) {
 	if (currentGUITab != null) {
-		currentGUITab.sendMousePress(me.getSceneX(),me.getSceneY());
+	    currentGUITab.sendMousePress(me);
 	}
     }
 

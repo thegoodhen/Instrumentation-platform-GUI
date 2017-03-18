@@ -15,7 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import shuntingyard.Token;
 
 /**
@@ -41,11 +45,16 @@ public class GUIChart extends GUIelement {
     private float autoScalePaddingCoeff = 0.8F;//a value between 0 and 1, determining how many % (normalized to 1) of the total space on the chart should be filled up by the chart once autoscale triggers
     private double lastScaleXWhenTickSizeChanged = 0;
     private double lastXTickSizeWhenTickSizeChanged = 0;
+    private double dragStartPlotY;
+    private double dragStartPlotX;
 
     public GUIChart() {
 
+	//TODO: make sure it's not necessary to do this duplicately
 	this.addFloatProperty(104, "LineX", 0);
 	this.addFloatProperty(105, "LineY", 0);
+	this.addFloatProperty(106, "LineWidth", 2);
+	this.addFloatProperty(107, "LineSamples", 0);
     }
 
     public GUIChart(GUITab gut) {
@@ -59,6 +68,14 @@ public class GUIChart extends GUIelement {
     public void addLine(PlotLine pl) {
 	this.linesList.put(pl.getCharacter(), pl);
     }
+
+    /*
+    public void addNewLine()
+    {
+	PlotLine pl=new PlotLine(currentLineChar,this);
+
+    }
+    */
 
     public void startRecording() {
 	if (isRecording) {
@@ -154,7 +171,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction scaleXUpAction = new NamedGUIAction("hscale++") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.scaleAlongOrigin(1 + (0.01 * this.getCount()), 1, 200, 50);
+		GUIChart.this.scaleAlongOrigin(1 + (0.01 * this.getCount()), 1, GUIChart.this.getWidth() / 2, GUIChart.this.getHeight() / 2);
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 1.01F);
 		System.out.println("kokodak");
 		GUIChart.super.update();
@@ -165,7 +182,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction scaleXDownAction = new NamedGUIAction("hscale--") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.scaleAlongOrigin(1 - (0.01 * this.getCount()), 1, 200, 50);
+		GUIChart.this.scaleAlongOrigin(1 - (0.01 * this.getCount()), 1, GUIChart.this.getWidth() / 2, GUIChart.this.getHeight() / 2);
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
 		System.out.println("kokodak");
 		GUIChart.super.update();
@@ -176,7 +193,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction scaleYUpAction = new NamedGUIAction("vscale++") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.scaleAlongOrigin(1, 1.01, 200, 50);
+		GUIChart.this.scaleAlongOrigin(1, 1 + (this.getCount() * 0.01), GUIChart.this.getWidth() / 2, GUIChart.this.getHeight() / 2);
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 1.01F);
 		System.out.println("kokodak");
 		GUIChart.super.update();
@@ -187,7 +204,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction scaleYDownAction = new NamedGUIAction("vscale--") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.scaleAlongOrigin(1, 0.99, 200, 50);
+		GUIChart.this.scaleAlongOrigin(1, 1 - (this.getCount() * 0.01), GUIChart.this.getWidth() / 2, GUIChart.this.getHeight() / 2);
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
 		System.out.println("kokodak");
 		GUIChart.super.update();
@@ -232,6 +249,44 @@ public class GUIChart extends GUIelement {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
 		GUIChart.this.selectNextLine(-this.getCount(), false);
 		System.out.println(GUIChart.this.currentLineChar);
+		GUIChart.super.update();
+
+	    }
+	};
+
+	NamedGUIAction moveDown = new NamedGUIAction("move down") {
+	    @Override
+	    public void doAction() {
+		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
+		GUIChart.this.setPlotY((float) GUIChart.this.getPlotY() + (5) * this.getCount());
+		GUIChart.super.update();
+
+	    }
+	};
+
+	NamedGUIAction moveUp = new NamedGUIAction("move up") {
+	    @Override
+	    public void doAction() {
+		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
+		GUIChart.this.setPlotY((float) GUIChart.this.getPlotY() - (5) * this.getCount());
+		GUIChart.super.update();
+
+	    }
+	};
+	NamedGUIAction moveLeft = new NamedGUIAction("move up") {
+	    @Override
+	    public void doAction() {
+		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
+		GUIChart.this.setPlotX((float) GUIChart.this.getPlotX() - (5) * this.getCount());
+		GUIChart.super.update();
+
+	    }
+	};
+	NamedGUIAction moveRight = new NamedGUIAction("move up") {
+	    @Override
+	    public void doAction() {
+		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
+		GUIChart.this.setPlotX((float) GUIChart.this.getPlotX() + (5) * this.getCount());
 		GUIChart.super.update();
 
 	    }
@@ -379,8 +434,10 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 
-		double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
-		double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
+		double minDrawnX = -(GUIChart.this.getPlotX()) / GUIChart.this.getPlotScaleX();
+		double maxDrawnX = (GUIChart.this.getWidth() - (GUIChart.this.getPlotX())) / GUIChart.this.getPlotScaleX();
+		//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
+		//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
 		GUIChart.this.autoScaleYForRange(GUIChart.this.linesList.values(), minDrawnX, maxDrawnX);
 
 		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
@@ -418,6 +475,16 @@ public class GUIChart extends GUIelement {
 
 	Menu pasteMenu = new Menu(gp, "paste", false);
 	pasteMenu.addAction("p", pasteOverwriteAction);
+	Menu moveMenu = new Menu(gut.getGUIPanel(), "move", true);
+	moveMenu.addAction("j", moveDown);
+	moveMenu.addAction("k", moveUp);
+	moveMenu.addAction("l", moveRight);
+	moveMenu.addAction("h", moveLeft);
+	moveMenu.addAction("w", scaleYUpAction);
+	moveMenu.addAction("s", scaleYDownAction);
+	moveMenu.addAction("a", scaleXDownAction);
+	moveMenu.addAction("d", scaleXUpAction);
+	this.getMenu().addSubMenu("m", moveMenu);
 	this.getMenu().addSubMenu("p", pasteMenu);
 
     }
@@ -428,6 +495,19 @@ public class GUIChart extends GUIelement {
 	    if (pl.isBeingRecorded()) {
 		pl.sample();
 	    }
+	}
+    }
+
+    @Override
+    void sendMouseScroll(ScrollEvent event) {
+	double deltaY = event.getDeltaY();
+	double eventX = event.getSceneX();
+	double eventY = event.getSceneY();
+	FloatPoint fp = this.getLastPositionDrawnTo();
+	double amount = 0.01;
+	if (eventX > fp.x && eventX < fp.x + this.getWidth() && eventY > fp.y && eventY < fp.y + this.getHeight())//is within bounds
+	{
+	    this.scaleAlongOrigin(1 + deltaY * amount, 1 + deltaY * amount, eventX - fp.x, eventY - fp.y);
 	}
     }
 
@@ -538,7 +618,7 @@ public class GUIChart extends GUIelement {
      * around; expressed in pixels, in coordinates relative to the top left
      * corner of the GUIChart element.
      */
-    public void scaleAlongOrigin(double amountX, double amountY, int originX, int originY) {
+    public void scaleAlongOrigin(double amountX, double amountY, double originX, double originY) {
 	double originXInPixelsWithRespectToPlotZero = (originX - this.getPlotX());
 	double originYInPixelsWithRespectToPlotZero = (originY - this.getPlotY());
 	double newOriginXBeforeCorrection = (originXInPixelsWithRespectToPlotZero * amountX + this.getPlotX());//where the OriginX would be after the scale with respect to the coordinate system of the GUIChart left top corner
@@ -585,7 +665,7 @@ public class GUIChart extends GUIelement {
 	}
     }
 
-    private void strokeBorderedRectangle(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double minY, double maxX, double maxY) {
+    private void strokeBorderedRectangle(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double minY, double maxX, double maxY, Color col) {
 	FloatPoint p1 = new FloatPoint(x1, y1);
 	FloatPoint p2 = new FloatPoint(x2, y2);
 
@@ -603,7 +683,7 @@ public class GUIChart extends GUIelement {
 	upPoint = FloatPoint.getDownMostPoint(upPoint, topLeftCorner);
 	downPoint = FloatPoint.getUpMostPoint(downPoint, bottomRightCorner);
 
-	gc.setFill(Color.FUCHSIA);
+	gc.setFill(col);
 	gc.fillRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
 	gc.strokeRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
 	//gc.strokeRect(200,100,-200,200);
@@ -634,6 +714,9 @@ public class GUIChart extends GUIelement {
 	FloatPoint rightPoint = FloatPoint.getRightMostPoint(p1, p2);
 	FloatPoint upPoint = FloatPoint.getUpMostPoint(p1, p2);
 	FloatPoint downPoint = FloatPoint.getDownMostPoint(p1, p2);
+	if (upPoint == null || downPoint == null) {
+	    System.out.println("kokodak");
+	}
 
 	if (leftPoint.x > minX && rightPoint.x < maxX && upPoint.y > minY && downPoint.y < maxY) {
 	    gc.strokeLine(leftPoint.x, leftPoint.y, rightPoint.x, rightPoint.y);
@@ -740,6 +823,9 @@ public class GUIChart extends GUIelement {
 	    double targetPixelMinMaxSpan = this.getHeight() * autoScalePaddingCoeff;
 	    this.setPlotScaleY((float) (this.getPlotScaleY() * (targetPixelMinMaxSpan / currentPixelMinMaxSpan)));
 	    double maxYOnChart = this.getPlotY() - (maxY * this.getPlotScaleY());//the y position of the local maximum, in pixels, relative to the chart coordinate system
+	    if (Float.isNaN((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))))) {
+		System.out.println("kvak ptak");
+	    }
 	    this.setPlotY((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))));
 	}
 
@@ -753,8 +839,15 @@ public class GUIChart extends GUIelement {
 	    if (!pl.getPoints().isEmpty()) {
 		FloatPoint fp1 = pl.getPoints().firstEntry().getValue();
 		for (FloatPoint fp : pl.getPoints().values()) {
+		    if (Double.isNaN(-fp1.y * this.getPlotScaleY() + y + getPlotY())) {
+			System.out.println("pipka kdaka");
+		    }
+		    //gc.setLineWidth(4);
+		    double lwBackup=gc.getLineWidth();
+		    gc.setLineWidth(pl.getLineWidth());
 		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
 		    fp1 = fp;
+		    gc.setLineWidth(lwBackup);
 		}
 	    }
 	}
@@ -762,8 +855,17 @@ public class GUIChart extends GUIelement {
 
     public void paintHistograms(GraphicsContext gc, double x, double y, double maxX, double maxY) {
 
+	ArrayList<PlotLine> linesToDrawList = new ArrayList<>();
 	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
 	    PlotLine pl = entry.getValue();
+	    if (pl.isVisible()) {
+		linesToDrawList.add(pl);
+	    }
+	}
+
+	double opacity=(double)1/linesToDrawList.size();
+
+	for (PlotLine pl : linesToDrawList) {
 	    gc.setStroke(pl.getColor());
 	    if (!pl.getHistogramBins().isEmpty()) {
 		double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
@@ -774,7 +876,9 @@ public class GUIChart extends GUIelement {
 		    double x2 = x1 + binWidth * this.getPlotScaleX();
 		    double y1 = getPlotY() + y;
 		    double y2 = y1 - i * getPlotScaleY();
-		    strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
+		    Color col=pl.getColor();
+		    col=col.deriveColor(0,1,1,opacity);
+		    strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY,col);
 
 		    currentRectangleStart += binWidth;
 		}
@@ -802,114 +906,180 @@ public class GUIChart extends GUIelement {
 
 	double currentScaleX = this.getPlotScaleX();
 
-	if (currentScaleX < this.lastScaleXWhenTickSizeChanged)//we scaled it down since last time checked
-	{
+	PlotLine currentLine = this.getPlotLineByChar('%');
+	ArrayList<PlotLine> linesToDrawList = new ArrayList<>();
 
-	    //the ticks may be too close together, so we first sorta approximate the correct order of magnitude, putting them further apart
-	    while (currentRoundXTickSize * currentScaleX < minXPixelTickSize) {
-		currentRoundXTickSize *= 10;
-		pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
-
+	for (PlotLine pl2 : this.linesList.values()) {
+	    if (pl2.isSelected() || pl2.equals(currentLine)) {
+		linesToDrawList.add(pl2);
 	    }
-
-	    currentXTickSize = currentRoundXTickSize;
-	    //...and then we actually correct for it if necessary!
-	    while ((currentXTickSize * currentScaleX) / 2 > minXPixelTickSize) {
-		currentXTickSize /= 2;
-		pixelXTickSize = (currentXTickSize * currentScaleX);
-	    }
-	    if (currentXTickSize > lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it further apart
-	    {
-		lastXTickSizeWhenTickSizeChanged = currentXTickSize;
-	    } else {
-		currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
-	    }
-	    lastScaleXWhenTickSizeChanged = currentScaleX;
 	}
 
-	if (currentScaleX > this.lastScaleXWhenTickSizeChanged)//we scaled it up since last time checked
-	{
+	int iterator = 1;
 
-	    //the ticks may be too far apart, so we first sorta approximate the correct order of magnitude, putting them closer together
-	    while (currentRoundXTickSize * currentScaleX > maxXPixelTickSize) {
-		currentRoundXTickSize /= 10;
-		pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+	for (PlotLine pl : linesToDrawList) {
 
-	    }
-
-	    currentXTickSize = currentRoundXTickSize;
-	    //...and then we actually correct for it if necessary!
-	    while ((currentXTickSize * currentScaleX) * 2 < maxXPixelTickSize) {
-		currentXTickSize *= 2;
-		pixelXTickSize = (currentScaleX * currentXTickSize);
-	    }
-	    if (currentXTickSize < lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it closer together
-	    {
-		lastXTickSizeWhenTickSizeChanged = currentXTickSize;
-	    } else {
-		currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
-	    }
-	    lastScaleXWhenTickSizeChanged = currentScaleX;
-	}
-	//pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
-
-	while (pixelYTickSize < minYPixelTickSize) {
-	    currentYTickSize *= 10;
-	    pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
-	    for (int i = 0; i < 2; i++) {
-		if (pixelYTickSize / 2 > minYPixelTickSize) {
-		    pixelYTickSize /= 2;
-		    currentYTickSize /= 2;
+	    gc.setStroke(pl.getColor());
+	    if (!pl.getHistogramBins().isEmpty()) {
+		double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
+		while (binWidth * this.getPlotScaleX() < this.minXPixelTickSize) {
+		    binWidth *= 2;
 		}
-	    }
-	}
+		//FloatPoint fp1 = pl.getPoints().get(0);
+		double currentRectangleStart = pl.getHistogramMin();
+		while (currentRectangleStart <= pl.getHistogramMax()) {
+		    double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
+		    //double x2 = x1 + binWidth * this.getPlotScaleX();
+		    double y1;
+		    if (iterator % 2 != 0)//1,3,5,7...
+		    {
+			y1 = y + iterator * -5 + getHeight();//draw first, third, fifth, seventh... tick line on the down side
 
-	while (pixelYTickSize > maxYPixelTickSize) {
-	    currentYTickSize /= 10;
-	    pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
-	    for (int i = 0; i < 2; i++) {
-		if (pixelYTickSize * 2 < maxYPixelTickSize) {
-		    pixelYTickSize *= 2;
-		    currentYTickSize *= 2;
-		}
-	    }
-	}
+		    } else {
+			y1 = y + iterator * 5;//draw the other tick lines on the up side 
+		    }
+		    //double y2 = y1 - i * getPlotScaleY();
+		    //strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
 
-	pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
-	pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
-
-	double minNumberOnAxis = -(getPlotX()) / this.getPlotScaleX();
-	double maxNumberOnAxis = (this.getWidth() - (getPlotX())) / this.getPlotScaleX();
-	double minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentXTickSize) * currentXTickSize;
-	double maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentXTickSize) * currentXTickSize;
-	System.out.println(maxTickNumberOnAxis);
-	//System.out.println(minNumberOnAxis);
-	//System.out.println(maxNumberOnAxis);
-	//draw max 100 ticks to the right of the origin
-
-	for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentXTickSize) {
-	    {
-		if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
-		    gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
-		    gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+		    gc.setStroke(pl.getColor());
+		    gc.strokeLine(x1, y1, x1, y1 + 5);
+		    gc.strokeText(Float.toString((float) currentRectangleStart), x1, y1);
+		    currentRectangleStart += binWidth;
 		}
 	    }
 
+	    iterator++;
 	}
 
-	int maxTicksDrawn = 100;
-	//draw max 100 ticks, down from the origin
-	for (int i = 0; i < maxTicksDrawn; i++) {
-	    if (y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize > maxY) {
-		break;
-	    } else if (y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize > y) {
-		gc.strokeLine(x, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize, x + 5, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize);
-		gc.strokeText(Float.toString((float) -((i - maxTicksDrawn / 2) * currentYTickSize)), x + 20, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize);
-	    }
+	/*
 
-	}
+	 if (currentScaleX < this.lastScaleXWhenTickSizeChanged)//we scaled it down since last time checked
+	 {
+
+	 //the ticks may be too close together, so we first sorta approximate the correct order of magnitude, putting them further apart
+	 while (currentRoundXTickSize * currentScaleX < minXPixelTickSize) {
+	 currentRoundXTickSize *= 10;
+	 pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+
+	 }
+
+	 currentXTickSize = currentRoundXTickSize;
+	 //...and then we actually correct for it if necessary!
+	 while ((currentXTickSize * currentScaleX) / 2 > minXPixelTickSize) {
+	 currentXTickSize /= 2;
+	 pixelXTickSize = (currentXTickSize * currentScaleX);
+	 }
+	 if (currentXTickSize > lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it further apart
+	 {
+	 lastXTickSizeWhenTickSizeChanged = currentXTickSize;
+	 } else {
+	 currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
+	 }
+	 lastScaleXWhenTickSizeChanged = currentScaleX;
+	 }
+
+	 if (currentScaleX > this.lastScaleXWhenTickSizeChanged)//we scaled it up since last time checked
+	 {
+
+	 //the ticks may be too far apart, so we first sorta approximate the correct order of magnitude, putting them closer together
+	 while (currentRoundXTickSize * currentScaleX > maxXPixelTickSize) {
+	 currentRoundXTickSize /= 10;
+	 pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+
+	 }
+
+	 currentXTickSize = currentRoundXTickSize;
+	 //...and then we actually correct for it if necessary!
+	 while ((currentXTickSize * currentScaleX) * 2 < maxXPixelTickSize) {
+	 currentXTickSize *= 2;
+	 pixelXTickSize = (currentScaleX * currentXTickSize);
+	 }
+	 if (currentXTickSize < lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it closer together
+	 {
+	 lastXTickSizeWhenTickSizeChanged = currentXTickSize;
+	 } else {
+	 currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
+	 }
+	 lastScaleXWhenTickSizeChanged = currentScaleX;
+	 }
+	 //pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
+
+	 while (pixelYTickSize < minYPixelTickSize) {
+	 currentYTickSize *= 10;
+	 pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
+	 for (int i = 0; i < 2; i++) {
+	 if (pixelYTickSize / 2 > minYPixelTickSize) {
+	 pixelYTickSize /= 2;
+	 currentYTickSize /= 2;
+	 }
+	 }
+	 }
+
+	 while (pixelYTickSize > maxYPixelTickSize) {
+	 currentYTickSize /= 10;
+	 pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
+	 for (int i = 0; i < 2; i++) {
+	 if (pixelYTickSize * 2 < maxYPixelTickSize) {
+	 pixelYTickSize *= 2;
+	 currentYTickSize *= 2;
+	 }
+	 }
+	 }
+
+	 pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
+	 pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
+
+	 double minNumberOnAxis = -(getPlotX()) / this.getPlotScaleX();
+	 double maxNumberOnAxis = (this.getWidth() - (getPlotX())) / this.getPlotScaleX();
+	 double minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentXTickSize) * currentXTickSize;
+	 double maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentXTickSize) * currentXTickSize;
+	 //System.out.println(maxTickNumberOnAxis);
+	 //System.out.println(minNumberOnAxis);
+	 //System.out.println(maxNumberOnAxis);
+	 //draw max 100 ticks to the right of the origin
+
+	 for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentXTickSize) {
+	 {
+	 if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
+	 gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+	 gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+	 }
+	 }
+
+	 }
+
+	 minNumberOnAxis = -(getPlotY()) / this.getPlotScaleY();
+	 maxNumberOnAxis = (this.getHeight() - (getPlotY())) / this.getPlotScaleY();
+	 minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentYTickSize) * currentYTickSize;
+	 maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentYTickSize) * currentYTickSize;
+	 System.out.println(maxTickNumberOnAxis);
+	 for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentYTickSize) {
+	 {
+	 if (y + getPlotY() + i * getPlotScaleY() > y && y + getPlotY() + i * getPlotScaleY() < y + getHeight()) {
+	 gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
+	 gc.strokeText(Float.toString((float) (-i)), x, y + getPlotY() + (i * getPlotScaleY()));
+	 //gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+	 //gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+	 }
+
+	 }
+	 }
+	 */
     }
 
+    /*
+     int maxTicksDrawn = 100;
+     //draw max 100 ticks, down from the origin
+     for (int i = 0; i < maxTicksDrawn; i++) {
+     if (y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize > maxY) {
+     break;
+     } else if (y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize > y) {
+     gc.strokeLine(x, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize, x + 5, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize);
+     gc.strokeText(Float.toString((float) -((i - maxTicksDrawn / 2) * currentYTickSize)), x + 20, y + getPlotY() + (i - maxTicksDrawn / 2) * pixelYTickSize);
+     }
+
+     }
+     }*/
     @Override
     public void recompileEvents() {
 	super.recompileEvents();
@@ -938,9 +1108,31 @@ public class GUIChart extends GUIelement {
     public boolean setLineProperty(String lineLetter, int propertyId, float value) {
 	return this.getLine(lineLetter).setProperty(propertyId, value);
     }
+    public FloatProperty getLineProperty(String lineLetter, int propertyId) {
+	return this.getLine(lineLetter).getProperty(propertyId);
+    }
 
     public String getSampleEventString() {
 	return this.getUniqueName() + "_Sample();\n";
     }
 
+    void sendMousePress(MouseEvent event) {
+	if (isWithinBounds(event.getSceneX(), event.getSceneY())) {
+	    if (event.getButton().equals(MouseButton.MIDDLE)) {
+		FloatPoint fp = this.getLastPositionDrawnTo();
+		this.dragStartMouseX = event.getSceneX();
+		this.dragStartMouseY = event.getSceneY();
+		this.dragStartPlotX = this.getPlotX();
+		this.dragStartPlotY = this.getPlotY();
+	    }
+	}
+
+    }
+
+    void sendMouseDrag(MouseEvent event) {
+	double deltaX = event.getSceneX() - dragStartMouseX;
+	double deltaY = event.getSceneY() - dragStartMouseY;
+	this.setPlotX((float) (this.dragStartPlotX + deltaX));
+	this.setPlotY((float) (this.dragStartPlotY + deltaY));
+    }
 }

@@ -18,6 +18,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 
 /**
@@ -638,7 +639,13 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
-    void sendMousePress(double sceneX, double sceneY) {
+    void sendMouseScroll(ScrollEvent event) {
+	this.getFocusedGUIElement().sendMouseScroll(event);
+    }
+
+    void sendMousePress(MouseEvent event) {
+	double sceneX = event.getSceneX();
+	double sceneY = event.getSceneY();
 	System.out.println("x: " + sceneX + " a y: " + sceneY);
 	for (GUIelement ge : this.GUIList) {
 	    FloatPoint fp = ge.getLastPositionDrawnTo();
@@ -648,10 +655,17 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	    {
 		if (!ge.isFocused()) {
 		    this.focusGUIelement(ge);
+		} else//was focused, we pass the press to it
+		{
+			ge.sendMousePress(event);
 		}
 		this.paintGUIelements();
 		break;
 	    }
 	}
+    }
+
+    void sendMouseDrag(MouseEvent event) {
+	this.getFocusedGUIElement().sendMouseDrag(event);
     }
 }
