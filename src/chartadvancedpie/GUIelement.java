@@ -521,23 +521,23 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     /**
-     * Whether or not does the GUI element have AT LEAST one of the tags listed
+     * Whether or not does the GUI element have ALL of the tags listed
      * as letters in the string t.
      *
      * @param t the string containing the possible tags
-     * @return true if it cotains at least one of the tags listen in t, false
+     * @return true if it cotains ALL of the tags listen in t, false
      * otherwise
      */
     public boolean hasTag(String t) {
 	for (int i = 0; i < t.length(); i++) {
 	    char c = t.charAt(i);
 	    String tags = getTags();
-	    if (tags.indexOf(c) != -1)//contains char
+	    if (tags.indexOf(c) == -1)//contains char
 	    {
-		return true;
+		return false;
 	    }
 	}
-	return false;
+	return true;
     }
 
     public String getGUIelementName() {
