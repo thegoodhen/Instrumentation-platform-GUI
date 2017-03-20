@@ -71,6 +71,8 @@ public class PlotLine {
 	this.addProperty(new FloatProperty(105, "LineY", 0.0F, gc));
 	this.addProperty(new FloatProperty(106, "LineWidth", 2.0F, gc));
 	this.addProperty(new FloatProperty(107, "LineSamples", 0.0F, gc));
+
+
 	this.lineChar = ch;
 	histogramBins = new ArrayList<Integer>();
 

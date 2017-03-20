@@ -668,4 +668,17 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
     void sendMouseDrag(MouseEvent event) {
 	this.getFocusedGUIElement().sendMouseDrag(event);
     }
+
+    void repaintElement(GUIelement ge) {
+
+	GraphicsContext gc = canvas.getGraphicsContext2D();
+	gc.setFill(Color.BLACK);//clear everything
+	double x=ge.getLastPositionDrawnTo().x;
+	double y=ge.getLastPositionDrawnTo().y;
+	double geW=ge.getWidth();
+	double geH=ge.getHeight();
+	gc.fillRect(x, y, geW, geH);
+	ge.paint(gc, x, y);
+
+    }
 }

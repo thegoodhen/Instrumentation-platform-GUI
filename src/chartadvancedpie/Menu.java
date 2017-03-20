@@ -115,7 +115,7 @@ public class Menu {
 		if (!keystroke.equals("x")) {//TODO: try esc
 			handleAction(keystroke);
 		} else {
-			close();
+			//close();//I implemented escaping elsewhere, this is now deprecated
 		}
 	}
 

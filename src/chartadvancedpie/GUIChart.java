@@ -47,6 +47,8 @@ public class GUIChart extends GUIelement {
     private double lastXTickSizeWhenTickSizeChanged = 0;
     private double dragStartPlotY;
     private double dragStartPlotX;
+    private long lastRecordingStartTime;
+    private boolean histogramView = false;
 
     public GUIChart() {
 
@@ -55,6 +57,9 @@ public class GUIChart extends GUIelement {
 	this.addFloatProperty(105, "LineY", 0);
 	this.addFloatProperty(106, "LineWidth", 2);
 	this.addFloatProperty(107, "LineSamples", 0);
+	FloatProperty runTime = new FloatProperty(150, "RunTime", -1.0F, this);
+	this.addProperty(runTime);
+
     }
 
     public GUIChart(GUITab gut) {
@@ -70,13 +75,12 @@ public class GUIChart extends GUIelement {
     }
 
     /*
-    public void addNewLine()
-    {
-	PlotLine pl=new PlotLine(currentLineChar,this);
+     public void addNewLine()
+     {
+     PlotLine pl=new PlotLine(currentLineChar,this);
 
-    }
-    */
-
+     }
+     */
     public void startRecording() {
 	if (isRecording) {
 	    return;
@@ -84,6 +88,7 @@ public class GUIChart extends GUIelement {
 
 	    isRecording = true;
 	}
+	lastRecordingStartTime = System.currentTimeMillis();
 	if (sampleTimer == null) {
 	    sampleTimer = new Timer();
 	}
@@ -161,12 +166,35 @@ public class GUIChart extends GUIelement {
 	this.setPlotY((50));
 	this.setPlotScaleX((2F));
 	this.setPlotScaleY((0.1F));
+	FloatProperty runTime = new FloatProperty(150, "RunTime", -1.0F, this);
+	runTime.setGetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		System.out.println("slepice v optice kdaka velmi velice");
+		if (!isRecording) {
+		    p.setValue((float) -1);
+		} else {
+		    p.setValue((float) (System.currentTimeMillis() - lastRecordingStartTime) / 1000);
+		}
+	    }
+	}
+	);
+	this.addProperty(runTime);
 
     }
 
     @Override
     public void setGUITab(GUITab gut) {
 	super.setGUITab(gut);
+
+	NamedGUIAction switchViewModeAction = new NamedGUIAction("histogram/normal") {
+	    @Override
+	    public void doAction() {
+		GUIChart.this.histogramView = !GUIChart.this.histogramView;
+		GUIChart.super.update();
+
+	    }
+	};
 
 	NamedGUIAction scaleXUpAction = new NamedGUIAction("hscale++") {
 	    @Override
@@ -453,7 +481,7 @@ public class GUIChart extends GUIelement {
 	this.setMenu(new Menu(gut.getGUIPanel(), "slider menu", true));
 	this.getMenu().addAction("a", autoScaleAction);
 	this.getMenu().addAction("l", scaleXUpAction);
-	this.getMenu().addAction("h", scaleXDownAction);
+	this.getMenu().addAction("h", switchViewModeAction);
 	//this.getMenu().addAction("j", scaleYUpAction);
 	//this.getMenu().addAction("k", scaleYDownAction);
 
@@ -644,8 +672,11 @@ public class GUIChart extends GUIelement {
 	gc.setFill(Color.RED);
 	gc.fillRect(x, y, this.getWidth(), this.getHeight());
 	//gc.fillRect(x+this.getWidth(), y+this.getHeight()/3,this.getWidth()*(2/3), this.getHeight()*(2/3));
-	paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
-	//paintHistograms(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	if (histogramView) {
+	    paintHistograms(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	} else {
+	    paintLines(gc, x, y, x + this.getWidth(), y + this.getHeight());//TODO: limit amount of calls to getWidth and getHeight
+	}
 	paintTicks(gc, x, y, x + this.getWidth(), y + this.getHeight());
 	drawLegend(gc, x + this.getWidth() - 50, y + 50);
     }
@@ -843,7 +874,7 @@ public class GUIChart extends GUIelement {
 			System.out.println("pipka kdaka");
 		    }
 		    //gc.setLineWidth(4);
-		    double lwBackup=gc.getLineWidth();
+		    double lwBackup = gc.getLineWidth();
 		    gc.setLineWidth(pl.getLineWidth());
 		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
 		    fp1 = fp;
@@ -863,7 +894,7 @@ public class GUIChart extends GUIelement {
 	    }
 	}
 
-	double opacity=(double)1/linesToDrawList.size();
+	double opacity = (double) 1 / linesToDrawList.size();
 
 	for (PlotLine pl : linesToDrawList) {
 	    gc.setStroke(pl.getColor());
@@ -876,9 +907,9 @@ public class GUIChart extends GUIelement {
 		    double x2 = x1 + binWidth * this.getPlotScaleX();
 		    double y1 = getPlotY() + y;
 		    double y2 = y1 - i * getPlotScaleY();
-		    Color col=pl.getColor();
-		    col=col.deriveColor(0,1,1,opacity);
-		    strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY,col);
+		    Color col = pl.getColor();
+		    col = col.deriveColor(0, 1, 1, opacity);
+		    strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY, col);
 
 		    currentRectangleStart += binWidth;
 		}
@@ -906,165 +937,167 @@ public class GUIChart extends GUIelement {
 
 	double currentScaleX = this.getPlotScaleX();
 
-	PlotLine currentLine = this.getPlotLineByChar('%');
-	ArrayList<PlotLine> linesToDrawList = new ArrayList<>();
+	if (histogramView) {
+	    PlotLine currentLine = this.getPlotLineByChar('%');
+	    ArrayList<PlotLine> linesToDrawList = new ArrayList<>();
 
-	for (PlotLine pl2 : this.linesList.values()) {
-	    if (pl2.isSelected() || pl2.equals(currentLine)) {
-		linesToDrawList.add(pl2);
-	    }
-	}
-
-	int iterator = 1;
-
-	for (PlotLine pl : linesToDrawList) {
-
-	    gc.setStroke(pl.getColor());
-	    if (!pl.getHistogramBins().isEmpty()) {
-		double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
-		while (binWidth * this.getPlotScaleX() < this.minXPixelTickSize) {
-		    binWidth *= 2;
+	    for (PlotLine pl2 : this.linesList.values()) {
+		if (pl2.isSelected() || pl2.equals(currentLine)) {
+		    linesToDrawList.add(pl2);
 		}
-		//FloatPoint fp1 = pl.getPoints().get(0);
-		double currentRectangleStart = pl.getHistogramMin();
-		while (currentRectangleStart <= pl.getHistogramMax()) {
-		    double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
-		    //double x2 = x1 + binWidth * this.getPlotScaleX();
-		    double y1;
-		    if (iterator % 2 != 0)//1,3,5,7...
-		    {
-			y1 = y + iterator * -5 + getHeight();//draw first, third, fifth, seventh... tick line on the down side
+	    }
 
-		    } else {
-			y1 = y + iterator * 5;//draw the other tick lines on the up side 
+	    int iterator = 1;
+
+	    for (PlotLine pl : linesToDrawList) {
+
+		gc.setStroke(pl.getColor());
+		if (!pl.getHistogramBins().isEmpty()) {
+		    double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
+		    while (binWidth * this.getPlotScaleX() < this.minXPixelTickSize) {
+			binWidth *= 2;
 		    }
-		    //double y2 = y1 - i * getPlotScaleY();
-		    //strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
+		    //FloatPoint fp1 = pl.getPoints().get(0);
+		    double currentRectangleStart = pl.getHistogramMin();
+		    while (currentRectangleStart <= pl.getHistogramMax()) {
+			double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
+			//double x2 = x1 + binWidth * this.getPlotScaleX();
+			double y1;
+			if (iterator % 2 != 0)//1,3,5,7...
+			{
+			    y1 = y + iterator * -5 + getHeight();//draw first, third, fifth, seventh... tick line on the down side
 
-		    gc.setStroke(pl.getColor());
-		    gc.strokeLine(x1, y1, x1, y1 + 5);
-		    gc.strokeText(Float.toString((float) currentRectangleStart), x1, y1);
-		    currentRectangleStart += binWidth;
+			} else {
+			    y1 = y + iterator * 5;//draw the other tick lines on the up side 
+			}
+			//double y2 = y1 - i * getPlotScaleY();
+			//strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
+
+			gc.setStroke(pl.getColor());
+			gc.strokeLine(x1, y1, x1, y1 + 5);
+			gc.strokeText(Float.toString((float) currentRectangleStart), x1, y1);
+			currentRectangleStart += binWidth;
+		    }
 		}
+
+		iterator++;
 	    }
 
-	    iterator++;
+	} else {//not in histogram view mode
+
+	    if (currentScaleX < this.lastScaleXWhenTickSizeChanged)//we scaled it down since last time checked
+	    {
+
+		//the ticks may be too close together, so we first sorta approximate the correct order of magnitude, putting them further apart
+		while (currentRoundXTickSize * currentScaleX < minXPixelTickSize) {
+		    currentRoundXTickSize *= 10;
+		    pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+
+		}
+
+		currentXTickSize = currentRoundXTickSize;
+		//...and then we actually correct for it if necessary!
+		while ((currentXTickSize * currentScaleX) / 2 > minXPixelTickSize) {
+		    currentXTickSize /= 2;
+		    pixelXTickSize = (currentXTickSize * currentScaleX);
+		}
+		if (currentXTickSize > lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it further apart
+		{
+		    lastXTickSizeWhenTickSizeChanged = currentXTickSize;
+		} else {
+		    currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
+		}
+		lastScaleXWhenTickSizeChanged = currentScaleX;
+	    }
+
+	    if (currentScaleX > this.lastScaleXWhenTickSizeChanged)//we scaled it up since last time checked
+	    {
+
+		//the ticks may be too far apart, so we first sorta approximate the correct order of magnitude, putting them closer together
+		while (currentRoundXTickSize * currentScaleX > maxXPixelTickSize) {
+		    currentRoundXTickSize /= 10;
+		    pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+
+		}
+
+		currentXTickSize = currentRoundXTickSize;
+		//...and then we actually correct for it if necessary!
+		while ((currentXTickSize * currentScaleX) * 2 < maxXPixelTickSize) {
+		    currentXTickSize *= 2;
+		    pixelXTickSize = (currentScaleX * currentXTickSize);
+		}
+		if (currentXTickSize < lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it closer together
+		{
+		    lastXTickSizeWhenTickSizeChanged = currentXTickSize;
+		} else {
+		    currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
+		}
+		lastScaleXWhenTickSizeChanged = currentScaleX;
+	    }
+
+	    pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
+	    double minNumberOnAxis = -(getPlotX()) / this.getPlotScaleX();
+	    double maxNumberOnAxis = (this.getWidth() - (getPlotX())) / this.getPlotScaleX();
+	    double minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentXTickSize) * currentXTickSize;
+	    double maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentXTickSize) * currentXTickSize;
+	    //System.out.println(maxTickNumberOnAxis);
+	    //System.out.println(minNumberOnAxis);
+	    //System.out.println(maxNumberOnAxis);
+	    //draw max 100 ticks to the right of the origin
+
+	    for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentXTickSize) {
+		{
+		    if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
+			gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+			gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+		    }
+		}
+
+	    }
+	}
+	//pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
+
+	while (pixelYTickSize < minYPixelTickSize) {
+	    currentYTickSize *= 10;
+	    pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
+	    for (int i = 0; i < 2; i++) {
+		if (pixelYTickSize / 2 > minYPixelTickSize) {
+		    pixelYTickSize /= 2;
+		    currentYTickSize /= 2;
+		}
+	    }
 	}
 
-	/*
+	while (pixelYTickSize > maxYPixelTickSize) {
+	    currentYTickSize /= 10;
+	    pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
+	    for (int i = 0; i < 2; i++) {
+		if (pixelYTickSize * 2 < maxYPixelTickSize) {
+		    pixelYTickSize *= 2;
+		    currentYTickSize *= 2;
+		}
+	    }
+	}
 
-	 if (currentScaleX < this.lastScaleXWhenTickSizeChanged)//we scaled it down since last time checked
-	 {
+	pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
 
-	 //the ticks may be too close together, so we first sorta approximate the correct order of magnitude, putting them further apart
-	 while (currentRoundXTickSize * currentScaleX < minXPixelTickSize) {
-	 currentRoundXTickSize *= 10;
-	 pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
+	double minNumberOnAxis = -(getPlotY()) / this.getPlotScaleY();
+	double maxNumberOnAxis = (this.getHeight() - (getPlotY())) / this.getPlotScaleY();
+	double minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentYTickSize) * currentYTickSize;
+	double maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentYTickSize) * currentYTickSize;
+	System.out.println(maxTickNumberOnAxis);
+	for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentYTickSize) {
+	    {
+		if (y + getPlotY() + i * getPlotScaleY() > y && y + getPlotY() + i * getPlotScaleY() < y + getHeight()) {
+		    gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
+		    gc.strokeText(Float.toString((float) (-i)), x, y + getPlotY() + (i * getPlotScaleY()));
+		    //gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+		    //gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+		}
 
-	 }
+	    }
+	}
 
-	 currentXTickSize = currentRoundXTickSize;
-	 //...and then we actually correct for it if necessary!
-	 while ((currentXTickSize * currentScaleX) / 2 > minXPixelTickSize) {
-	 currentXTickSize /= 2;
-	 pixelXTickSize = (currentXTickSize * currentScaleX);
-	 }
-	 if (currentXTickSize > lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it further apart
-	 {
-	 lastXTickSizeWhenTickSizeChanged = currentXTickSize;
-	 } else {
-	 currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
-	 }
-	 lastScaleXWhenTickSizeChanged = currentScaleX;
-	 }
-
-	 if (currentScaleX > this.lastScaleXWhenTickSizeChanged)//we scaled it up since last time checked
-	 {
-
-	 //the ticks may be too far apart, so we first sorta approximate the correct order of magnitude, putting them closer together
-	 while (currentRoundXTickSize * currentScaleX > maxXPixelTickSize) {
-	 currentRoundXTickSize /= 10;
-	 pixelXTickSize = (this.getPlotScaleX() * currentRoundXTickSize);
-
-	 }
-
-	 currentXTickSize = currentRoundXTickSize;
-	 //...and then we actually correct for it if necessary!
-	 while ((currentXTickSize * currentScaleX) * 2 < maxXPixelTickSize) {
-	 currentXTickSize *= 2;
-	 pixelXTickSize = (currentScaleX * currentXTickSize);
-	 }
-	 if (currentXTickSize < lastXTickSizeWhenTickSizeChanged)//we actually fixed things and put it closer together
-	 {
-	 lastXTickSizeWhenTickSizeChanged = currentXTickSize;
-	 } else {
-	 currentXTickSize = lastXTickSizeWhenTickSizeChanged;//do nothing if we would make it worse
-	 }
-	 lastScaleXWhenTickSizeChanged = currentScaleX;
-	 }
-	 //pixelXTickSize = (int) (this.getPlotScaleX() * currentXTickSize);
-
-	 while (pixelYTickSize < minYPixelTickSize) {
-	 currentYTickSize *= 10;
-	 pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
-	 for (int i = 0; i < 2; i++) {
-	 if (pixelYTickSize / 2 > minYPixelTickSize) {
-	 pixelYTickSize /= 2;
-	 currentYTickSize /= 2;
-	 }
-	 }
-	 }
-
-	 while (pixelYTickSize > maxYPixelTickSize) {
-	 currentYTickSize /= 10;
-	 pixelYTickSize = (int) (this.getPlotScaleY() * currentYTickSize);
-	 for (int i = 0; i < 2; i++) {
-	 if (pixelYTickSize * 2 < maxYPixelTickSize) {
-	 pixelYTickSize *= 2;
-	 currentYTickSize *= 2;
-	 }
-	 }
-	 }
-
-	 pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
-	 pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
-
-	 double minNumberOnAxis = -(getPlotX()) / this.getPlotScaleX();
-	 double maxNumberOnAxis = (this.getWidth() - (getPlotX())) / this.getPlotScaleX();
-	 double minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentXTickSize) * currentXTickSize;
-	 double maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentXTickSize) * currentXTickSize;
-	 //System.out.println(maxTickNumberOnAxis);
-	 //System.out.println(minNumberOnAxis);
-	 //System.out.println(maxNumberOnAxis);
-	 //draw max 100 ticks to the right of the origin
-
-	 for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentXTickSize) {
-	 {
-	 if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
-	 gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
-	 gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
-	 }
-	 }
-
-	 }
-
-	 minNumberOnAxis = -(getPlotY()) / this.getPlotScaleY();
-	 maxNumberOnAxis = (this.getHeight() - (getPlotY())) / this.getPlotScaleY();
-	 minTickNumberOnAxis = Math.floor(minNumberOnAxis / currentYTickSize) * currentYTickSize;
-	 maxTickNumberOnAxis = Math.ceil(maxNumberOnAxis / currentYTickSize) * currentYTickSize;
-	 System.out.println(maxTickNumberOnAxis);
-	 for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentYTickSize) {
-	 {
-	 if (y + getPlotY() + i * getPlotScaleY() > y && y + getPlotY() + i * getPlotScaleY() < y + getHeight()) {
-	 gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
-	 gc.strokeText(Float.toString((float) (-i)), x, y + getPlotY() + (i * getPlotScaleY()));
-	 //gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
-	 //gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
-	 }
-
-	 }
-	 }
-	 */
     }
 
     /*
@@ -1108,6 +1141,7 @@ public class GUIChart extends GUIelement {
     public boolean setLineProperty(String lineLetter, int propertyId, float value) {
 	return this.getLine(lineLetter).setProperty(propertyId, value);
     }
+
     public FloatProperty getLineProperty(String lineLetter, int propertyId) {
 	return this.getLine(lineLetter).getProperty(propertyId);
     }

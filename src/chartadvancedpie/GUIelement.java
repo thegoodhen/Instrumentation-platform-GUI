@@ -418,6 +418,11 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return this.lastPositionDrawnTo;
     }
 
+    public void requestRepaint()
+    {
+	this.gut.repaintElement(this);
+    }
+
     public void paint(GraphicsContext gc, double x, double y) {
 	this.lastPositionDrawnTo=new FloatPoint(x,y);
 	gc.setFill(Color.BLUE);

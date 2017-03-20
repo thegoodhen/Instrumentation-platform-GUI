@@ -23,11 +23,29 @@ public abstract class Property<T> {
     private ArrayList<Token> getEvent;
     private ArrayList<Token> setEvent;
     private GUIelement ge;
+    private PropertyCallback getterPropertyCallback = null;
+
+    public PropertyCallback getGetterPropertyCallback() {
+	return getterPropertyCallback;
+    }
+
+    public void setGetterPropertyCallback(PropertyCallback getterPropertyCallback) {
+	this.getterPropertyCallback = getterPropertyCallback;
+    }
+
+    public PropertyCallback getSetterPropertyCallback() {
+	return setterPropertyCallback;
+    }
+
+    public void setSetterPropertyCallback(PropertyCallback setterPropertyCallback) {
+	this.setterPropertyCallback = setterPropertyCallback;
+    }
+    private PropertyCallback setterPropertyCallback = null;
 
     public void recompile() {
-	
+
 	try {
-	GUICompiler c = ge.getGUIPanel().getGUICompiler();
+	    GUICompiler c = ge.getGUIPanel().getGUICompiler();
 	    c.compile(getGetEventString());
 	    getEvent = c.getByteCodeAL();
 	    System.out.println("SUCCESS");
@@ -36,36 +54,61 @@ public abstract class Property<T> {
 
 	}
 	try {
-	GUICompiler c = ge.getGUIPanel().getGUICompiler();
-	    String slepice=getSetEventString();
+	    GUICompiler c = ge.getGUIPanel().getGUICompiler();
+	    String slepice = getSetEventString();
 	    c.compile(getSetEventString());
 	    setEvent = c.getByteCodeAL();
 	    System.out.println("SUCCESS");
 	} catch (Exception ex) {
 	    //Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
 	}
-	
+
     }
 
     private String getGetEventString() {
-	return  this.ge.getUniqueName() +"_"+name + "_G"+"();\n";
+	return this.ge.getUniqueName() + "_" + name + "_G" + "();\n";
     }
 
     private String getSetEventString() {
-	return  this.ge.getUniqueName() +"_"+name + "_S"+"();\n";
+	return this.ge.getUniqueName() + "_" + name + "_S" + "();\n";
 	//return "slepice();\n";
 	//return "EVENT_" + this.ge.getUniqueName() + "_S" + name + "();\n";
     }
 
+    public T getValueSilent() {
+	return this.value;
+    }
+
+    /**
+     * runs Java callbacks, then user callback, then returns the value
+     * @return 
+     */
     public T getValue() {
+	if (this.name.equals("RunTime")) {
+	    System.out.println("kva kva");
+	}
+	if (getterPropertyCallback != null) {
+	    getterPropertyCallback.run(this);
+	}
 	if (getEvent != null) {
 	    ge.getGUIPanel().handleCallBack(getEvent);
 	}
 	return this.value;
     }
 
+    public void setValueSilent(T newValue) {
+	this.value = newValue;
+    }
+
+    /**
+     * Sets the value property, then fires Java callback, then user code.
+     * @param newValue 
+     */
     public void setValue(T newValue) {
 	this.value = newValue;
+	if (setterPropertyCallback != null) {
+	    setterPropertyCallback.run(this);
+	}
 	if (setEvent != null) {
 	    ge.getGUIPanel().handleCallBack(setEvent);
 	}

@@ -444,6 +444,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	GUISlider gs3 = new GUISlider(gt2);
 	GUISlider gs4 = new GUISlider(gt2);
 	GUIDisplay gd = new GUIDisplay(gt);
+	GUIStatsDisplay gsd=new GUIStatsDisplay(gt2);
+	gt2.addGUIelement(gsd);
 	gt.addGUIelement(gd);
 	gt2.addGUIelement(gs2);
 	gt2.addGUIelement(gs3);
@@ -472,7 +474,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//c.compile(funcCall);
 	//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();
-	String userCode="";
+	String userCode = "";
 	this.globalMapManager.addMapping("j", "k");
 	this.globalMapManager.addMapping("k", "j");
 	this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
@@ -495,7 +497,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		new EventHandler<ActionEvent>() {
 		    @Override
 		    public void handle(ActionEvent event) {
-			GUIPanel.this.userCode=editorTextArea.getText();
+			GUIPanel.this.userCode = editorTextArea.getText();
 			GUIPanel.this.recompileUserCode();
 		    }
 		});
@@ -503,8 +505,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	dialog.show();
     }
 
-    public void recompileUserCode()
-    {
+    public void recompileUserCode() {
 	c.compile(this.userCode);
 	this.recompileEventsForAll();
     }
@@ -777,10 +778,23 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	private void runCommand(KeyCode code, Object object) {
 	    if (code == KeyCode.ENTER) {
 		//c=InterpreterFacade.prepareCompiler(GUIPanel.this);
-		c.compile("printNumber(" + GUIPanel.this.cmdLine.getText() + ");\n");//added the printNumber for convenience, not sure if the best
-		//vm=new GUIVirtualMachine(GUIPanel.this);//TODO: NO NO NO
-		vm.setProgram(c.getByteCodeAL());
-		vm.runProgram();
+		if (!vFlag) {
+		    c.compile("printNumber(" + GUIPanel.this.cmdLine.getText() + ");\n");//added the printNumber for convenience, not sure if the best
+		    //vm=new GUIVirtualMachine(GUIPanel.this);//TODO: NO NO NO
+		    vm.setProgram(c.getByteCodeAL());
+		    vm.runProgram();
+		} else {
+		    GUIelement backupGE = this.getGUIPanel().getCurrentGUITab().getFocusedGUIElement();
+		    for (GUIelement ge : this.getGUIPanel().getCurrentGUITab().getSelectedGUIelementsList()) {
+			this.getGUIPanel().getCurrentGUITab().focusGUIelement(ge);
+
+			c.compile(GUIPanel.this.cmdLine.getText()+";\n");
+			vm.setProgram(c.getByteCodeAL());
+			vm.runProgram();
+
+		    }
+		    this.getGUIPanel().getCurrentGUITab().focusGUIelement(backupGE);
+		}
 	    }
 	}
     }

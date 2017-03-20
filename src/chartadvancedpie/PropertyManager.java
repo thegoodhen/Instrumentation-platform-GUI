@@ -89,16 +89,20 @@ public class PropertyManager {
 
     public int getPropertyIDByName(String name) {
 	Property p = this.getProperty(name);
-	Integer id = -1;
+	return p.getId();
+	/*
+	 Integer id = -1;
 
-	for (GUIelement ge : elementList) {
-	    id = ge.getProperty2idMap().get(p);
-	    if (id != null) {
-		break;
-	    }
-	}
-	return id;
+	 for (GUIelement ge : elementList) {
+	 id = ge.getProperty2idMap().get(p);
+	 if (id != null) {
+	 break;
+	 }
+	 }
+	 return id;
+
+	 }
+	 */
 
     }
-
-}
+    }

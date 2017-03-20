@@ -41,6 +41,7 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new AllocIntsOnStackUserFunctionTokenFactory());
 		this.addSubFactory(new StackIntUserFunctionTokenFactory());
 		this.addSubFactory(new SetStackIntUserFunctionTokenFactory());
+		this.addSubFactory(new HasTagUserFunctionTokenFactory());
 		//super();
 		//TODO: write the custom functions here
 	}
