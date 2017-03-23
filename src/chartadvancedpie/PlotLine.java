@@ -116,6 +116,11 @@ public class PlotLine {
      * @return
      */
     public double evaluateYatX(double x) {
+	FloatPoint thePoint=this.pointList.get(x);
+	if(thePoint!=null)
+	{
+	    return thePoint.getY();
+	}
 	FloatPoint leftPoint = getPointLeftTo(x);
 	FloatPoint rightPoint = getPointRightTo(x);
 	if (leftPoint != null && rightPoint != null) {

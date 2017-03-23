@@ -41,18 +41,7 @@ public class GUIStatsDisplay extends GUIelement {
 	}
     }
 
-    public GUIStatsDisplay() {
-
-    }
-
-    public GUIStatsDisplay(GUITab gut) {
-	super(gut);
-	this.setGUIPanel(gut.getGUIPanel());
-	delayList = new LinkedList<>();
-	workingList = new LinkedList<>();
-	samplesSortedByValueList = new LinkedList<>();
-	statGenList = new ArrayList<>();
-
+    public final void addProperthies() {
 	this.addFloatProperty(200, "Delay", 2);
 	this.addFloatProperty(201, "WindowWidth", 10);
 	this.getPropertyByName("Value").setSetterPropertyCallback(
@@ -71,6 +60,23 @@ public class GUIStatsDisplay extends GUIelement {
 		    }
 		}
 	);
+    }
+
+    public GUIStatsDisplay() {
+	super();
+	this.addProperthies();
+
+    }
+
+    public GUIStatsDisplay(GUITab gut) {
+	super(gut);
+	this.setGUIPanel(gut.getGUIPanel());
+	delayList = new LinkedList<>();
+	workingList = new LinkedList<>();
+	samplesSortedByValueList = new LinkedList<>();
+	statGenList = new ArrayList<>();
+
+	this.addProperthies();
 	//super(r);
 
 	statGenerator rawValueStatGen = new statGenerator("Raw value") {
@@ -234,10 +240,10 @@ public class GUIStatsDisplay extends GUIelement {
 		switchStats(-this.getCount());
 	    }
 	};
-	NamedGUIAction switchSamplesSecondsAction= new NamedGUIAction("switch between samples and seconds") {
+	NamedGUIAction switchSamplesSecondsAction = new NamedGUIAction("switch between samples and seconds") {
 	    @Override
 	    public void doAction() {
-		timeInSamples=!timeInSamples;
+		timeInSamples = !timeInSamples;
 	    }
 	};
 
@@ -275,15 +281,15 @@ public class GUIStatsDisplay extends GUIelement {
 	gc.strokeText(Float.toString(this.getValue()), x, y + 10);
 	String unitString = (this.timeInSamples ? "samples" : "seconds");
 	double delay = (float) this.getPropertyByName("Delay").getValueSilent();
-	String delayString="";
+	String delayString = "";
 	if (delay != 0) {
-	    delayString = ", delayed by " + (delay)+" "+unitString;
+	    delayString = ", delayed by " + (delay) + " " + unitString;
 	}
 	double winWidth = (float) this.getPropertyByName("WindowWidth").getValue();
 	if (timeInSamples) {
 	    winWidth = Math.floor(winWidth);
 	}
-	String infoText = "(" + this.statGenList.get(currentStatgenIndex).statName + ", window width " + winWidth +" "+ unitString +  delayString + ")";
+	String infoText = "(" + this.statGenList.get(currentStatgenIndex).statName + ", window width " + winWidth + " " + unitString + delayString + ")";
 	gc.strokeText(infoText, x + 40, y + 10);
     }
 

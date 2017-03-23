@@ -5,8 +5,12 @@
  */
 package chartadvancedpie;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.canvas.GraphicsContext;
@@ -49,7 +53,7 @@ public abstract class GUIelement extends Container implements Subscriber {
     private static MappingManager globalElementMappingManager = null;
     private static MappingManager elementTypeMappingManager = null;
     private MappingManager thisInstanceMappingManager = null;
-    private FloatPoint lastPositionDrawnTo=null;
+    private FloatPoint lastPositionDrawnTo = null;
     double dragStartMouseX;
     private double lastMousePressY;
     double dragStartMouseY;
@@ -138,7 +142,6 @@ public abstract class GUIelement extends Container implements Subscriber {
 	}
     }
 
-
     void sendMouseScroll(ScrollEvent event) {
 
     }
@@ -148,13 +151,12 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     void sendMousePress(MouseEvent event) {
-	
+
     }
 
-    public boolean isWithinBounds(double x, double y)
-    {
-	FloatPoint fp=this.getLastPositionDrawnTo();
-	return (x>fp.x && x<fp.x+this.getWidth() && y>fp.y && y<fp.y+this.getHeight());
+    public boolean isWithinBounds(double x, double y) {
+	FloatPoint fp = this.getLastPositionDrawnTo();
+	return (x > fp.x && x < fp.x + this.getWidth() && y > fp.y && y < fp.y + this.getHeight());
     }
 
     @Deprecated
@@ -413,18 +415,16 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.focused = selected;
     }
 
-    public FloatPoint getLastPositionDrawnTo()
-    {
+    public FloatPoint getLastPositionDrawnTo() {
 	return this.lastPositionDrawnTo;
     }
 
-    public void requestRepaint()
-    {
+    public void requestRepaint() {
 	this.gut.repaintElement(this);
     }
 
     public void paint(GraphicsContext gc, double x, double y) {
-	this.lastPositionDrawnTo=new FloatPoint(x,y);
+	this.lastPositionDrawnTo = new FloatPoint(x, y);
 	gc.setFill(Color.BLUE);
 	gc.setStroke(Color.WHITE);
 
@@ -453,9 +453,9 @@ public abstract class GUIelement extends Container implements Subscriber {
 	    gc.fillOval(x - 15, y, 10, 10);
 	}
 
-	gc.strokeText(getContextDependantName(), x + this.getWidth()+10, y + 10);
+	gc.strokeText(getContextDependantName(), x + this.getWidth() + 10, y + 10);
 	gc.setStroke(Color.CRIMSON);
-	gc.strokeText(getTags(), x + this.getWidth()+10, y + 20);
+	gc.strokeText(getTags(), x + this.getWidth() + 10, y + 20);
     }
 
     public void setValue(float value) {
@@ -526,12 +526,11 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     /**
-     * Whether or not does the GUI element have ALL of the tags listed
-     * as letters in the string t.
+     * Whether or not does the GUI element have ALL of the tags listed as
+     * letters in the string t.
      *
      * @param t the string containing the possible tags
-     * @return true if it cotains ALL of the tags listen in t, false
-     * otherwise
+     * @return true if it cotains ALL of the tags listen in t, false otherwise
      */
     public boolean hasTag(String t) {
 	for (int i = 0; i < t.length(); i++) {
@@ -567,12 +566,31 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return returnString;
     }
 
-    public abstract GUIelement makeCopy();
+    public GUIelement makeCopy() {
+	Class<?> thisClass = this.getClass();
+	System.out.println(thisClass.getName());
+
+	for (Constructor<?> constructor : thisClass.getConstructors()) {
+	    if (constructor.getParameterTypes().length == 1) {
+		Class<?> paramType = constructor.getParameterTypes()[0];
+		if (paramType.getCanonicalName().equals(GUITab.class.getCanonicalName())) {
+		    try {
+			GUIelement ge=(GUIelement) constructor.newInstance(this.gut);
+			this.copyPropertiesTo(ge);
+			return ge;
+		    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+			Logger.getLogger(GUIelement.class.getName()).log(Level.SEVERE, null, ex);
+		    }
+		}
+	    }
+	}
+	return null;
+    }
 
     public void copyPropertiesTo(GUIelement ge) {
-	ge.setEnabled(this.isEnabled());
-	ge.setName(this.getName());
-	ge.setValue(this.getValue());
+	for (Property p : this.id2PropertyMap.values()) {
+	    ge.addProperty(p.makeCopy());
+	}
     }
 
     public void setName(String name) {

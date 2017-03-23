@@ -445,6 +445,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	GUISlider gs4 = new GUISlider(gt2);
 	GUIDisplay gd = new GUIDisplay(gt);
 	GUIStatsDisplay gsd=new GUIStatsDisplay(gt2);
+	GUIPID pid=new GUIPID(gt2);
+	System.out.println("pipka kokon:");
+	pid.getPropertyByName("P").setValue(10F);
+	GUIPID pid2=(GUIPID)pid.makeCopy();
+	gt2.addGUIelement(pid);
+	gt2.addGUIelement(pid2);
 	gt2.addGUIelement(gsd);
 	gt.addGUIelement(gd);
 	gt2.addGUIelement(gs2);
@@ -873,9 +879,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	GUIList.add(ge);
     }
 
-    public void addGUITab(GUITab gt) {
+    public int addGUITab(GUITab gt) {
 	gt.setGUIPanel(this);
 	tabList.add(gt);
+	return tabList.size()-1;
     }
 
     public void traverseElements(boolean forward) {

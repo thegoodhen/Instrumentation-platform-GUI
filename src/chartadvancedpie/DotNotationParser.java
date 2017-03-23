@@ -48,7 +48,7 @@ public class DotNotationParser extends ExpressionParser {
 	}
 
 	//Now let's handle the "getProperty" and "setProperty", where "Property" is something generic...
-	Pattern getPropertyPattern = Pattern.compile("get([A-Z][a-zA-Z0-9]*)\\((.*)\\)");
+	Pattern getPropertyPattern = Pattern.compile("get(?![A-Za-z]*Property)([A-Z][a-zA-Z0-9]*)\\((.*)\\)");
 	Pattern setPropertyPattern = Pattern.compile("set([A-Z][a-zA-Z0-9]*)\\((.*)\\)");
 	String getterCallString = "";
 	String setterCallString = "";
@@ -63,7 +63,7 @@ public class DotNotationParser extends ExpressionParser {
 	    propertyName = getPropertyMatcher.group(1);
 	    if (propertyName.contains("Property"))//the thingy is "getProperty" already
 	    {
-		continue;
+		continue;//TODO: look for others
 	    } else {
 		//arguments = this.removeTrailingParenthesis(getPropertyMatcher.group(2));
 		arguments =getArgs(getterCallString);// this.removeTrailingParenthesis(setPropertyMatcher.group(2));

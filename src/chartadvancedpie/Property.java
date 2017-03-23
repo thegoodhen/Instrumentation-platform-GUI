@@ -5,6 +5,8 @@
  */
 package chartadvancedpie;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,7 +83,8 @@ public abstract class Property<T> {
 
     /**
      * runs Java callbacks, then user callback, then returns the value
-     * @return 
+     *
+     * @return
      */
     public T getValue() {
 	if (this.name.equals("RunTime")) {
@@ -102,7 +105,8 @@ public abstract class Property<T> {
 
     /**
      * Sets the value property, then fires Java callback, then user code.
-     * @param newValue 
+     *
+     * @param newValue
      */
     public void setValue(T newValue) {
 	this.value = newValue;
@@ -131,6 +135,25 @@ public abstract class Property<T> {
 
     public int getId() {
 	return this.id;
+    }
+
+    public Property<T> makeCopy() {
+	Class<?> thisClass = this.getClass();
+	System.out.println(thisClass.getName());
+
+	for (Constructor<?> constructor : thisClass.getConstructors()) {
+	    if (constructor.getParameterTypes().length == 4) {
+		try {
+		    Property<T> p = (Property<T>) constructor.newInstance(id, name, value, ge);
+		    return p;
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+		    Logger.getLogger(GUIelement.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (InvocationTargetException ex) {
+		    Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	    }
+	}
+	return null;
     }
 
     public String getName() {

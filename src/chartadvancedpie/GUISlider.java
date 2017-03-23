@@ -223,10 +223,4 @@ public class GUISlider extends GUIelement {
 		gc.fillRect(x, y, this.getValue(), this.getHeight());
 	}
 
-	@Override
-	public GUIelement makeCopy() {
-		GUISlider cb = new GUISlider();
-		this.copyPropertiesTo(cb);
-		return cb;
-	}
 }

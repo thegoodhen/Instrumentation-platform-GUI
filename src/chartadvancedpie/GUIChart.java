@@ -50,20 +50,26 @@ public class GUIChart extends GUIelement {
     private long lastRecordingStartTime;
     private boolean histogramView = false;
 
-    public GUIChart() {
+    public final void addProperthies() {
 
-	//TODO: make sure it's not necessary to do this duplicately
 	this.addFloatProperty(104, "LineX", 0);
 	this.addFloatProperty(105, "LineY", 0);
 	this.addFloatProperty(106, "LineWidth", 2);
 	this.addFloatProperty(107, "LineSamples", 0);
 	FloatProperty runTime = new FloatProperty(150, "RunTime", -1.0F, this);
 	this.addProperty(runTime);
+    }
+
+    public GUIChart() {
+	super();
+	this.addProperthies();
+	//TODO: make sure it's not necessary to do this duplicately
 
     }
 
     public GUIChart(GUITab gut) {
 	super(gut);
+	this.addProperthies();
 		//super(r);
 
 	//actionMap.put("l", testAction);

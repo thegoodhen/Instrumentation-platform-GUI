@@ -38,6 +38,8 @@ public class PropertyManager {
 	if (setup == false) {
 	    elementList.add(new GUISlider());
 	    elementList.add(new GUIChart());
+	    elementList.add(new GUIStatsDisplay());
+	    elementList.add(new GUIPID());
 	    setup = true;
 	}
     }
