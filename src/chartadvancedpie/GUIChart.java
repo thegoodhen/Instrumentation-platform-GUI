@@ -56,6 +56,7 @@ public class GUIChart extends GUIelement {
 	this.addFloatProperty(105, "LineY", 0);
 	this.addFloatProperty(106, "LineWidth", 2);
 	this.addFloatProperty(107, "LineSamples", 0);
+	this.addFloatProperty(108,"LineColor",2.0F);
 	FloatProperty runTime = new FloatProperty(150, "RunTime", -1.0F, this);
 	this.addProperty(runTime);
     }
@@ -675,7 +676,7 @@ public class GUIChart extends GUIelement {
 	    gc.strokeText(getRegister().getName().toString(), x, y + 20);
 	}
 	gc.fillRect(x, y, this.getWidth(), this.getHeight());
-	gc.setFill(Color.RED);
+	gc.setFill(this.getColor1());
 	gc.fillRect(x, y, this.getWidth(), this.getHeight());
 	//gc.fillRect(x+this.getWidth(), y+this.getHeight()/3,this.getWidth()*(2/3), this.getHeight()*(2/3));
 	if (histogramView) {

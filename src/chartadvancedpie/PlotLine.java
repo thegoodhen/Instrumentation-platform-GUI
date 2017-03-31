@@ -71,6 +71,28 @@ public class PlotLine {
 	this.addProperty(new FloatProperty(105, "LineY", 0.0F, gc));
 	this.addProperty(new FloatProperty(106, "LineWidth", 2.0F, gc));
 	this.addProperty(new FloatProperty(107, "LineSamples", 0.0F, gc));
+	FloatProperty lineCol=new FloatProperty(108, "LineColor", 2.0F, gc);
+	lineCol.setSetterPropertyCallback(new PropertyCallback<Float>()
+	{
+		@Override
+		public void run(Property<Float> p)
+		{
+			PlotLine.this.lineColor=ColorManager.get().colorFromFloat(p.getValueSilent());
+		}
+	
+	});
+
+
+	lineCol.setGetterPropertyCallback(new PropertyCallback<Float>()
+	{
+		@Override
+		public void run(Property<Float> p)
+		{
+		    p.setValueSilent(ColorManager.get().floatFromColor(lineColor));	
+		}
+	
+	});
+	this.addProperty(lineCol);
 
 
 	this.lineChar = ch;

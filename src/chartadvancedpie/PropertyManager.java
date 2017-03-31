@@ -40,6 +40,7 @@ public class PropertyManager {
 	    elementList.add(new GUIChart());
 	    elementList.add(new GUIStatsDisplay());
 	    elementList.add(new GUIPID());
+	    elementList.add(new GUITimer());
 	    setup = true;
 	}
     }

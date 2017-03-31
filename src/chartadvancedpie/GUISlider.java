@@ -6,8 +6,11 @@
 package chartadvancedpie;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import shuntingyard.CompilerException;
 import shuntingyard.Token;
 
 /**
@@ -54,10 +57,14 @@ public class GUISlider extends GUIelement {
 
 
 		public void confirmSetValueAction() {
+		    try {
 			String program="CGE.setValue("+getGUIPanel().getCmdLine().getText()+");\n";
 			getGUIPanel().getGUICompiler().compile(program);
 			ArrayList<Token> programList=getGUIPanel().getGUICompiler().getByteCodeAL();
 			getGUIPanel().handleCallBack(programList);
+		    } catch (CompilerException ex) {
+			getGUIPanel().showError(ex.getMessage());
+		    }
 		}
 
 	}
@@ -212,14 +219,16 @@ public class GUISlider extends GUIelement {
 
 	public void paint(GraphicsContext gc, double x, double y) {
 		super.paint(gc, x, y);
-		gc.setFill(Color.BROWN);
+		gc.setFill(this.getColor1());
+		//gc.setFill(Color.BROWN);
 		/*
 		 if (getRegister() != null) {
 		 gc.strokeText(getRegister().getName().toString(), x, y + 20);
 		 }
 		 */
 		gc.fillRect(x, y, 100, this.getHeight());
-		gc.setFill(Color.WHITE);
+		gc.setFill(this.getColor2());
+		//gc.setFill(Color.WHITE);
 		gc.fillRect(x, y, this.getValue(), this.getHeight());
 	}
 

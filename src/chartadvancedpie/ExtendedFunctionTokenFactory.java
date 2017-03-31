@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import shuntingyard.AllocBytesOnStackUserFunctionTokenFactory;
 import shuntingyard.AllocIntsOnStackUserFunctionTokenFactory;
+import shuntingyard.CompilerException;
 import shuntingyard.DelegatingFactory;
 import shuntingyard.FunctionToken;
 import shuntingyard.FunctionTokenFactory;
@@ -46,6 +47,7 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new newDisplayUserFunctionTokenFactory());
 		this.addSubFactory(new newTabUserFunctionTokenFactory());
 		this.addSubFactory(new EvalAtUserFunctionTokenFactory());
+		this.addSubFactory(new RGBAUserFunctionTokenFactory());
 		//super();
 		//TODO: write the custom functions here
 	}
@@ -84,7 +86,7 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		
 
 	@Override
-	public Token create(String tokenString, int position)
+	public Token create(String tokenString, int position) throws CompilerException
 	{
 		Pattern p=Pattern.compile("([A-Za-z][A-Za-z_0-9]*)\\(",0);
 		//Pattern p=Pattern.compile("(.*?)\\s*\\r?\\n");

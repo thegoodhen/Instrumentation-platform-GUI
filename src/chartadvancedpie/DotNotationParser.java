@@ -8,6 +8,7 @@ package chartadvancedpie;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import shuntingyard.CompilerException;
 import shuntingyard.ExpressionParser;
 import shuntingyard.Token;
 
@@ -20,7 +21,7 @@ import shuntingyard.Token;
 public class DotNotationParser extends ExpressionParser {
 
     @Override
-    public ArrayList<Token> Tokenize(String s) {
+    public ArrayList<Token> Tokenize(String s) throws CompilerException {
 	s = super.stripSpaces(s);
 	Pattern argumentLessFunctionPattern = Pattern.compile("([A-Za-z0-9_]*[0-9]*)\\.([^.()]*)\\(\\)");
 	Pattern argumentFunctionPattern = Pattern.compile("([A-Za-z0-9_]*[0-9]*)\\.([^.()]*)\\((.*)\\)");

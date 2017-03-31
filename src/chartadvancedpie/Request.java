@@ -44,7 +44,7 @@ public class Request<type> {
 	}
 
 	private static void compileCallbacks(GUICompiler gc) {
-		gc.compile("step();\n");
+		//gc.compile("step();\n");
 		stepCallBack=gc.getByteCodeAL();
 	}
 

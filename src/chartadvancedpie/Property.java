@@ -82,39 +82,83 @@ public abstract class Property<T> {
     }
 
     /**
-     * runs Java callbacks, then user callback, then returns the value
+     * Returns the value assigned to this Property after having called Java
+     * callbacks and user callbacks;
      *
      * @return
      */
     public T getValue() {
+	return this.getValue(true, true);
+    }
+
+    /**
+     * Returns the value assigned to this Property; optionally trigers Java
+     * callbacks before that (allowing it to first calculate the value before
+     * returning it) and optionally also then triggers user callbacks, allowing
+     * user code to react to the event of the property being read.
+     *
+     * @param javaCallbacks whether Java callbacks should be fired
+     * @param userCallbacks whether user callbacks should be fired
+     * @return
+     */
+    public T getValue(boolean javaCallbacks, boolean userCallbacks) {
 	if (this.name.equals("RunTime")) {
 	    System.out.println("kva kva");
 	}
-	if (getterPropertyCallback != null) {
-	    getterPropertyCallback.run(this);
+	if (javaCallbacks) {
+	    if (getterPropertyCallback != null) {
+		getterPropertyCallback.run(this);
+	    }
 	}
-	if (getEvent != null) {
-	    ge.getGUIPanel().handleCallBack(getEvent);
+	if (userCallbacks) {
+	    if (getEvent != null) {
+		ge.getGUIPanel().handleCallBack(getEvent);
+	    }
 	}
 	return this.value;
     }
 
+    /**
+     * Sets the value silently, that is, without firing any callbacks.
+     *
+     * @param newValue
+     */
     public void setValueSilent(T newValue) {
 	this.value = newValue;
     }
 
     /**
-     * Sets the value property, then fires Java callback, then user code.
+     * Set the value, firing both Java and User callbacks.
      *
      * @param newValue
      */
     public void setValue(T newValue) {
+	this.setValue(newValue, true, true);
+    }
+
+    /**
+     * Sets the value property, then optionally fires Java callback, then
+     * optionally fires user code.
+     *
+     * @param newValue
+     * @param javaCallbacks
+     * @param userCallbacks
+     */
+    public void setValue(T newValue, boolean javaCallbacks, boolean userCallbacks) {
 	this.value = newValue;
-	if (setterPropertyCallback != null) {
-	    setterPropertyCallback.run(this);
+	if (javaCallbacks) {
+	    if(this.name.equals("Value"))
+	    {
+		this.ge.requestRepaint();
+	    }
+	    if (setterPropertyCallback != null) {
+		setterPropertyCallback.run(this);
+	    }
 	}
-	if (setEvent != null) {
-	    ge.getGUIPanel().handleCallBack(setEvent);
+	if (userCallbacks) {
+	    if (setEvent != null) {
+		ge.getGUIPanel().handleCallBack(setEvent);
+	    }
 	}
     }
 
@@ -130,7 +174,7 @@ public abstract class Property<T> {
     public Property(Property<T> source) {
 	this.id = source.getId();
 	this.name = source.getName();
-	this.value = source.getValue();
+	this.value = source.getValueSilent();
     }
 
     public int getId() {

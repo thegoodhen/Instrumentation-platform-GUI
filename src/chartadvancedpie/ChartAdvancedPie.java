@@ -150,10 +150,11 @@ public class ChartAdvancedPie extends Application{
 		}
 		System.out.println(m.toString());
 
+		/*
 		Request.setGUIPanel(gp);
 		try {
 			//new Request(null);
-			SerialCommunicator sC = new SerialCommunicator("COM3", 9600);
+			SerialCommunicatorObsolete sC = new SerialCommunicatorObsolete("COM3", 9600);
 		Request.startComms(sC);
 		} catch (Exception ex) {
 			Logger.getLogger(ChartAdvancedPie.class.getName()).log(Level.SEVERE, null, ex);
@@ -161,6 +162,7 @@ public class ChartAdvancedPie extends Application{
 		//Request.startComms(null);
 		Request.offerIfResolved(new SyncRequest());
 		(new Thread(new HelloRunnable(m))).start();
+		*/
 		//parseXml();
 		//System.out.println(v);
 	}

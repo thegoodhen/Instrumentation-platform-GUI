@@ -12,6 +12,8 @@ import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.sg.prism.NGNode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -33,6 +35,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import shuntingyard.CompilerException;
 import shuntingyard.Token;
 
 /**
@@ -43,8 +46,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     Canvas canvas;
     VBox vb;
-    TextField cmdLine;
+    TextArea cmdLine;
     TextArea statusLine;
+    TextArea editorTextArea;
     private int selectedElementIndex = 0;
     ArrayList<GUIelement> GUIList = new ArrayList<>();
     ArrayList<GUITab> tabList = new ArrayList<>();
@@ -82,6 +86,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     private GUIelement currentlyEditedGUIelement = null;
     private final CanvasPane canvasPane;
     private String userCode;
+    private SerialCommunicator sc;
 
     public void handle(String s) {
 	this.pkeh.handle(s, false);
@@ -295,6 +300,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    public void showError(String text) {
+	showText(text + "\n");//TODO: make it red
+
+    }
+
     public CanvasPane getCanvasPane() {
 	return this.canvasPane;
     }
@@ -310,7 +320,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
 	vb = new VBox(8);
 	//vb.getChildren().add(canvas);
-	cmdLine = new TextField("Slepice");
+	cmdLine = new TextArea("Slepice");
+
+	cmdLine.setPrefRowCount(10);
 	statusLine = new TextArea("Kokodak") {
 	    @Override
 	    public void requestFocus() {
@@ -318,6 +330,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    }
 	};
 	cmdLine.setStyle("-fx-text-inner-color: gray;");
+
+	editorTextArea = new TextArea("kokodak");
+	editorTextArea.setPrefRowCount(500);
 	//cmdLine.setOnKeyPressed(event -> pkeh.escapeKeyPressed(event.getCode(), null));
 	this.enterPressAction = new NamedGUIAction("confirm") {
 	    public void doAction() {
@@ -326,6 +341,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	};
 
 	cmdLine.setOnKeyPressed(event -> pkeh.keyPressed(event, null));
+	editorTextArea.setOnKeyPressed(event->pkeh.userCodeEditorKeyPressed(event, null));
 		//cmdLine.setPrefRowCount(1);
 
 	//statusLine.setRotate(40);//wow, funky
@@ -437,18 +453,19 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	String eventTest2 = "byte sklepice()\nprintText(\"Koroptev\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nprintText(\"Kokodak\");\nprintText(\"Kokodak\");\nRETURN 0;\nENDFUNCTION\n";
 	//String eventTest="byte slepice()\nfindGE(\"CGE\");\nRETURN 0;\nENDFUNCTION\n";
-	c.compile(eventTest);
-	c.compile(eventTest2);
+	//c.compile(eventTest);
+	//c.compile(eventTest2);
 
 	GUISlider gs2 = new GUISlider(gt2);
 	GUISlider gs3 = new GUISlider(gt2);
 	GUISlider gs4 = new GUISlider(gt2);
 	GUIDisplay gd = new GUIDisplay(gt);
-	GUIStatsDisplay gsd=new GUIStatsDisplay(gt2);
-	GUIPID pid=new GUIPID(gt2);
+	GUITimer gti = new GUITimer(gt);
+	GUIStatsDisplay gsd = new GUIStatsDisplay(gt2);
+	GUIPID pid = new GUIPID(gt2);
 	System.out.println("pipka kokon:");
 	pid.getPropertyByName("P").setValue(10F);
-	GUIPID pid2=(GUIPID)pid.makeCopy();
+	GUIPID pid2 = (GUIPID) pid.makeCopy();
 	gt2.addGUIelement(pid);
 	gt2.addGUIelement(pid2);
 	gt2.addGUIelement(gsd);
@@ -456,9 +473,16 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	gt2.addGUIelement(gs2);
 	gt2.addGUIelement(gs3);
 	gt2.addGUIelement(gs4);
+	gt2.addGUIelement(gti);
 
 	//gt.addGUIelement(gs4);
-	String prog = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
+	String prog = "byte kokon()\n"
+		+ "IF (123)\n"
+		+ "printNumber(10);\n"
+		+ "ENDIF\n"
+		+ "RETURN 0;\n"
+		+ "ENDFUNCTION\n";
+	//String prog = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
 	String prog2 = "byte test(byte n)\nprintNumber(n);\nRETURN 0;\nENDFUNCTION\n";
 	//String prog2 = "byte test(byte n)\nprintNumber(n+10);\nRETURN 0;\nENDFUNCTION\n";
 
@@ -466,11 +490,13 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	String prog4 = "byte TAB1_GS_SLIDER0_Value_S()\nprintNumber(15);\nRETURN 0;\nENDFUNCTION\n";
 	String prog5 = "byte TAB2_GENERIC_GUI_ELEMENT_GENERIC0_Sample()\nprintText(\"kokodak\");\nTAB2_GENERIC_GUI_ELEMENT_GENERIC0.setLineY(\"a\",TAB2_GS_SLIDER0.getValue()*10);\nRETURN 0;\nENDFUNCTION\n";
 	//String prog6 = "byte TAB1_GS_SLIDER3_Value_S()\nprintNumber(20);\nRETURN 0;\nENDFUNCTION\n";
-	c.compile(prog);
-	c.compile(prog2);
-	c.compile(prog3);
-	c.compile(prog4);
-	c.compile(prog5);
+	//c.compile(prog);
+	/*
+	 c.compile(prog2);
+	 c.compile(prog3);
+	 c.compile(prog4);
+	 c.compile(prog5);
+	 */
 	//c.compile(prog6);
 	vm = new GUIVirtualMachine(this);
 		//vm.setProgram(c.getByteCodeAL());
@@ -484,15 +510,13 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.globalMapManager.addMapping("j", "k");
 	this.globalMapManager.addMapping("k", "j");
 	this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
-	this.recompileEventsForAll();
+	//this.recompileEventsForAll();
 
 	final Stage dialog = new Stage();
 	dialog.initModality(Modality.APPLICATION_MODAL);
 	//dialog.initOwner(primaryStage);
 	VBox dialogVbox = new VBox(20);
 	//dialogVbox.getChildren().add(new Text("This is a Dialog"));
-	TextArea editorTextArea = new TextArea("kokodak");
-	editorTextArea.setPrefRowCount(500);
 	dialogVbox.getChildren().add(editorTextArea);
 	Scene dialogScene = new Scene(dialogVbox, 500, 500);
 	dialog.setScene(dialogScene);
@@ -509,10 +533,21 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		});
 	dialogVbox.getChildren().add(btn);
 	dialog.show();
+	System.out.println(HintManager.get(this).fillString("I TAB1_GS"));
+	sc=new SerialCommunicator(this);
+	try {
+	    sc.connect("COM3");
+	} catch (Exception ex) {
+	    Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
+	}
     }
 
     public void recompileUserCode() {
-	c.compile(this.userCode);
+	try {
+	    c.compile(this.userCode);
+	} catch (CompilerException ex) {
+	    this.showError(ex.getMessage());
+	}
 	this.recompileEventsForAll();
     }
 
@@ -599,7 +634,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    protected TextField getCmdLine() {
+    protected TextArea getCmdLine() {
 	return this.cmdLine;
     }
 
@@ -647,6 +682,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		    //selectedElementIndex = 0;//GUIList.size() - 1;
 		    //traverseElements(true);
 		    cmdLine.requestFocus();
+		    cmdLine.selectAll();
 
 		    GUIPanel.this.enterPressAction = new NamedGUIAction("Run command") {
 			@Override
@@ -690,22 +726,52 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    }
 	}
 
+
+	public void userCodeEditorKeyPressed(KeyEvent keyEvent, Stage dialog)
+	{
+	    if (keyEvent.getCode() == KeyCode.TAB) {
+	    String autoComplete = HintManager.get(GUIPanel.this).fillString(GUIPanel.this.editorTextArea.getText());
+		editorTextArea.insertText(editorTextArea.getCaretPosition(),autoComplete);
+		keyEvent.consume();
+	    }
+	}
+	
 	public void keyPressed(KeyEvent keyEvent, Stage dialog) {
 	    if (keyEvent.getCode() == KeyCode.ESCAPE) {
 		canvas.requestFocus();
 		GUIPanel.this.resetCmdLineListeners();
 	    }
-	    if (keyEvent.getCode() == KeyCode.ENTER && !keyEvent.isShiftDown()) {
-		sendEnterPressForCmdLine();
+	    if (keyEvent.getCode() == KeyCode.ENTER) {
+		sendEnterPressForCmdLine(keyEvent.isShiftDown());
+		keyEvent.consume();
+	    }
+	    if (keyEvent.getCode() == KeyCode.TAB) {
+		sendTabPressForCmdLine();
+		keyEvent.consume();
 	    }
 	}
 
-	public void sendEnterPressForCmdLine() {
-	    canvas.requestFocus();
-	    GUIPanel.this.enterPressAction.doAction();
-	    GUIPanel.this.resetCmdLineListeners();
-	    if (isRecordingAMacro) {
-		currentMacro.append(GUIPanel.this.getCmdLine().getText() + "<ENTER>");
+	public void sendTabPressForCmdLine() {
+
+	    String autoComplete = HintManager.get(GUIPanel.this).fillString(GUIPanel.this.cmdLine.getText());
+	    GUIPanel.this.showText("--------------------\n");
+	    GUIPanel.this.showText(HintManager.get(GUIPanel.this).getHints(GUIPanel.this.cmdLine.getText()));
+	    cmdLine.insertText(cmdLine.getCaretPosition(), autoComplete);
+	}
+
+	public void sendEnterPressForCmdLine(boolean shiftPressed) {
+	    if (!shiftPressed) {
+		canvas.requestFocus();
+		GUIPanel.this.enterPressAction.doAction();
+		cmdLine.setPrefRowCount(1);
+		GUIPanel.this.resetCmdLineListeners();
+		if (isRecordingAMacro) {
+		    currentMacro.append(GUIPanel.this.getCmdLine().getText() + "<ENTER>");
+		}
+	    } else {
+		cmdLine.setPrefRowCount(cmdLine.getPrefRowCount() + 1);
+		cmdLine.insertText(cmdLine.getCaretPosition(), "\n");
+		System.out.println("shift pressed");
 	    }
 	    //cmdLine.setDisable(true);
 
@@ -714,7 +780,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	public void handle(String eventText, boolean respectMappings) {
 	    if (GUIPanel.this.getCmdLine().isFocused()) {
 		if (eventText.equals("<ENTER>")) {
-		    sendEnterPressForCmdLine();
+		    sendEnterPressForCmdLine(true);
 		    return;
 		} else {
 		    String currentText;
@@ -785,18 +851,34 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    if (code == KeyCode.ENTER) {
 		//c=InterpreterFacade.prepareCompiler(GUIPanel.this);
 		if (!vFlag) {
-		    c.compile("printNumber(" + GUIPanel.this.cmdLine.getText() + ");\n");//added the printNumber for convenience, not sure if the best
-		    //vm=new GUIVirtualMachine(GUIPanel.this);//TODO: NO NO NO
-		    vm.setProgram(c.getByteCodeAL());
-		    vm.runProgram();
+		    try {
+			c.compile("printNumber(" + GUIPanel.this.cmdLine.getText() + ");\n");//added the printNumber for convenience, not sure if the best
+			//vm=new GUIVirtualMachine(GUIPanel.this);//TODO: NO NO NO
+			vm.setProgram(c.getByteCodeAL());
+			vm.runProgram();
+		    } catch (CompilerException ex) {
+			try {
+			    c.compile(GUIPanel.this.cmdLine.getText() + "\n");
+			    //vm=new GUIVirtualMachine(GUIPanel.this);//TODO: NO NO NO
+			    vm.setProgram(c.getByteCodeAL());
+			    vm.runProgram();
+			} catch (CompilerException ex1) {
+			    GUIPanel.this.showError(ex.getMessage());
+			    GUIPanel.this.showError(ex1.getMessage());
+			}
+		    }
 		} else {
 		    GUIelement backupGE = this.getGUIPanel().getCurrentGUITab().getFocusedGUIElement();
 		    for (GUIelement ge : this.getGUIPanel().getCurrentGUITab().getSelectedGUIelementsList()) {
 			this.getGUIPanel().getCurrentGUITab().focusGUIelement(ge);
 
-			c.compile(GUIPanel.this.cmdLine.getText()+";\n");
-			vm.setProgram(c.getByteCodeAL());
-			vm.runProgram();
+			try {
+			    c.compile(GUIPanel.this.cmdLine.getText() + "\n");
+			    vm.setProgram(c.getByteCodeAL());
+			    vm.runProgram();
+			} catch (CompilerException ex) {
+			    GUIPanel.this.showError(ex.getMessage());
+			}
 
 		    }
 		    this.getGUIPanel().getCurrentGUITab().focusGUIelement(backupGE);
@@ -882,7 +964,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     public int addGUITab(GUITab gt) {
 	gt.setGUIPanel(this);
 	tabList.add(gt);
-	return tabList.size()-1;
+	return tabList.size() - 1;
     }
 
     public void traverseElements(boolean forward) {
