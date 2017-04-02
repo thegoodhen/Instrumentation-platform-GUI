@@ -64,6 +64,15 @@ public class PlotLine {
 	return this.getPropertyByName("LineWidth").getValue();
     }
 
+    public void reset() {
+	this.pointList = new TreeMap();
+	histogramMin = 0;
+	histogramMax = 10;
+	dataMin = 0;
+	dataMax = 10;
+	histogramBinsCount = 10;
+    }
+
     public PlotLine(char ch, GUIChart gc)//TODO: this is just a test constructor
     {
 	this.theChart = gc;
@@ -71,29 +80,23 @@ public class PlotLine {
 	this.addProperty(new FloatProperty(105, "LineY", 0.0F, gc));
 	this.addProperty(new FloatProperty(106, "LineWidth", 2.0F, gc));
 	this.addProperty(new FloatProperty(107, "LineSamples", 0.0F, gc));
-	FloatProperty lineCol=new FloatProperty(108, "LineColor", 2.0F, gc);
-	lineCol.setSetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-			PlotLine.this.lineColor=ColorManager.get().colorFromFloat(p.getValueSilent());
-		}
-	
+	FloatProperty lineCol = new FloatProperty(108, "LineColor", 2.0F, gc);
+	lineCol.setSetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		PlotLine.this.lineColor = ColorManager.get().colorFromFloat(p.getValueSilent());
+	    }
+
 	});
 
+	lineCol.setGetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		p.setValueSilent(ColorManager.get().floatFromColor(lineColor));
+	    }
 
-	lineCol.setGetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-		    p.setValueSilent(ColorManager.get().floatFromColor(lineColor));	
-		}
-	
 	});
 	this.addProperty(lineCol);
-
 
 	this.lineChar = ch;
 	histogramBins = new ArrayList<Integer>();
@@ -138,9 +141,8 @@ public class PlotLine {
      * @return
      */
     public double evaluateYatX(double x) {
-	FloatPoint thePoint=this.pointList.get(x);
-	if(thePoint!=null)
-	{
+	FloatPoint thePoint = this.pointList.get(x);
+	if (thePoint != null) {
 	    return thePoint.getY();
 	}
 	FloatPoint leftPoint = getPointLeftTo(x);
@@ -153,8 +155,8 @@ public class PlotLine {
 
     public void addPoint(FloatPoint fp) {
 	this.pointList.put(fp.x, fp);
-	float currentSamplesCount=this.getPropertyByName("LineSamples").getValue();
-	this.getPropertyByName("LineSamples").setValue(currentSamplesCount+1);
+	float currentSamplesCount = this.getPropertyByName("LineSamples").getValue();
+	this.getPropertyByName("LineSamples").setValue(currentSamplesCount + 1);
 	theChart.update();
 	GUIPanel gp = theChart.getGUIPanel();
 	if (gp != null) {
@@ -195,11 +197,11 @@ public class PlotLine {
 	this.setProperty(this.name2IdMap.get("LineY"), (float) y);
     }
 
-    public void setRecorded(boolean rec) {
+    public synchronized void setRecorded(boolean rec) {
 	this.recorded = rec;
     }
 
-    public boolean isBeingRecorded() {
+    public synchronized boolean isBeingRecorded() {
 	return this.recorded;
     }
 

@@ -49,6 +49,14 @@ public class GUIChart extends GUIelement {
     private double dragStartPlotX;
     private long lastRecordingStartTime;
     private boolean histogramView = false;
+    private double plotXBackup = 0;
+    private double plotYBackup = 0;
+    private double histoXBackup = 0;
+    private double histoYBackup = 0;
+    private double plotXScaleBackup = 1;
+    private double plotYScaleBackup = 1;
+    private double histoXScaleBackup = 1;
+    private double histoYScaleBackup = 1;
 
     public final void addProperthies() {
 
@@ -56,7 +64,7 @@ public class GUIChart extends GUIelement {
 	this.addFloatProperty(105, "LineY", 0);
 	this.addFloatProperty(106, "LineWidth", 2);
 	this.addFloatProperty(107, "LineSamples", 0);
-	this.addFloatProperty(108,"LineColor",2.0F);
+	this.addFloatProperty(108, "LineColor", 2.0F);
 	FloatProperty runTime = new FloatProperty(150, "RunTime", -1.0F, this);
 	this.addProperty(runTime);
     }
@@ -88,6 +96,16 @@ public class GUIChart extends GUIelement {
 
      }
      */
+    public void stopRecording() {
+	if (!isRecording) {
+	    return;
+	}
+	isRecording = false;
+	sampleTimer.cancel();
+	sampleTimer = null;
+
+    }
+
     public void startRecording() {
 	if (isRecording) {
 	    return;
@@ -197,7 +215,28 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction switchViewModeAction = new NamedGUIAction("histogram/normal") {
 	    @Override
 	    public void doAction() {
-		GUIChart.this.histogramView = !GUIChart.this.histogramView;
+		if (GUIChart.this.histogramView) {
+		    GUIChart.this.histogramView = false;
+		    histoXBackup = (float) GUIChart.this.getPlotX();
+		    histoYBackup = (float) GUIChart.this.getPlotY();
+		    histoXScaleBackup = (float) GUIChart.this.getPlotScaleX();
+		    histoYScaleBackup = (float) GUIChart.this.getPlotScaleY();
+		    GUIChart.this.setPlotX((float) plotXBackup);
+		    GUIChart.this.setPlotY((float) plotYBackup);
+		    GUIChart.this.setPlotScaleX((float) plotXScaleBackup);
+		    GUIChart.this.setPlotScaleY((float) plotYScaleBackup);
+		} else {
+		    GUIChart.this.histogramView = true;
+		    plotXBackup = (float) GUIChart.this.getPlotX();
+		    plotYBackup = (float) GUIChart.this.getPlotY();
+		    plotXScaleBackup = (float) GUIChart.this.getPlotScaleX();
+		    plotYScaleBackup = (float) GUIChart.this.getPlotScaleY();
+		    GUIChart.this.setPlotX((float) histoXBackup);
+		    GUIChart.this.setPlotY((float) histoYBackup);
+		    GUIChart.this.setPlotScaleX((float) histoXScaleBackup);
+		    GUIChart.this.setPlotScaleY((float) histoYScaleBackup);
+		}
+		//GUIChart.this.histogramView = !GUIChart.this.histogramView;
 		GUIChart.super.update();
 
 	    }
@@ -445,7 +484,7 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
-	NamedGUIAction startRecordingAction = new NamedGUIAction("Start recording") {
+	NamedGUIAction toggleRecordingAction = new NamedGUIAction("Toggle recording") {
 	    @Override
 	    public void doAction() {
 
@@ -453,19 +492,61 @@ public class GUIChart extends GUIelement {
 		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
 			PlotLine pl = entry.getValue();
 			if (pl.isSelected()) {
-			    pl.setRecorded(true);
+			    if (!pl.isBeingRecorded()) {
+				pl.reset();
+				pl.setRecorded(true);
+			    } else {
+				pl.setRecorded(false);
+			    }
 			}
 		    }
 		} else {
 		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
-		    pl.setRecorded(true);
+
+		    if (pl == null) {
+			pl = new PlotLine(GUIChart.this.currentLineChar, GUIChart.this);
+			GUIChart.this.addLine(pl);
+		    }
+		    if (!pl.isBeingRecorded()) {
+			pl.reset();
+			pl.setRecorded(true);
+		    } else {
+			pl.setRecorded(false);
+		    }
 		}
-		GUIChart.this.startRecording();
+		boolean isSomeLineRecorded = false;
+		for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+		    PlotLine pl = entry.getValue();
+		    if (pl.isBeingRecorded()) {
+			isSomeLineRecorded = true;
+			break;
+		    }
+		}
+		if (isSomeLineRecorded) {
+		    GUIChart.this.startRecording();
+		} else {
+		    GUIChart.this.stopRecording();
+		}
 	    }
 
 	};
 
-	NamedGUIAction autoScaleAction = new NamedGUIAction("Autoscale seletion") {
+	NamedGUIAction stopAllRecordingAction = new NamedGUIAction("Stop all recording") {
+	    @Override
+	    public void doAction() {
+
+		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+			pl.setRecorded(false);
+		    }
+		}
+		GUIChart.this.stopRecording();
+	    }
+
+	};
+
+	NamedGUIAction autoScaleAction = new NamedGUIAction("Autoscale selection") {
 	    @Override
 	    public void doAction() {
 
@@ -473,35 +554,75 @@ public class GUIChart extends GUIelement {
 		double maxDrawnX = (GUIChart.this.getWidth() - (GUIChart.this.getPlotX())) / GUIChart.this.getPlotScaleX();
 		//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
 		//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
-		GUIChart.this.autoScaleYForRange(GUIChart.this.linesList.values(), minDrawnX, maxDrawnX);
+		ArrayList<PlotLine> theList = new ArrayList<>();
 
 		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
 		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
 			PlotLine pl = entry.getValue();
+			if (pl.isSelected()) {
+			    theList.add(pl);
+			}
 		    }
 		} else {
 		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
+		    theList.add(pl);
 		}
+		GUIChart.this.autoScaleYForRange(theList, minDrawnX, maxDrawnX);
+
 	    }
 
 	};
+
+	NamedGUIAction autoScaleXAction = new NamedGUIAction("Autoscale selection along X") {
+	    @Override
+	    public void doAction() {
+
+		double maxDrawnY = (GUIChart.this.getPlotY()) / GUIChart.this.getPlotScaleY();
+		double minDrawnY = -(GUIChart.this.getHeight() - (GUIChart.this.getPlotY())) / GUIChart.this.getPlotScaleY();
+		System.out.println("minDrawnY: " + minDrawnY);
+		System.out.println("maxDrawnY: " + maxDrawnY);
+		//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
+		//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
+		ArrayList<PlotLine> theList = new ArrayList<>();
+
+		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
+		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+			PlotLine pl = entry.getValue();
+			if (pl.isSelected()) {
+			    theList.add(pl);
+			}
+		    }
+		} else {
+		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
+		    theList.add(pl);
+		}
+		GUIChart.this.autoScaleXForRange(theList, minDrawnY, maxDrawnY);
+
+	    }
+
+	};
+
 	this.setMenu(new Menu(gut.getGUIPanel(), "slider menu", true));
 	this.getMenu().addAction("a", autoScaleAction);
+	this.getMenu().addAction("z", autoScaleXAction);
 	this.getMenu().addAction("l", scaleXUpAction);
 	this.getMenu().addAction("h", switchViewModeAction);
 	//this.getMenu().addAction("j", scaleYUpAction);
 	//this.getMenu().addAction("k", scaleYDownAction);
 
-	this.getMenu().addAction("j", nextExistingLine);
-	this.getMenu().addAction("k", prevExistingLine);
 	this.getMenu().addAction("J", nextLine);
 	this.getMenu().addAction("K", prevLine);
-	this.getMenu().addAction("r", startRecordingAction);
-	this.getMenu().addAction("s", sampleAction);
+	this.getMenu().addAction("j", nextExistingLine);
+	this.getMenu().addAction("k", prevExistingLine);
 	GUIPanel gp = gut.getGUIPanel();
 	Menu yankMenu = new Menu(gp, "yank (copy)", false);
 	yankMenu.addAction("y", yankAction);
 	this.getMenu().addSubMenu("y", yankMenu);
+	Menu recordingMenu = new Menu(gp, "recording", false);
+	recordingMenu.addAction("r", toggleRecordingAction);
+	recordingMenu.addAction("s", stopAllRecordingAction);
+	this.getMenu().addSubMenu("r", recordingMenu);
+	this.getMenu().addAction("s", sampleAction);
 	Menu selectionMenu = new Menu(gp, "visually select", false);
 	selectionMenu.addAction("v", selectOneAction);
 	selectionMenu.addAction("a", selectAllAction);
@@ -703,7 +824,7 @@ public class GUIChart extends GUIelement {
 	}
     }
 
-    private void strokeBorderedRectangle(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double minY, double maxX, double maxY, Color col) {
+    private void strokeBorderedRectangle(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double minY, double maxX, double maxY, Color fillCol, Color strokeCol) {
 	FloatPoint p1 = new FloatPoint(x1, y1);
 	FloatPoint p2 = new FloatPoint(x2, y2);
 
@@ -721,7 +842,8 @@ public class GUIChart extends GUIelement {
 	upPoint = FloatPoint.getDownMostPoint(upPoint, topLeftCorner);
 	downPoint = FloatPoint.getUpMostPoint(downPoint, bottomRightCorner);
 
-	gc.setFill(col);
+	gc.setFill(fillCol);
+	gc.setStroke(strokeCol);
 	gc.fillRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
 	gc.strokeRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
 	//gc.strokeRect(200,100,-200,200);
@@ -837,35 +959,101 @@ public class GUIChart extends GUIelement {
 	this.getPropertyByName("PlotScaleY").setValue(y);
     }
 
+    //TODO: some refactoring would come in handy, as code duplication is always bad
+    void autoScaleXForRange(Collection<PlotLine> lines, double minY, double maxY) {
+	double maxX = Double.NEGATIVE_INFINITY;
+	double minX = Double.POSITIVE_INFINITY;
+
+	if (this.histogramView) {
+	    minX = 0;
+
+	    for (PlotLine pl : lines) {
+		ArrayList<Integer> bins = pl.getHistogramBins();
+		for (int val : bins) {
+		    if (val > maxX) {
+			maxX = val;
+		    }
+		}
+	    }
+	} else {
+	    for (PlotLine pl : lines) {
+		for (FloatPoint fp : pl.getPoints().values()) {
+		    if (fp.y > minY && fp.y < maxY) {
+			if (fp.x > maxX) {
+			    maxX = fp.x;
+			}
+			if (fp.x < minX) {
+			    minX = fp.x;
+			}
+		    }
+		}
+	    }
+	}
+	if (maxX == Double.NEGATIVE_INFINITY || minX == Double.POSITIVE_INFINITY)//this can happen when the chart is outside the view and user wants to autoscale
+	{
+	    return;
+	}
+	//so now we found the local max and min in Y between minX and maxX
+
+	double currentPixelMinMaxSpan = (maxX - minX) * this.getPlotScaleX();//the distance in pixels between the min and max X found between minY and maxY
+	double targetPixelMinMaxSpan = this.getWidth() * autoScalePaddingCoeff;
+	this.setPlotScaleX((float) (this.getPlotScaleX() * (targetPixelMinMaxSpan / currentPixelMinMaxSpan)));
+	double maxXOnChart = this.getPlotX() + (maxX * this.getPlotScaleX());//the x position of the local maximum, in pixels, relative to the chart coordinate system
+	if (Float.isNaN((float) (this.getPlotX() + ((this.getWidth() * ((1 - autoScalePaddingCoeff) / 2) - maxXOnChart))))) {
+	    System.out.println("kvak ptak");
+	}
+	this.setPlotX((float) (this.getPlotX() - (maxXOnChart - this.getWidth()) - this.getWidth() * ((1 - autoScalePaddingCoeff)) / 2));
+
+	//double maxY=Double.NEGATIVE_INFINITY;
+    }
+
     void autoScaleYForRange(Collection<PlotLine> lines, double minX, double maxX) {
 	double maxY = Double.NEGATIVE_INFINITY;
 	double minY = Double.POSITIVE_INFINITY;
-	for (PlotLine pl : lines) {
-	    for (FloatPoint fp : pl.getPoints().values()) {
-		if (fp.x > maxX)//pl.getPoints returns an ordered treemap, so no need to iterate further
-		{
-		    break;
-		}
-		if (fp.x > minX && fp.x < maxX) {//technically, the "x<maxX" is duplicate; but I bet this will be optimized by javac. So it's kept for the sake of readability. 
-		    if (fp.y > maxY) {
-			maxY = fp.y;
-		    }
-		    if (fp.y < minY) {
-			minY = fp.y;
-		    }
-		}
-	    }
-	    //so now we found the local max and min in Y between minX and maxX
 
-	    double currentPixelMinMaxSpan = (maxY - minY) * this.getPlotScaleY();//the distance in pixels between the min and max Y found between minX and maxX
-	    double targetPixelMinMaxSpan = this.getHeight() * autoScalePaddingCoeff;
-	    this.setPlotScaleY((float) (this.getPlotScaleY() * (targetPixelMinMaxSpan / currentPixelMinMaxSpan)));
-	    double maxYOnChart = this.getPlotY() - (maxY * this.getPlotScaleY());//the y position of the local maximum, in pixels, relative to the chart coordinate system
-	    if (Float.isNaN((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))))) {
-		System.out.println("kvak ptak");
+	if (this.histogramView) {
+	    minY = 0;
+
+	    for (PlotLine pl : lines) {
+		ArrayList<Integer> bins = pl.getHistogramBins();
+		for (int val : bins) {
+		    if (val > maxY) {
+			maxY = val;
+		    }
+		}
 	    }
-	    this.setPlotY((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))));
+	} else {
+	    for (PlotLine pl : lines) {
+		for (FloatPoint fp : pl.getPoints().values()) {
+		    if (fp.x > maxX)//pl.getPoints returns an ordered treemap, so no need to iterate further
+		    {
+			break;
+		    }
+		    if (fp.x > minX && fp.x < maxX) {//technically, the "x<maxX" is duplicate; but I bet this will be optimized by javac. So it's kept for the sake of readability. 
+			if (fp.y > maxY) {
+			    maxY = fp.y;
+			}
+			if (fp.y < minY) {
+			    minY = fp.y;
+			}
+		    }
+		}
+	    }
 	}
+	if (maxY == Double.NEGATIVE_INFINITY || minY == Double.POSITIVE_INFINITY)//this can happen when the chart is outside the view and user wants to autoscale
+	{
+	    return;
+	}
+	//so now we found the local max and min in Y between minX and maxX
+
+	double currentPixelMinMaxSpan = (maxY - minY) * this.getPlotScaleY();//the distance in pixels between the min and max Y found between minX and maxX
+	double targetPixelMinMaxSpan = this.getHeight() * autoScalePaddingCoeff;
+	this.setPlotScaleY((float) (this.getPlotScaleY() * (targetPixelMinMaxSpan / currentPixelMinMaxSpan)));
+	double maxYOnChart = this.getPlotY() - (maxY * this.getPlotScaleY());//the y position of the local maximum, in pixels, relative to the chart coordinate system
+	if (Float.isNaN((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))))) {
+	    System.out.println("kvak ptak");
+	}
+	this.setPlotY((float) (this.getPlotY() + ((this.getHeight() * ((1 - autoScalePaddingCoeff) / 2) - maxYOnChart))));
 
 	//double maxY=Double.NEGATIVE_INFINITY;
     }
@@ -884,9 +1072,39 @@ public class GUIChart extends GUIelement {
 		    double lwBackup = gc.getLineWidth();
 		    gc.setLineWidth(pl.getLineWidth());
 		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
+		    paintCursor(gc, pl.getColor(), pl.getCursorX() * this.getPlotScaleX() + getPlotX() + x, pl.getCursorY() * this.getPlotScaleY() + getPlotY() + y, maxX, maxY);
 		    fp1 = fp;
 		    gc.setLineWidth(lwBackup);
 		}
+	    }
+	}
+    }
+
+    public void paintCursor(GraphicsContext gc, Color c, double x, double y, double maxX, double maxY) {
+	gc.setLineWidth(2);
+	gc.setStroke(c);
+	gc.strokeLine(x - 2, y, x - 6, y);
+	gc.strokeLine(x + 2, y, x + 6, y);
+	gc.strokeLine(x, y - 2, x, y - 6);
+	gc.strokeLine(x, y + 2, x, y + 6);
+    }
+
+    public void paintSingleHistogram(GraphicsContext gc, PlotLine pl, Color fillCol, Color strokeCol, double x, double y, double maxX, double maxY) {
+
+	if (!pl.getHistogramBins().isEmpty()) {
+	    double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
+	    //FloatPoint fp1 = pl.getPoints().get(0);
+	    double currentRectangleStart = pl.getHistogramMin();
+	    for (int i : pl.getHistogramBins()) {
+		double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
+		double x2 = x1 + binWidth * this.getPlotScaleX();
+		double y1 = getPlotY() + y;
+		double y2 = y1 - i * getPlotScaleY();
+		//Color col = fillCol;//pl.getColor();
+		//col = col.deriveColor(0, 1, 1, opacity);
+		strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY, fillCol, strokeCol);
+
+		currentRectangleStart += binWidth;
 	    }
 	}
     }
@@ -904,24 +1122,14 @@ public class GUIChart extends GUIelement {
 	double opacity = (double) 1 / linesToDrawList.size();
 
 	for (PlotLine pl : linesToDrawList) {
-	    gc.setStroke(pl.getColor());
-	    if (!pl.getHistogramBins().isEmpty()) {
-		double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
-		//FloatPoint fp1 = pl.getPoints().get(0);
-		double currentRectangleStart = pl.getHistogramMin();
-		for (int i : pl.getHistogramBins()) {
-		    double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
-		    double x2 = x1 + binWidth * this.getPlotScaleX();
-		    double y1 = getPlotY() + y;
-		    double y2 = y1 - i * getPlotScaleY();
-		    Color col = pl.getColor();
-		    col = col.deriveColor(0, 1, 1, opacity);
-		    strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY, col);
-
-		    currentRectangleStart += binWidth;
-		}
-	    }
+	    Color strokeCol = pl.getColor();
+	    Color fillCol = strokeCol.deriveColor(0, 1, 1, opacity);
+	    paintSingleHistogram(gc, pl, fillCol, strokeCol, x, y, maxX, maxY);
 	}
+	PlotLine currentLine = this.getPlotLineByChar(currentLineChar);
+	Color fillCol = Color.TRANSPARENT;
+	Color strokeCol = Color.WHITE;
+	paintSingleHistogram(gc, currentLine, fillCol, strokeCol, x, y, maxX, maxY);
     }
 
     public void drawLegend(GraphicsContext gc, double x, double y) {
@@ -1055,7 +1263,9 @@ public class GUIChart extends GUIelement {
 	    for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentXTickSize) {
 		{
 		    if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
-			gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+			//col = col.deriveColor(0, 1, 1, opacity);
+			//gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+			gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + 5);
 			gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
 		    }
 		}
@@ -1096,7 +1306,8 @@ public class GUIChart extends GUIelement {
 	for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentYTickSize) {
 	    {
 		if (y + getPlotY() + i * getPlotScaleY() > y && y + getPlotY() + i * getPlotScaleY() < y + getHeight()) {
-		    gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
+		    //gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
+		    gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x+getWidth(), y + getPlotY() + (i) * getPlotScaleY());
 		    gc.strokeText(Float.toString((float) (-i)), x, y + getPlotY() + (i * getPlotScaleY()));
 		    //gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
 		    //gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());

@@ -133,7 +133,7 @@ public class SerialCommunicator {
 			break;
 		    } else {
 			try {
-			    Thread.sleep(Math.min(2, timeoutBetweenBytes / 100));
+			    Thread.sleep(Math.min(1, timeoutBetweenBytes / 100));
 			} catch (InterruptedException ex) {
 			    Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -166,7 +166,7 @@ public class SerialCommunicator {
 		    while(!ph.offer(new RequestNew(data, this.ph.gp)))
 		    {
 			try {
-			    Thread.sleep(2);
+			    Thread.sleep(1);
 			} catch (InterruptedException ex) {
 			    Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -241,7 +241,7 @@ public class SerialCommunicator {
 
 	}
 
-	public void sendData(int[] data, boolean waitForConfirm) throws IOException {
+	public synchronized void sendData(int[] data, boolean waitForConfirm) throws IOException {
 	    byte[] byteData = new byte[data.length];
 	    out.write(data.length);
 	    for (int i = 0; i < byteData.length; i++) {

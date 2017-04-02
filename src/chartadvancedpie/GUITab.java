@@ -615,14 +615,14 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		if (selectedElementIndex >= GUIList.size()) {
 		    selectedElementIndex = 0;
 		}
-	    } while (!GUIList.get(selectedElementIndex).isEnabled());
+	    } while (!GUIList.get(selectedElementIndex).isEnabled() || !GUIList.get(selectedElementIndex).isVisible());
 	} else {
 	    do {
 		selectedElementIndex--;
 		if (selectedElementIndex < 0) {
 		    selectedElementIndex = GUIList.size() - 1;
 		}
-	    } while (!GUIList.get(selectedElementIndex).isEnabled());
+	    } while (!GUIList.get(selectedElementIndex).isEnabled() || !GUIList.get(selectedElementIndex).isVisible());
 	}
 
 	GUIList.get(selectedElementIndex).setFocused(true);

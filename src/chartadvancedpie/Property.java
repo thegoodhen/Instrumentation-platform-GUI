@@ -5,11 +5,13 @@
  */
 package chartadvancedpie;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import shuntingyard.HelpByteMethods;
 import shuntingyard.Token;
 
 /**
@@ -44,6 +46,32 @@ public abstract class Property<T> {
     }
     private PropertyCallback setterPropertyCallback = null;
 
+    public void sendValue() {
+	//System.out.println("zkousim odpalit setr (svetr)");
+	int data[] = new int[7];
+	Integer geId = this.ge.getGUIPanel().GUIIDMap.get(ge);
+	if(geId!=11)
+	{
+	    return;
+	}
+	System.out.println("SETTING WOOOOOOOO WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO WOOOOOOO");
+	if (geId != null) {
+	    data[0]=(byte)2;//command to write value
+	    data[1]=(byte)(int)geId;
+	    data[2]=(byte)this.getId();
+	    byte[] floatBytes=HelpByteMethods.getFloatBytes((float)(Float)this.getValueSilent());
+	    for(int i=0;i<4;i++)
+	    {
+		data[i+3]=floatBytes[i];
+	    }
+	}
+	try {
+	    this.ge.getGUIPanel().getSerialCommunicator().getWriter().sendData(data, true);
+	} catch (IOException ex) {
+	    Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
+	}
+    }
+
     public void recompile() {
 
 	try {
@@ -77,7 +105,7 @@ public abstract class Property<T> {
 	//return "EVENT_" + this.ge.getUniqueName() + "_S" + name + "();\n";
     }
 
-    public T getValueSilent() {
+    public synchronized T getValueSilent() {
 	return this.value;
     }
 
@@ -87,7 +115,7 @@ public abstract class Property<T> {
      *
      * @return
      */
-    public T getValue() {
+    public synchronized T getValue() {
 	return this.getValue(true, true);
     }
 
@@ -101,7 +129,7 @@ public abstract class Property<T> {
      * @param userCallbacks whether user callbacks should be fired
      * @return
      */
-    public T getValue(boolean javaCallbacks, boolean userCallbacks) {
+    public synchronized T getValue(boolean javaCallbacks, boolean userCallbacks) {
 	if (this.name.equals("RunTime")) {
 	    System.out.println("kva kva");
 	}
@@ -123,7 +151,7 @@ public abstract class Property<T> {
      *
      * @param newValue
      */
-    public void setValueSilent(T newValue) {
+    public synchronized void setValueSilent(T newValue) {
 	this.value = newValue;
     }
 
@@ -132,7 +160,7 @@ public abstract class Property<T> {
      *
      * @param newValue
      */
-    public void setValue(T newValue) {
+    public synchronized void setValue(T newValue) {
 	this.setValue(newValue, true, true);
     }
 
@@ -144,11 +172,10 @@ public abstract class Property<T> {
      * @param javaCallbacks
      * @param userCallbacks
      */
-    public void setValue(T newValue, boolean javaCallbacks, boolean userCallbacks) {
+    public synchronized void setValue(T newValue, boolean javaCallbacks, boolean userCallbacks) {
 	this.value = newValue;
 	if (javaCallbacks) {
-	    if(this.name.equals("Value"))
-	    {
+	    if (this.name.equals("Value")) {
 		this.ge.requestRepaint();
 	    }
 	    if (setterPropertyCallback != null) {

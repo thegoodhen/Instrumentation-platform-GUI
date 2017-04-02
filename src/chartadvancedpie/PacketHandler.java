@@ -34,7 +34,7 @@ public class PacketHandler {
 	{
 	    @Override
 	    public void resolve(RequestNew rn) {
-		System.out.println("resolving...");
+		//System.out.println("resolving...");
 		int[] data = rn.getData();
 		/*
 		 if(Math.random()>0.9)
@@ -87,7 +87,7 @@ public class PacketHandler {
     public boolean offer(RequestNew rn) {
 	boolean accepted = queue.offer(rn);
 	if (accepted) {
-	    System.out.println("new request, adding to queue, which already has " + queue.size() + " elements in it!");
+	    //System.out.println("new request, adding to queue, which already has " + queue.size() + " elements in it!");
 	    //System.out.println("REJECTED!");
 	}
 	if (!isProcessingRequests()) {
@@ -99,9 +99,9 @@ public class PacketHandler {
 
     public void resolveRequest(RequestNew rn) {
 	int requestType = rn.getData()[0];
-	System.out.println("should I send for resolution? hmm...");
+	//System.out.println("should I send for resolution? hmm...");
 	if (requestType < this.resolverList.size()) {
-	    System.out.println("Sending for resolution");
+	    //System.out.println("Sending for resolution");
 	    this.resolverList.get(requestType).resolve(rn);
 	}
     }

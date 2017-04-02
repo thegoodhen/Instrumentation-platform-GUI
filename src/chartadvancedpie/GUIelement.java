@@ -58,10 +58,10 @@ public abstract class GUIelement extends Container implements Subscriber {
     double dragStartMouseX;
     private double lastMousePressY;
     double dragStartMouseY;
-    private Color col1=Color.ALICEBLUE;
-    private Color col2=Color.BLACK;
-    private Color col3=Color.PURPLE;
-    private Color col4=Color.AQUA;
+    private Color col1 = Color.ALICEBLUE;
+    private Color col2 = Color.BLACK;
+    private Color col3 = Color.PURPLE;
+    private Color col4 = Color.AQUA;
 
     public void addProperty(Property p) {
 	name2IdMap.put(p.getName(), p.getId());
@@ -204,24 +204,19 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return id2NameMap;
     }
 
-    public Color getColor1()
-    {
+    public Color getColor1() {
 	return col1;
     }
 
-
-    public Color getColor2()
-    {
+    public Color getColor2() {
 	return col2;
     }
 
-    public Color getColor3()
-    {
+    public Color getColor3() {
 	return col3;
     }
 
-    public Color getColor4()
-    {
+    public Color getColor4() {
 	return col4;
     }
 
@@ -275,123 +270,106 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.name2IdMap = new HashMap<>();
 	this.property2idMap = new HashMap<>();
 	this.id2PropertyMap = new HashMap<>();
-	this.addFloatProperty(0, "Value", 0);
+	FloatProperty valp = new FloatProperty(0, "Value", 0.0F, this);
+
+	valp.setSetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		//System.out.println("odpalen setter");
+		p.sendValue();
+	    }
+
+	});
+	this.addProperty(valp);
+
+	//this.addFloatProperty(0, "Value", 0);
 	this.addFloatProperty(1, "Max", 100);
 	this.addFloatProperty(2, "Min", 0);
 	this.addFloatProperty(3, "Step", 1);
 	this.addStringProperty(4, "Name", "Generic gui element");
 	this.addStringProperty(5, "UniqueName", "GUI_GENERIC");
-	FloatProperty col1p=new FloatProperty(6,"Color1",0.0F,this);
+	FloatProperty col1p = new FloatProperty(6, "Color1", 0.0F, this);
 
+	col1p.setSetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		GUIelement.this.col1 = ColorManager.get().colorFromFloat(p.getValueSilent());
+	    }
 
-	col1p.setSetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-			GUIelement.this.col1=ColorManager.get().colorFromFloat(p.getValueSilent());
-		}
-	
 	});
 
+	col1p.setGetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		p.setValueSilent(ColorManager.get().floatFromColor(col1));
+	    }
 
-	col1p.setGetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-		    p.setValueSilent(ColorManager.get().floatFromColor(col1));	
-		}
-	
 	});
 	this.addProperty(col1p);
 
-	FloatProperty col2p=new FloatProperty(7,"Color2",0.0F,this);
+	FloatProperty col2p = new FloatProperty(7, "Color2", 0.0F, this);
 
+	col2p.setSetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		GUIelement.this.col2 = ColorManager.get().colorFromFloat(p.getValueSilent());
+	    }
 
-	col2p.setSetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-			GUIelement.this.col2=ColorManager.get().colorFromFloat(p.getValueSilent());
-		}
-	
 	});
 
+	col2p.setGetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		p.setValueSilent(ColorManager.get().floatFromColor(col2));
+	    }
 
-	col2p.setGetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-		    p.setValueSilent(ColorManager.get().floatFromColor(col2));	
-		}
-	
 	});
 	this.addProperty(col2p);
 
-	FloatProperty col3p=new FloatProperty(8,"Color3",0.0F,this);
+	FloatProperty col3p = new FloatProperty(8, "Color3", 0.0F, this);
 
+	col3p.setSetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		GUIelement.this.col3 = ColorManager.get().colorFromFloat(p.getValueSilent());
+	    }
 
-	col3p.setSetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-			GUIelement.this.col3=ColorManager.get().colorFromFloat(p.getValueSilent());
-		}
-	
 	});
 
+	col3p.setGetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		p.setValueSilent(ColorManager.get().floatFromColor(col3));
+	    }
 
-	col3p.setGetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-		    p.setValueSilent(ColorManager.get().floatFromColor(col3));	
-		}
-	
 	});
 	this.addProperty(col3p);
 
+	FloatProperty col4p = new FloatProperty(9, "Color4", 0.0F, this);
 
-	FloatProperty col4p=new FloatProperty(9,"Color4",0.0F,this);
+	col4p.setSetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		GUIelement.this.col4 = ColorManager.get().colorFromFloat(p.getValueSilent());
+	    }
 
-
-	col4p.setSetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-			GUIelement.this.col4=ColorManager.get().colorFromFloat(p.getValueSilent());
-		}
-	
 	});
 
+	col4p.setGetterPropertyCallback(new PropertyCallback<Float>() {
+	    @Override
+	    public void run(Property<Float> p) {
+		p.setValueSilent(ColorManager.get().floatFromColor(col4));
+	    }
 
-	col4p.setGetterPropertyCallback(new PropertyCallback<Float>()
-	{
-		@Override
-		public void run(Property<Float> p)
-		{
-		    p.setValueSilent(ColorManager.get().floatFromColor(col4));	
-		}
-	
 	});
 	this.addProperty(col4p);
 
-
-
-
-
 	/*
-	this.addIntegerProperty(6, "Color1", 0);
-	this.addIntegerProperty(7, "Color2", 200);
-	this.addIntegerProperty(8, "Color3", 400);
-	this.addIntegerProperty(9, "Color4", 600);
-	*/
+	 this.addIntegerProperty(6, "Color1", 0);
+	 this.addIntegerProperty(7, "Color2", 200);
+	 this.addIntegerProperty(8, "Color3", 400);
+	 this.addIntegerProperty(9, "Color4", 600);
+	 */
 	this.addIntegerProperty(10, "Focused", 0);
 	this.addIntegerProperty(11, "Selected", 0);
 	this.addIntegerProperty(11, "Selected", 0);
@@ -556,7 +534,9 @@ public abstract class GUIelement extends Container implements Subscriber {
 
 	Platform.runLater(new Runnable() {
 	    public void run() {
-		GUIelement.this.gut.repaintElement(GUIelement.this);
+		if (GUIelement.this.isVisible()) {
+		    GUIelement.this.gut.repaintElement(GUIelement.this);
+		}
 	    }
 	});
     }
@@ -597,7 +577,8 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     public void setValue(float value) {
-	this.setFloatProperty("Value", value, true);
+	this.getPropertyByName("Value").setValue(value);
+	//this.setFloatProperty("Value", value, true);
 	//this.value = value;
     }
 

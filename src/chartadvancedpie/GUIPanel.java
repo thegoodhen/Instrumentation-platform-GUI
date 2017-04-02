@@ -92,6 +92,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.pkeh.handle(s, false);
     }
 
+
+    public SerialCommunicator getSerialCommunicator()
+    {
+	return this.sc;
+    }
+
     public GUIelement getCurrentlyEditedGUIelement() {
 	return this.currentlyEditedGUIelement;
     }
@@ -121,6 +127,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.lFlag = false;
 	return s;
     }
+
 
     protected void setCurrentRegister(String register) {
 	this.currentRegister = register;
@@ -967,26 +974,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return tabList.size() - 1;
     }
 
-    public void traverseElements(boolean forward) {
-	GUIList.get(selectedElementIndex).setFocused(false);
-	if (forward) {
-	    do {
-		selectedElementIndex++;
-		if (selectedElementIndex >= GUIList.size()) {
-		    selectedElementIndex = 0;
-		}
-	    } while (!GUIList.get(selectedElementIndex).isEnabled());
-	} else {
-	    do {
-		selectedElementIndex--;
-		if (selectedElementIndex < 0) {
-		    selectedElementIndex = GUIList.size() - 1;
-		}
-	    } while (!GUIList.get(selectedElementIndex).isEnabled());
-	}
-
-	GUIList.get(selectedElementIndex).setFocused(true);
-    }
 
     public void addAction(String s, GUIAbstractAction gaa) {
 	actionMap.put(s, gaa);
