@@ -473,6 +473,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	System.out.println("pipka kokon:");
 	pid.getPropertyByName("P").setValue(10F);
 	GUIPID pid2 = (GUIPID) pid.makeCopy();
+	GUINumericUpDown gnud=new GUINumericUpDown(gt2);
+	gt2.addGUIelement(gnud);
 	gt2.addGUIelement(pid);
 	gt2.addGUIelement(pid2);
 	gt2.addGUIelement(gsd);
@@ -787,7 +789,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	public void handle(String eventText, boolean respectMappings) {
 	    if (GUIPanel.this.getCmdLine().isFocused()) {
 		if (eventText.equals("<ENTER>")) {
-		    sendEnterPressForCmdLine(true);
+		    sendEnterPressForCmdLine(false);
 		    return;
 		} else {
 		    String currentText;

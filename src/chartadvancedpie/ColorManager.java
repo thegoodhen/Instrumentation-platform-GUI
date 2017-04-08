@@ -47,6 +47,28 @@ public class ColorManager {
 
     }
 
+    public Color getNthColor(int n)
+    {
+	double hue=0;
+	double stepSize=360;
+	double start=0;
+
+	for(int i=0;i<n;i++)
+	{
+	    if((hue+stepSize)%360==start)
+	    {
+		stepSize/=2;
+		hue+=stepSize/2;
+		start=hue;
+	    }
+	    else
+	    {
+		hue+=stepSize;
+	    }
+	}
+	return Color.hsb(hue, 1, 1);
+    }
+
     
 
     public Color colorFromFloat(float source) {

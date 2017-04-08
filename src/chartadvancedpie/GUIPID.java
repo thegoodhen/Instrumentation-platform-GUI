@@ -72,6 +72,7 @@ public class GUIPID extends GUIelement {
     public GUIPID(GUITab gut) {
 	super(gut);
 	this.addProperthies();
+	this.setName("PID");
 	this.setGUIPanel(gut.getGUIPanel());
     }
 

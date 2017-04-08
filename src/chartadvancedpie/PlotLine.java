@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
@@ -18,7 +21,7 @@ import javafx.scene.paint.Color;
  */
 public class PlotLine {
 
-    TreeMap<Double, FloatPoint> pointList = new TreeMap();
+    ConcurrentSkipListMap<Double, FloatPoint> pointList = new ConcurrentSkipListMap();
     Color lineColor = Color.CHARTREUSE;//such a pun, because I reused it in chart! :3
     //FloatPoint cursor = new FloatPoint(0, 0);
     private boolean recorded = false;
@@ -65,12 +68,146 @@ public class PlotLine {
     }
 
     public void reset() {
-	this.pointList = new TreeMap();
+	this.pointList = new ConcurrentSkipListMap();
 	histogramMin = 0;
 	histogramMax = 10;
 	dataMin = 0;
 	dataMax = 10;
 	histogramBinsCount = 10;
+    }
+
+    private ArrayList<Double> parseDoublesFromString(String s) {
+	Matcher m1 = Pattern.compile("^([^0-9.,-])*(.*?)(([^0-9e.,-]))*$").matcher(s);
+	String nonNumericCharsRegex = "[^0-9.,e-\\s]";
+
+	String prefix = "";
+	String body = "";
+	String postfix = "";
+
+	ArrayList<Double> returnList = new ArrayList<>();
+	if (m1.find()) {
+	    prefix = m1.group(1); //characters before the numbers themselves
+	    body = m1.group(2); //the numbers
+	    postfix = m1.group(3); //characters after the numbers
+	}
+
+	boolean containsDot = body.contains(".");
+	boolean containsComma = body.contains(",");
+
+	Matcher m = Pattern.compile(",\\s+").matcher(body);
+	Matcher m2 = Pattern.compile("[^\\s,.e0-9-]").matcher(body);
+
+	boolean containsCommaSpace = m.find();
+	boolean containsOtherChars = m2.find();
+
+	if (containsDot) { //1.2;2.3;3.4 or 1.2, 2.3, 3.4, 2e03, 150e3, 12, 28 or 1.2 something 2.3 something else - numbers with an optional decimal dot; separated by whatever
+	    Matcher m3 = Pattern.compile("[0-9-]*\\.?[0-9]+e?[0-9]*").matcher(body);
+	    while (m3.find()) {
+		try {
+
+		    returnList.add(Double.parseDouble(m3.group(0)));
+		} catch (Exception e) {
+
+		}
+	    }
+	} else {
+	    if (containsComma) {
+		if (containsCommaSpace) {
+		    if (containsOtherChars) {// 1, 000; 2, 000; 
+			body = body.replaceAll(",\\s*", "");
+			Matcher m3 = Pattern.compile("[0-9-]*\\.?[0-9]+e?[0-9]*").matcher(body);
+			while (m3.find()) {
+
+			    try {
+
+				returnList.add(Double.parseDouble(m3.group(0)));
+			    } catch (Exception e) {
+
+			    }
+			}
+
+		    } else { //1, 2, 3 or 1e02, 1e05, 2e03 - no decimal dots in the input; just a bunch of numbers separated by commas, followed by blank space, OR!! for fools: some guy actually gave us list of numbers using floating comma, separated by comma. Wow, what a dork.
+			body = body.replaceAll(",\\s+", "xxx");
+			body = body.replaceAll("\\s+", "");
+			body = body.replaceAll(",", ".");
+			Matcher m3 = Pattern.compile("-?[0-9]*\\.?[0-9]+e?[0-9]*").matcher(body);
+			while (m3.find()) {
+			    try {
+
+				returnList.add(Double.parseDouble(m3.group(0)));
+			    } catch (Exception e) {
+
+			    }
+			}
+		    }
+		} else //contains comma, but it's not followed by a space; doesn't contain any dots.
+		{
+		    if (containsOtherChars) {
+			body = body.replaceAll(",", "");//remove all commas TODO: FIX BUG HERE
+			Matcher m3 = Pattern.compile("-?[0-9]*e?[0-9]*").matcher(body);
+			while (m3.find()) {
+			    try {
+
+				returnList.add(Double.parseDouble(m3.group(0)));
+			    } catch (Exception e) {
+
+			    }
+			}
+		    } else {
+
+			Matcher m3 = Pattern.compile("\\s+").matcher(body);
+			if (m3.find())//contains spaces, so it's like 1,2 3,4 5,6
+			{
+
+			    body = body.replaceAll(",", ".");//for the parser
+
+			    Matcher m4 = Pattern.compile("-?[0-9]*\\.?[0-9]+e?[0-9]*").matcher(body);
+			    while (m4.find()) {
+				try {
+
+				    returnList.add(Double.parseDouble(m4.group(0)));
+				} catch (Exception e) {
+
+				}
+			    }
+			} else//no spaces, no dots, no other characters, just numbers and commas, so it's like: 1,2,3,4,5,1e05,2e03
+			{
+			    Matcher m4 = Pattern.compile("[0-9-]+e?[0-9]*").matcher(body);
+			    while (m4.find()) {
+				try {
+
+				    returnList.add(Double.parseDouble(m4.group(0)));
+				} catch (Exception e) {
+
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	return returnList;
+    }
+
+    public PlotLine(String s, char ch, GUIChart gc) {
+	this(ch, gc);
+	this.reset();
+	s=s.replace("(^|\\r?\\n)[^0-9]\\r?\\n", "");//throw away lines without numbahs
+	String lines[] = s.split("\\r?\\n");
+	for(int i=0;i<lines.length;i++)
+	{
+	    String currentLine=lines[i];
+	    ArrayList<Double> numbersOnCurrentLine=parseDoublesFromString(currentLine);
+	    if(numbersOnCurrentLine!=null)
+	    {
+		if(numbersOnCurrentLine.size()==2)
+		{
+		    double theX=numbersOnCurrentLine.get(0);
+		    double theY=numbersOnCurrentLine.get(1);
+		    this.pointList.put(theX,new FloatPoint(theX,theY));
+		}
+	    }
+	}
     }
 
     public PlotLine(char ch, GUIChart gc)//TODO: this is just a test constructor
@@ -173,7 +310,7 @@ public class PlotLine {
 	updateHistogram(fp);
     }
 
-    public TreeMap<Double, FloatPoint> getPoints() {
+    public synchronized ConcurrentSkipListMap<Double, FloatPoint> getPoints() {
 	return this.pointList;
     }
 
@@ -221,7 +358,7 @@ public class PlotLine {
 	return this.visible;
     }
 
-    public int getPointCount() {
+    public synchronized int getPointCount() {
 	return this.pointList.size();
     }
 

@@ -65,6 +65,7 @@ public class GUIChart extends GUIelement {
 	this.addFloatProperty(106, "LineWidth", 2);
 	this.addFloatProperty(107, "LineSamples", 0);
 	this.addFloatProperty(108, "LineColor", 2.0F);
+	this.addIntegerProperty(109, "AutoScaleMode", 0);
 	FloatProperty runTime = new FloatProperty(150, "RunTime", -1.0F, this);
 	this.addProperty(runTime);
     }
@@ -79,6 +80,7 @@ public class GUIChart extends GUIelement {
     public GUIChart(GUITab gut) {
 	super(gut);
 	this.addProperthies();
+	this.setName("Chart");
 		//super(r);
 
 	//actionMap.put("l", testAction);
@@ -87,7 +89,9 @@ public class GUIChart extends GUIelement {
 
     public void addLine(PlotLine pl) {
 	this.linesList.put(pl.getCharacter(), pl);
+	pl.lineColor = ColorManager.get().getNthColor(linesList.size());
     }
+
 
     /*
      public void addNewLine()
@@ -422,12 +426,20 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction pasteOverwriteAction = new NamedGUIAction("paste with overwriting") {
 	    @Override
 	    public void doAction() {
-		ArrayList<String> test = GUIChart.this.parseDoublesFromString("1.2,\t 2.3, \t 3.4,  kokon slepice   4.5 10e05, 		50.35, 10.3e10");
-		ArrayList<String> test2 = GUIChart.this.parseDoublesFromString("2, 3, 4");
-		ArrayList<String> test3 = GUIChart.this.parseDoublesFromString("2,3,4e05");
-		ArrayList<String> test4 = GUIChart.this.parseDoublesFromString("1 000, 2 000, 3 000");
-		ArrayList<String> test5 = GUIChart.this.parseDoublesFromString("1, 000, 000; 2, 000, 000; 3, 000; 5e04");
-		ArrayList<String> test6 = GUIChart.this.parseDoublesFromString("1,2, 2,3, 3,4, 5,6");
+		/*
+		ArrayList<Double> test = GUIChart.this.parseDoublesFromString("-1.2,\t 2.3, \t 3.4,  kokon slepice   4.5 10e05, 		50.35, 10.3e10");
+		ArrayList<Double> test2 = GUIChart.this.parseDoublesFromString("2, -3, 4");
+		ArrayList<Double> test3 = GUIChart.this.parseDoublesFromString("-2,3,-4e05");
+		ArrayList<Double> test4 = GUIChart.this.parseDoublesFromString("1 000, -2 000, 3 000");
+		ArrayList<Double> test5 = GUIChart.this.parseDoublesFromString("-1, 000, 000; 2, 000, 000; -3, 000; -5e04");
+		ArrayList<Double> test6 = GUIChart.this.parseDoublesFromString("1,2, -2,3, 3,4, -5,6");
+		ArrayList<Double> test7 = GUIChart.this.parseDoublesFromString("1,2 -2,3 3,4 -5,6");
+		ArrayList<Double> test8 = GUIChart.this.parseDoublesFromString("123,45; 23,232; 343,43");//TODO:FIX THIS
+		*/
+		String s=GUIChart.this.getGUIPanel().getCurrentRegisterContentAndReset();
+		PlotLine pl=new PlotLine(s,currentLineChar,GUIChart.this);
+		GUIChart.this.addLine(pl);
+		//GUIChart.this.linesList.put(currentLineChar, pl);
 		System.out.println("kdak");
 	    }
 	};
@@ -549,26 +561,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction autoScaleAction = new NamedGUIAction("Autoscale selection") {
 	    @Override
 	    public void doAction() {
-
-		double minDrawnX = -(GUIChart.this.getPlotX()) / GUIChart.this.getPlotScaleX();
-		double maxDrawnX = (GUIChart.this.getWidth() - (GUIChart.this.getPlotX())) / GUIChart.this.getPlotScaleX();
-		//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
-		//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
-		ArrayList<PlotLine> theList = new ArrayList<>();
-
-		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
-		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
-			PlotLine pl = entry.getValue();
-			if (pl.isSelected()) {
-			    theList.add(pl);
-			}
-		    }
-		} else {
-		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
-		    theList.add(pl);
-		}
-		GUIChart.this.autoScaleYForRange(theList, minDrawnX, maxDrawnX);
-
+		autoScaleY();
 	    }
 
 	};
@@ -576,28 +569,7 @@ public class GUIChart extends GUIelement {
 	NamedGUIAction autoScaleXAction = new NamedGUIAction("Autoscale selection along X") {
 	    @Override
 	    public void doAction() {
-
-		double maxDrawnY = (GUIChart.this.getPlotY()) / GUIChart.this.getPlotScaleY();
-		double minDrawnY = -(GUIChart.this.getHeight() - (GUIChart.this.getPlotY())) / GUIChart.this.getPlotScaleY();
-		System.out.println("minDrawnY: " + minDrawnY);
-		System.out.println("maxDrawnY: " + maxDrawnY);
-		//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
-		//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
-		ArrayList<PlotLine> theList = new ArrayList<>();
-
-		if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
-		    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
-			PlotLine pl = entry.getValue();
-			if (pl.isSelected()) {
-			    theList.add(pl);
-			}
-		    }
-		} else {
-		    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
-		    theList.add(pl);
-		}
-		GUIChart.this.autoScaleXForRange(theList, minDrawnY, maxDrawnY);
-
+		autoScaleX();
 	    }
 
 	};
@@ -645,12 +617,77 @@ public class GUIChart extends GUIelement {
 
     }
 
+    public void autoScaleX() {
+
+	double maxDrawnY = (GUIChart.this.getPlotY()) / GUIChart.this.getPlotScaleY();
+	double minDrawnY = -(GUIChart.this.getHeight() - (GUIChart.this.getPlotY())) / GUIChart.this.getPlotScaleY();
+	System.out.println("minDrawnY: " + minDrawnY);
+	System.out.println("maxDrawnY: " + maxDrawnY);
+	//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
+	//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
+	ArrayList<PlotLine> theList = new ArrayList<>();
+
+	if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
+	    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+		PlotLine pl = entry.getValue();
+		if (pl.isSelected()) {
+		    theList.add(pl);
+		}
+	    }
+	} else {
+	    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
+	    theList.add(pl);
+	}
+	GUIChart.this.autoScaleXForRange(theList, minDrawnY, maxDrawnY);
+
+    }
+
+    public void autoScaleY() {
+	double minDrawnX = -(GUIChart.this.getPlotX()) / GUIChart.this.getPlotScaleX();
+	double maxDrawnX = (GUIChart.this.getWidth() - (GUIChart.this.getPlotX())) / GUIChart.this.getPlotScaleX();
+	//double minDrawnX = -GUIChart.this.getPlotX() * GUIChart.this.getPlotScaleX();//minimum value of x displayed in chart at current scale
+	//double maxDrawnX = (-GUIChart.this.getPlotX() + GUIChart.this.getWidth()) * GUIChart.this.getPlotScaleX();//maximum value of x displayed in chart at current scale
+	ArrayList<PlotLine> theList = new ArrayList<>();
+
+	if (this.getGUIPanel().getVFlag()) { //multiple lines selected, should operate on the selected ones
+	    for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
+		PlotLine pl = entry.getValue();
+		if (pl.isSelected()) {
+		    theList.add(pl);
+		}
+	    }
+	} else {
+	    PlotLine pl = GUIChart.this.getPlotLineByChar(GUIChart.this.getGUIPanel().getCurrentRegisterLetterAndReset().charAt(0));
+	    theList.add(pl);
+	}
+	GUIChart.this.autoScaleYForRange(theList, minDrawnX, maxDrawnX);
+
+    }
+
     public void sampleAllRelevant() {
 	for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
 	    PlotLine pl = entry.getValue();
 	    if (pl.isBeingRecorded()) {
 		pl.sample();
 	    }
+	}
+	int autoScaleMode = (int) this.getPropertyByName("AutoScaleMode").getValue();
+	if (autoScaleMode == 2) {
+	    Platform.runLater(new Runnable() {
+		public void run() {
+		    autoScaleY();
+		}
+
+	    });
+	}
+	if (autoScaleMode == 3) {
+	    Platform.runLater(new Runnable() {
+		public void run() {
+		    autoScaleX();
+		    autoScaleY();
+		}
+
+	    });
 	}
     }
 
@@ -667,84 +704,6 @@ public class GUIChart extends GUIelement {
 	}
     }
 
-    private ArrayList<String> parseDoublesFromString(String s) {
-	Matcher m1 = Pattern.compile("^([^0-9.,])*(.*?)(([^0-9e.,]))*$").matcher(s);
-	String nonNumericCharsRegex = "[^0-9.,e\\s]";
-
-	String prefix = "";
-	String body = "";
-	String postfix = "";
-
-	ArrayList<String> returnList = new ArrayList<>();
-	if (m1.find()) {
-	    prefix = m1.group(1); //characters before the numbers themselves
-	    body = m1.group(2); //the numbers
-	    postfix = m1.group(3); //characters after the numbers
-	}
-
-	boolean containsDot = body.contains(".");
-	boolean containsComma = body.contains(",");
-
-	Matcher m = Pattern.compile(",\\s+").matcher(body);
-	Matcher m2 = Pattern.compile("[^\\s,.e0-9]").matcher(body);
-
-	boolean containsCommaSpace = m.find();
-	boolean containsOtherChars = m2.find();
-
-	if (containsDot) { //1.2;2.3;3.4 or 1.2, 2.3, 3.4, 2e03, 150e3, 12, 28 or 1.2 something 2.3 something else - numbers with an optional decimal dot; separated by whatever
-	    Matcher m3 = Pattern.compile("[0-9]*\\.?[0-9]+e?[0-9]*").matcher(body);
-	    while (m3.find()) {
-		returnList.add(m3.group(0));
-	    }
-	} else {
-	    if (containsComma) {
-		if (containsCommaSpace) {
-		    if (containsOtherChars) {// 1, 000; 2, 000; 
-			body = body.replaceAll(",\\s*", "");
-			Matcher m3 = Pattern.compile("[0-9]*\\.?[0-9]+e?[0-9]*").matcher(body);
-			while (m3.find()) {
-			    returnList.add(m3.group(0));
-			}
-
-		    } else { //1, 2, 3 or 1e02, 1e05, 2e03 - no decimal dots or commas in the input; just a bunch of numbers separated by commas, followed by blank space
-			body = body.replaceAll(",\\s+", "xxx");
-			body = body.replaceAll("\\s+", "");
-			Matcher m3 = Pattern.compile("[0-9]*,?[0-9]+e?[0-9]*").matcher(body);
-			while (m3.find()) {
-			    returnList.add(m3.group(0));
-			}
-		    }
-		} else //contains comma, but it's not followed by a space; doesn't contain any dots.
-		{
-		    if (containsOtherChars) {
-			body = body.replaceAll(",", "");//remove all commas
-			Matcher m3 = Pattern.compile("[0-9]*e?[0-9]*").matcher(body);
-			while (m3.find()) {
-			    returnList.add(m3.group(0));
-			}
-		    } else {
-
-			Matcher m3 = Pattern.compile("\\s+").matcher(body);
-			if (m3.find())//contains spaces, so it's like 1,2 3,4 5,6
-			{
-
-			    Matcher m4 = Pattern.compile("[0-9]*,?[0-9]+e?[0-9]*").matcher(body);
-			    while (m4.find()) {
-				returnList.add(m4.group(0));
-			    }
-			} else//no spaces, no dots, no other characters, just numbers and commas, so it's like: 1,2,3,4,5,1e05,2e03
-			{
-			    Matcher m4 = Pattern.compile("[0-9]+e?[0-9]*").matcher(body);
-			    while (m4.find()) {
-				returnList.add(m4.group(0));
-			    }
-			}
-		    }
-		}
-	    }
-	}
-	return returnList;
-    }
 
     public void increaseValue(boolean forward, boolean fast) {
 	byte increase = 1;
@@ -845,6 +804,7 @@ public class GUIChart extends GUIelement {
 	gc.setFill(fillCol);
 	gc.setStroke(strokeCol);
 	gc.fillRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
+	gc.setLineWidth(4);
 	gc.strokeRect(leftPoint.x, upPoint.y, rightPoint.x - leftPoint.x, downPoint.y - upPoint.y);
 	//gc.strokeRect(200,100,-200,200);
 
@@ -852,14 +812,14 @@ public class GUIChart extends GUIelement {
 
     @Override
     public int getHeight() {
-	int preferredHeight = ((IntegerProperty) this.getPropertyByName("Height")).getValue();
-	int preferredWidth = ((IntegerProperty) this.getPropertyByName("Width")).getValue();
+	int preferredHeight = ((IntegerProperty) this.getPropertyByName("Height")).getValueSilent();
+	int preferredWidth = ((IntegerProperty) this.getPropertyByName("Width")).getValueSilent();
 	return (int) (((double) getWidth() / preferredWidth) * preferredHeight);
     }
 
     @Override
     public int getWidth() {
-	int preferredWidth = ((IntegerProperty) this.getPropertyByName("Width")).getValue();
+	int preferredWidth = ((IntegerProperty) this.getPropertyByName("Width")).getValueSilent();
 	return Math.max(preferredWidth, (int) (this.getGUIPanel().getCanvas().getWidth() * 0.8));
     }
 
@@ -874,36 +834,50 @@ public class GUIChart extends GUIelement {
 	FloatPoint rightPoint = FloatPoint.getRightMostPoint(p1, p2);
 	FloatPoint upPoint = FloatPoint.getUpMostPoint(p1, p2);
 	FloatPoint downPoint = FloatPoint.getDownMostPoint(p1, p2);
-	if (upPoint == null || downPoint == null) {
+	if (upPoint == null || downPoint == null || leftPoint == null || rightPoint == null) {
 	    System.out.println("kokodak");
+	    return;
 	}
 
 	if (leftPoint.x > minX && rightPoint.x < maxX && upPoint.y > minY && downPoint.y < maxY) {
 	    gc.strokeLine(leftPoint.x, leftPoint.y, rightPoint.x, rightPoint.y);
 	} else {
+	    FloatPoint vert;//point of intersection between the line being drawn and vertical lines
+	    FloatPoint hor;
 
 	    if (leftPoint.x < minX && rightPoint.x > minX)//outside the left border
 	    {
 		double yIntersect = findVertLineIntersect(x1, y1, x2, y2, minX);
-		gc.strokeLine(minX, yIntersect, rightPoint.x, rightPoint.y);
-		gc.setFill(Color.AQUA);
-		gc.fillOval(minX - 2, yIntersect - 2, 4, 4);
-	    } else if (leftPoint.x < maxX && rightPoint.x > maxX) {
+		if (yIntersect > minY && yIntersect < maxY) {
+		    gc.strokeLine(minX, yIntersect, rightPoint.x, rightPoint.y);
+		    gc.setFill(Color.AQUA);
+		    gc.fillOval(minX - 2, yIntersect - 2, 4, 4);
+		}
+	    }
+	    if (leftPoint.x < maxX && rightPoint.x > maxX) {
 
 		double yIntersect = findVertLineIntersect(x1, y1, x2, y2, maxX);
-		gc.strokeLine(maxX, yIntersect, leftPoint.x, leftPoint.y);
-		gc.setFill(Color.AQUA);
-		gc.fillOval(maxX - 2, yIntersect - 2, 4, 4);
-	    } else if (upPoint.y < minY && downPoint.y > minY) {
+		if (yIntersect > minY && yIntersect < maxY) {
+		    gc.strokeLine(maxX, yIntersect, leftPoint.x, leftPoint.y);
+		    gc.setFill(Color.AQUA);
+		    gc.fillOval(maxX - 2, yIntersect - 2, 4, 4);
+		}
+	    }
+	    if (upPoint.y < minY && downPoint.y > minY) {
 		double xIntersect = findHorLineIntersect(x1, y1, x2, y2, minY);
-		gc.strokeLine(xIntersect, minY, downPoint.x, downPoint.y);
-		gc.setFill(Color.AQUA);
-		gc.fillOval(xIntersect - 2, minY - 2, 4, 4);
-	    } else if (upPoint.y < maxY && downPoint.y > maxY) {
+		if (xIntersect > minX && xIntersect < maxX) {
+		    gc.strokeLine(xIntersect, minY, downPoint.x, downPoint.y);
+		    gc.setFill(Color.AQUA);
+		    gc.fillOval(xIntersect - 2, minY - 2, 4, 4);
+		}
+	    }
+	    if (upPoint.y < maxY && downPoint.y > maxY) {
 		double xIntersect = findHorLineIntersect(x1, y1, x2, y2, maxY);
-		gc.strokeLine(xIntersect, maxY, upPoint.x, upPoint.y);
-		gc.setFill(Color.AQUA);
-		gc.fillOval(xIntersect - 2, maxY - 2, 4, 4);
+		if (xIntersect > minX && xIntersect < maxX) {
+		    gc.strokeLine(xIntersect, maxY, upPoint.x, upPoint.y);
+		    gc.setFill(Color.AQUA);
+		    gc.fillOval(xIntersect - 2, maxY - 2, 4, 4);
+		}
 	    }
 
 	}
@@ -965,19 +939,17 @@ public class GUIChart extends GUIelement {
 	double minX = Double.POSITIVE_INFINITY;
 
 	if (this.histogramView) {
-	    minX = 0;
+	    //minX = 0;
 
 	    for (PlotLine pl : lines) {
-		ArrayList<Integer> bins = pl.getHistogramBins();
-		for (int val : bins) {
-		    if (val > maxX) {
-			maxX = val;
-		    }
-		}
+		minX=pl.getHistogramMin();
+		maxX=pl.getHistogramMax();
 	    }
 	} else {
+	    int totalPointsCount = 0;
 	    for (PlotLine pl : lines) {
 		for (FloatPoint fp : pl.getPoints().values()) {
+		    totalPointsCount++;
 		    if (fp.y > minY && fp.y < maxY) {
 			if (fp.x > maxX) {
 			    maxX = fp.x;
@@ -988,9 +960,16 @@ public class GUIChart extends GUIelement {
 		    }
 		}
 	    }
+	    if (totalPointsCount < 2) {
+		return;
+	    }
 	}
 	if (maxX == Double.NEGATIVE_INFINITY || minX == Double.POSITIVE_INFINITY)//this can happen when the chart is outside the view and user wants to autoscale
 	{
+	    return;
+	}
+
+	if (Math.abs(maxX - minX) < 0.000001) {
 	    return;
 	}
 	//so now we found the local max and min in Y between minX and maxX
@@ -1023,8 +1002,10 @@ public class GUIChart extends GUIelement {
 		}
 	    }
 	} else {
+	    int totalPointsCount = 0;
 	    for (PlotLine pl : lines) {
 		for (FloatPoint fp : pl.getPoints().values()) {
+		    totalPointsCount++;
 		    if (fp.x > maxX)//pl.getPoints returns an ordered treemap, so no need to iterate further
 		    {
 			break;
@@ -1039,9 +1020,15 @@ public class GUIChart extends GUIelement {
 		    }
 		}
 	    }
+	    if (totalPointsCount < 2) {
+		return;
+	    }
 	}
 	if (maxY == Double.NEGATIVE_INFINITY || minY == Double.POSITIVE_INFINITY)//this can happen when the chart is outside the view and user wants to autoscale
 	{
+	    return;
+	}
+	if (Math.abs(maxY - minY) < 0.000001) {
 	    return;
 	}
 	//so now we found the local max and min in Y between minX and maxX
@@ -1058,29 +1045,47 @@ public class GUIChart extends GUIelement {
 	//double maxY=Double.NEGATIVE_INFINITY;
     }
 
-    public void paintLines(GraphicsContext gc, double x, double y, double maxX, double maxY) {
-	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
-	    PlotLine pl = entry.getValue();
-	    gc.setStroke(pl.getColor());
-	    if (!pl.getPoints().isEmpty()) {
-		FloatPoint fp1 = pl.getPoints().firstEntry().getValue();
-		for (FloatPoint fp : pl.getPoints().values()) {
-		    if (Double.isNaN(-fp1.y * this.getPlotScaleY() + y + getPlotY())) {
-			System.out.println("pipka kdaka");
-		    }
-		    //gc.setLineWidth(4);
-		    double lwBackup = gc.getLineWidth();
-		    gc.setLineWidth(pl.getLineWidth());
-		    strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
-		    paintCursor(gc, pl.getColor(), pl.getCursorX() * this.getPlotScaleX() + getPlotX() + x, pl.getCursorY() * this.getPlotScaleY() + getPlotY() + y, maxX, maxY);
-		    fp1 = fp;
-		    gc.setLineWidth(lwBackup);
+    public void paintSingleLine(PlotLine pl, GraphicsContext gc, Color c, double lineWidth, double x, double y, double maxX, double maxY) {
+	if (pl == null) {
+	    return;
+	}
+
+	if (!pl.getPoints().isEmpty()) {
+	    FloatPoint fp1 = pl.getPoints().firstEntry().getValue();
+	    for (FloatPoint fp : pl.getPoints().values()) {
+		if (Double.isNaN(-fp1.y * this.getPlotScaleY() + y + getPlotY())) {
+		    System.out.println("pipka kdaka");
 		}
+		//gc.setLineWidth(4);
+		double lwBackup = gc.getLineWidth();
+		gc.setLineWidth(lineWidth);
+		gc.setStroke(c);
+		strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
+		paintCursor(gc, c, pl.getCursorX() * this.getPlotScaleX() + getPlotX() + x, -pl.getCursorY() * this.getPlotScaleY() + getPlotY() + y, maxX, maxY);
+		fp1 = fp;
+		gc.setLineWidth(lwBackup);
 	    }
 	}
     }
 
+    public void paintLines(GraphicsContext gc, double x, double y, double maxX, double maxY) {
+	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
+	    PlotLine pl = entry.getValue();
+	    if (pl.isSelected()) {
+		paintSingleLine(pl, gc, Color.rgb(255, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, x, y, maxX, maxY);
+	    }
+	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), x, y, maxX, maxY);
+	    //gc.setStroke(pl.getColor());
+	}
+	PlotLine pl = this.getLine("%");
+	if (pl != null) {
+	    paintSingleLine(pl, gc, Color.rgb(0, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, x, y, maxX, maxY);
+	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), x, y, maxX, maxY);
+	}
+    }
+
     public void paintCursor(GraphicsContext gc, Color c, double x, double y, double maxX, double maxY) {
+	//y = -y;
 	gc.setLineWidth(2);
 	gc.setStroke(c);
 	gc.strokeLine(x - 2, y, x - 6, y);
@@ -1124,11 +1129,14 @@ public class GUIChart extends GUIelement {
 	for (PlotLine pl : linesToDrawList) {
 	    Color strokeCol = pl.getColor();
 	    Color fillCol = strokeCol.deriveColor(0, 1, 1, opacity);
+	    if (pl.isSelected()) {
+		strokeCol = Color.YELLOW;
+	    }
 	    paintSingleHistogram(gc, pl, fillCol, strokeCol, x, y, maxX, maxY);
 	}
 	PlotLine currentLine = this.getPlotLineByChar(currentLineChar);
 	Color fillCol = Color.TRANSPARENT;
-	Color strokeCol = Color.WHITE;
+	Color strokeCol = Color.GREENYELLOW;
 	paintSingleHistogram(gc, currentLine, fillCol, strokeCol, x, y, maxX, maxY);
     }
 
@@ -1136,6 +1144,7 @@ public class GUIChart extends GUIelement {
 	int i = 0;
 	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
 	    PlotLine pl = entry.getValue();
+	    gc.setStroke(pl.getColor());
 	    gc.strokeText((pl.getCharacter() == this.currentLineChar ? ">" : "") + pl.getCharacter() + ": " + ((pl.isVisible()) ? "" : "(H)") + (pl.isSelected() ? "(V)" : ""), x, y + i);
 	    i += 10;
 	}
@@ -1189,7 +1198,9 @@ public class GUIChart extends GUIelement {
 			//strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
 
 			gc.setStroke(pl.getColor());
-			gc.strokeLine(x1, y1, x1, y1 + 5);
+			gc.setLineWidth(1);
+			//gc.strokeLine(x1, y1, x1, y1 + 5);
+			gc.strokeLine(x1, y, x1, y+this.getHeight());
 			gc.strokeText(Float.toString((float) currentRectangleStart), x1, y1);
 			currentRectangleStart += binWidth;
 		    }
@@ -1265,6 +1276,7 @@ public class GUIChart extends GUIelement {
 		    if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
 			//col = col.deriveColor(0, 1, 1, opacity);
 			//gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+			gc.setStroke(this.getColor2());
 			gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + 5);
 			gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
 		    }
@@ -1305,9 +1317,10 @@ public class GUIChart extends GUIelement {
 	System.out.println(maxTickNumberOnAxis);
 	for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentYTickSize) {
 	    {
+		gc.setStroke(this.getColor2());
 		if (y + getPlotY() + i * getPlotScaleY() > y && y + getPlotY() + i * getPlotScaleY() < y + getHeight()) {
 		    //gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
-		    gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x+getWidth(), y + getPlotY() + (i) * getPlotScaleY());
+		    gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + getWidth(), y + getPlotY() + (i) * getPlotScaleY());
 		    gc.strokeText(Float.toString((float) (-i)), x, y + getPlotY() + (i * getPlotScaleY()));
 		    //gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
 		    //gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());

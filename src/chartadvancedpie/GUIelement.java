@@ -58,10 +58,10 @@ public abstract class GUIelement extends Container implements Subscriber {
     double dragStartMouseX;
     private double lastMousePressY;
     double dragStartMouseY;
-    private Color col1 = Color.ALICEBLUE;
-    private Color col2 = Color.BLACK;
-    private Color col3 = Color.PURPLE;
-    private Color col4 = Color.AQUA;
+    private Color col1 = Color.rgb(51,77,92);//Color.ALICEBLUE;
+    private Color col2 = Color.rgb(223,90,73);//Color.BLACK;
+    private Color col3 = Color.rgb(69,178,157);//Color.PURPLE;
+    private Color col4 = Color.rgb(239, 201, 76);//Color.AQUA;
 
     public void addProperty(Property p) {
 	name2IdMap.put(p.getName(), p.getId());
@@ -378,6 +378,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.addIntegerProperty(14, "Width", 100);
 	this.addIntegerProperty(15, "Height", 20);
 	this.addStringProperty(16, "Tags", "");
+	this.lastPositionDrawnTo=new FloatPoint(0,0);
     }
 
     public GUIelement(GUITab gut) {
@@ -583,7 +584,7 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     public float getValue() {
-	return ((FloatProperty) this.getPropertyByName("Value")).getValue();
+	return ((FloatProperty) this.getPropertyByName("Value")).getValueSilent();
     }
 
     public int getHeight() {
@@ -670,6 +671,7 @@ public abstract class GUIelement extends Container implements Subscriber {
     public void recalculateUniqueName(GUITab gt) {
 	int i = 0;
 	this.uniqueName = normalizeName(gt.getName() + " " + getName() + " " + getGUIelementName());
+	this.uniqueName = normalizeName(getName());
 
 	while (gt.getGUIPanel().GUINameMap.containsKey(this.uniqueName + i)) {
 	    i++;

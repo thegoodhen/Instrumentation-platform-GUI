@@ -112,11 +112,14 @@ public class Menu {
 	}
 
 	public void handle(String keystroke) {
+	    /*
 		if (!keystroke.equals("x")) {//TODO: try esc
 			handleAction(keystroke);
 		} else {
 			//close();//I implemented escaping elsewhere, this is now deprecated
 		}
+		    */
+			handleAction(keystroke);
 	}
 
 	public void close() {

@@ -191,7 +191,7 @@ public class GUISlider extends GUIelement {
 	}
 
 	public String getName() {
-		return "gs";
+		return "slider";
 	}
 
 	public void increaseValue(float step)

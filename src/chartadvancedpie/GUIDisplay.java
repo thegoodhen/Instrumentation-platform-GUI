@@ -20,6 +20,7 @@ public class GUIDisplay extends GUIelement {
 
 	public GUIDisplay(GUITab gut) {
 		super(gut);
+		this.setName("Display");
 		this.setGUIPanel(gut.getGUIPanel());
 
 		//super(r);
@@ -108,7 +109,7 @@ public class GUIDisplay extends GUIelement {
 	}
 
 	public String getName() {
-		return "gd";
+		return "Display";
 	}
 
 

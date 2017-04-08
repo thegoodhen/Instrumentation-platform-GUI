@@ -48,6 +48,8 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new newTabUserFunctionTokenFactory());
 		this.addSubFactory(new EvalAtUserFunctionTokenFactory());
 		this.addSubFactory(new RGBAUserFunctionTokenFactory());
+		this.addSubFactory(new CastToIntUserFunctionTokenFactory());
+		this.addSubFactory(new CastToByteUserFunctionTokenFactory());
 		//super();
 		//TODO: write the custom functions here
 	}

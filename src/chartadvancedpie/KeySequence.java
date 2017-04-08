@@ -27,14 +27,14 @@ public class KeySequence {
 	for (int i = 0; i < sequenceString.length(); i++) {
 	    char ch = sequenceString.charAt(i);
 	    if (ch == '<') {
-		currentString="";
+		currentString="<";
 		isInsideBrackets = true;
 	    } else if (ch == '>') {
 		currentString += ch;
 		returnList.add(currentString);
 		isInsideBrackets = false;
 	    }
-	    if (isInsideBrackets) {
+	    else if (isInsideBrackets) {
 		currentString += ch;
 	    } else {
 		currentString = "" + ch;

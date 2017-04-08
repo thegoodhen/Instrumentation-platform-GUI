@@ -262,7 +262,7 @@ public class GUIStatsDisplay extends GUIelement {
     }
 
     public String getName() {
-	return "gsd";
+	return "stats display";
     }
 
     @Override

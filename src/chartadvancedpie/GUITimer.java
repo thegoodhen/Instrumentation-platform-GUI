@@ -92,6 +92,7 @@ public class GUITimer extends GUIelement {
 		//GUIPID.this.sampleAllRelevant();
 	    }
 	}, 0, 200);
+	this.setName("timer");
     }
 
     //private int value=50;
