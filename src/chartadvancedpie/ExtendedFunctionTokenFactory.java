@@ -50,6 +50,15 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new RGBAUserFunctionTokenFactory());
 		this.addSubFactory(new CastToIntUserFunctionTokenFactory());
 		this.addSubFactory(new CastToByteUserFunctionTokenFactory());
+		this.addSubFactory(new SendGlobalKeysUserFunctionTokenFactory());
+		this.addSubFactory(new SendKeysUserFunctionTokenFactory());
+		this.addSubFactory(new MapUserFunctionTokenFactory());
+		this.addSubFactory(new TypeMapUserFunctionTokenFactory());
+		this.addSubFactory(new InstanceMapUserFunctionTokenFactory());
+		this.addSubFactory(new SetRegisterUserFunctionTokenFactory());
+		this.addSubFactory(new AddToRegisterUserFunctionTokenFactory());
+		this.addSubFactory(new CopyRegisterUserFunctionTokenFactory());
+		this.addSubFactory(new RegistersUserFunctionTokenFactory());
 		//super();
 		//TODO: write the custom functions here
 	}

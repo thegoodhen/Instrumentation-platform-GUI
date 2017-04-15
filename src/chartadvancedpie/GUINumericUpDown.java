@@ -27,6 +27,7 @@ public class GUINumericUpDown extends GUIelement {
     int cursorPos = 0;//the position of the cursor (which digit will be incremented) - zero based
     private int dotPos = 1;
     double preciseValue = 0;
+    static MappingManager elementTypeMappingManager;
 
     public final void addProperthies() {
 
@@ -157,6 +158,11 @@ public class GUINumericUpDown extends GUIelement {
 	this.addProperthies();
 	this.setName("UPDOWN");
 	this.setGUIPanel(gut.getGUIPanel());
+	elementTypeMappingManager=new MappingManager(gut.getGUIPanel());
+    }
+
+    public static MappingManager getElementTypeMappingManager() {
+	return elementTypeMappingManager;
     }
 
     private int getIndexOfLastDigitBeforeDot() {

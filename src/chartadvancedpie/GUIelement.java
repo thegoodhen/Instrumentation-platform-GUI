@@ -70,6 +70,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	property2idMap.put(p, p.getId());
     }
 
+
     public void addProperty(Property p, GUIAction ga) {
 	this.addProperty(p);
 	this.callbackMap.put(p.getName(), ga);

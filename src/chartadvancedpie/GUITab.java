@@ -566,6 +566,21 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	if (!GUIList.get(index).isEnabled()) {
 	    traverseElements(true);
 	}
+
+
+	FloatPoint lastPos = GUIList.get(selectedElementIndex).getLastPositionDrawnTo();
+
+	double maxYpos = this.getGUIPanel().getCanvas().getHeight() * 0.9;
+	double minYpos = this.getGUIPanel().getCanvas().getHeight() * 0.1;
+	if (lastPos.y > maxYpos) {
+	    this.scrollOffset -= (lastPos.y - maxYpos);
+	}
+
+	if (lastPos.y < minYpos) {
+	    this.scrollOffset += (minYpos - lastPos.y);
+	}
+
+
     }
 
     public void focusGUIelement(GUIelement ge) {

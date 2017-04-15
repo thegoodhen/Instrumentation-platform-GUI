@@ -91,6 +91,7 @@ public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPr
 				if (gp.getNFlag())//number specified
 				{
 					gp.getCurrentGUITab().focusGUIelement(this.getCount());
+
 				}
 				else
 				{

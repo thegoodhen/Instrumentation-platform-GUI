@@ -44,13 +44,13 @@ public class RegisterSelectionMenu extends Menu {
 	public void handleAction(String keystroke) {
 		if (keystroke.length() == 1) {
 			int asciiCode = (int) keystroke.charAt(0);
-			if ((asciiCode >= 'A' && asciiCode <= 'Z') || (asciiCode >= 'a' && asciiCode <= 'z')) {
+			//if ((asciiCode >= 'A' && asciiCode <= 'Z') || (asciiCode >= 'a' && asciiCode <= 'z')) {
 				//close();
 				this.ra.doAction(keystroke);
 
 					this.suggestClosing();
 
-			}
+			//}
 		}
 	}
 

@@ -92,9 +92,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.pkeh.handle(s, false);
     }
 
+    public MappingManager getGlobalMappingManager() {
+	return this.globalMapManager;
+    }
 
-    public SerialCommunicator getSerialCommunicator()
-    {
+    public SerialCommunicator getSerialCommunicator() {
 	return this.sc;
     }
 
@@ -104,6 +106,17 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     public void setCurrentlyEditedGUIelement(GUIelement ge) {
 	this.currentlyEditedGUIelement = ge;
+    }
+
+    public void editElement(GUIelement ge) {
+	this.currentlyEditedGUIelement = ge;
+	ge.getMenu().setSuperMenu(getMenu());//so that escaping works correctly
+	this.setMenu(ge.getMenu());
+    }
+
+    public void stopEditing() {
+	this.currentlyEditedGUIelement = null;
+	this.setMenu(pkeh.getMainMenu());
     }
 
     private RegisterAction pickRegisterAction = new RegisterAction() {
@@ -127,7 +140,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	this.lFlag = false;
 	return s;
     }
-
 
     protected void setCurrentRegister(String register) {
 	this.currentRegister = register;
@@ -268,12 +280,24 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    registerMap.put(registerName, content);
 	} else if (registerName.charAt(0) >= 'A' && registerName.charAt(0) <= 'Z')//change register
 	{
-	    registerMap.put(registerName.toLowerCase(), registerMap.get(registerName.toLowerCase()) + content);
+	    registerMap.put(registerName.toLowerCase(), registerMap.get(registerName.toLowerCase()) + "\n" + content);
 	} else if (registerName.charAt(0) == '%')//unnamed register
 	{
-	    registerMap.put(registerName, content);
+
+	    for (int i = 9; i > 0; i--) {
+		String sourceRegName = "" + (i - 1);
+		String targetRegName = "" + i;
+		String currentString = registerMap.get(sourceRegName);
+		if (currentString != null) {
+		    registerMap.put(targetRegName, currentString);
+		}
+	    }
+
 	    final Clipboard clipboard = Clipboard.getSystemClipboard();
 	    final ClipboardContent cContent = new ClipboardContent();
+	    String currentString = getRegisterContent("%");
+	    registerMap.put("0", currentString);
+	    registerMap.put(registerName, content);
 	    cContent.putString(content);
 	    clipboard.setContent(cContent);
 	}
@@ -348,7 +372,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	};
 
 	cmdLine.setOnKeyPressed(event -> pkeh.keyPressed(event, null));
-	editorTextArea.setOnKeyPressed(event->pkeh.userCodeEditorKeyPressed(event, null));
+	editorTextArea.setOnKeyPressed(event -> pkeh.userCodeEditorKeyPressed(event, null));
 		//cmdLine.setPrefRowCount(1);
 
 	//statusLine.setRotate(40);//wow, funky
@@ -473,7 +497,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	System.out.println("pipka kokon:");
 	pid.getPropertyByName("P").setValue(10F);
 	GUIPID pid2 = (GUIPID) pid.makeCopy();
-	GUINumericUpDown gnud=new GUINumericUpDown(gt2);
+	GUINumericUpDown gnud = new GUINumericUpDown(gt2);
 	gt2.addGUIelement(gnud);
 	gt2.addGUIelement(pid);
 	gt2.addGUIelement(pid2);
@@ -543,7 +567,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	dialogVbox.getChildren().add(btn);
 	dialog.show();
 	System.out.println(HintManager.get(this).fillString("I TAB1_GS"));
-	sc=new SerialCommunicator(this);
+	sc = new SerialCommunicator(this);
 	try {
 	    sc.connect("COM3");
 	} catch (Exception ex) {
@@ -735,16 +759,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    }
 	}
 
-
-	public void userCodeEditorKeyPressed(KeyEvent keyEvent, Stage dialog)
-	{
+	public void userCodeEditorKeyPressed(KeyEvent keyEvent, Stage dialog) {
 	    if (keyEvent.getCode() == KeyCode.TAB) {
-	    String autoComplete = HintManager.get(GUIPanel.this).fillString(GUIPanel.this.editorTextArea.getText());
-		editorTextArea.insertText(editorTextArea.getCaretPosition(),autoComplete);
+		String autoComplete = HintManager.get(GUIPanel.this).fillString(GUIPanel.this.editorTextArea.getText());
+		editorTextArea.insertText(editorTextArea.getCaretPosition(), autoComplete);
 		keyEvent.consume();
 	    }
 	}
-	
+
 	public void keyPressed(KeyEvent keyEvent, Stage dialog) {
 	    if (keyEvent.getCode() == KeyCode.ESCAPE) {
 		canvas.requestFocus();
@@ -840,7 +862,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		GUIPanel.this.pickRegisterMenu.setSuperMenu(GUIPanel.this.currentMenu);
 		GUIPanel.this.currentMenu = (GUIPanel.this.pickRegisterMenu);
 		lFlag = true;
-	    } else if (isDigit(eventText)) {
+	    } else if (isDigit(eventText) && !((GUIPanel.this.currentMenu) instanceof RegisterSelectionMenu)) { //instanceof, so we allow numeric registers... Stupid hotfix, I know
 		System.out.println("pressed num: " + eventText);
 		GUIPanel.this.repeatCountString += eventText;
 		System.out.println("Current num: " + GUIPanel.this.repeatCountString);
@@ -975,7 +997,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	tabList.add(gt);
 	return tabList.size() - 1;
     }
-
 
     public void addAction(String s, GUIAbstractAction gaa) {
 	actionMap.put(s, gaa);

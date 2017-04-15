@@ -278,7 +278,9 @@ public class GUIStatsDisplay extends GUIelement {
 	 }
 	 */
 	gc.setStroke(Color.WHITESMOKE);
-	gc.strokeText(Float.toString(this.getValue()), x, y + 10);
+
+	float val=(float)this.getPropertyByName("Value").getValue(true, false);
+	gc.strokeText(Float.toString(val), x, y + 10);
 	String unitString = (this.timeInSamples ? "samples" : "seconds");
 	double delay = (float) this.getPropertyByName("Delay").getValueSilent();
 	String delayString = "";

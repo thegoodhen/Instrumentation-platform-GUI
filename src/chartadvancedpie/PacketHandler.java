@@ -30,11 +30,25 @@ public class PacketHandler {
 
     public PacketHandler() {
 	resolverList = new ArrayList<>();
-	resolverList.add(new Resolver()//This is number 0
+
+	for (int i = 0; i < 10; i++) {
+	    resolverList.add(null);
+	}
+
+	resolverList.add(0, new Resolver()//OK
 	{
 	    @Override
 	    public void resolve(RequestNew rn) {
-		//System.out.println("resolving...");
+		gp.getSerialCommunicator().getWriter().informAboutProcessedRequest();
+		System.out.println("Informing about processed request");
+	    }
+	}
+	);//This is number 0
+
+	resolverList.add(3, new Resolver() {
+	    @Override
+	    public void resolve(RequestNew rn) {
+		System.out.println("new set req");
 		int[] data = rn.getData();
 		/*
 		 if(Math.random()>0.9)
@@ -102,7 +116,10 @@ public class PacketHandler {
 	//System.out.println("should I send for resolution? hmm...");
 	if (requestType < this.resolverList.size()) {
 	    //System.out.println("Sending for resolution");
-	    this.resolverList.get(requestType).resolve(rn);
+	    Resolver r = this.resolverList.get(requestType);
+	    if (r != null) {
+		r.resolve(rn);
+	    }
 	}
     }
 

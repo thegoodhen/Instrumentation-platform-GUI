@@ -56,7 +56,7 @@ public abstract class Property<T> {
 	}
 	System.out.println("SETTING WOOOOOOOO WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO WOOOOOOO");
 	if (geId != null) {
-	    data[0]=(byte)2;//command to write value
+	    data[0]=(byte)3;//command to write value
 	    data[1]=(byte)(int)geId;
 	    data[2]=(byte)this.getId();
 	    byte[] floatBytes=HelpByteMethods.getFloatBytes((float)(Float)this.getValueSilent());

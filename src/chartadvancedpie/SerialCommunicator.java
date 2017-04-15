@@ -23,12 +23,14 @@ import java.util.logging.Logger;
  */
 public class SerialCommunicator {
 
-    final static byte REQ_MODULE_DATA = 1;
-    final static byte REQ_MODULE_XML = 2;
-    final static byte REQ_SYNC = 0;
-    final static byte REQ_BYTE = 1;
-    final static byte WR_BYTE = 2;
-    final static byte CMD_NONE = 3;
+    /*
+     final static byte REQ_MODULE_DATA = 1;
+     final static byte REQ_MODULE_XML = 2;
+     final static byte REQ_SYNC = 0;
+     final static byte REQ_BYTE = 1;
+     final static byte WR_BYTE = 2;
+     final static byte CMD_NONE = 3;
+     */
     static ArrayList<Byte> dataOutBuffer;
     static ArrayList<Byte> dataInBuffer;
     static volatile boolean isWriteBufferWritten = false;
@@ -36,7 +38,7 @@ public class SerialCommunicator {
     static volatile boolean isReadBufferWritten = true;
     static volatile boolean isReadBufferSent;
     static volatile boolean commsOn;
-    static volatile byte lastCommand = REQ_SYNC;
+    //static volatile byte lastCommand = REQ_SYNC;
     static int commandIndex = 0;
 
     boolean idle = true;//awaiting the beginning of next packet
@@ -47,7 +49,7 @@ public class SerialCommunicator {
 
     public SerialCommunicator(GUIPanel gp) {
 	super();
-	this.gp=gp;
+	this.gp = gp;
     }
 
     public SerialReader getReader() {
@@ -163,8 +165,7 @@ public class SerialCommunicator {
 		    idle = true;
 		} else {
 		    //System.out.println("Integrity ok!");
-		    while(!ph.offer(new RequestNew(data, this.ph.gp)))
-		    {
+		    while (!ph.offer(new RequestNew(data, this.ph.gp))) {
 			try {
 			    Thread.sleep(1);
 			} catch (InterruptedException ex) {
@@ -172,7 +173,13 @@ public class SerialCommunicator {
 			}
 		    }
 		    //System.out.println("Sending OK");
-		    SerialCommunicator.this.getWriter().sendOk();
+		    if (data[0] != 0) {
+			SerialCommunicator.this.getWriter().sendOk();//only send "OK" if we haven't just received "OK", otherwise ignore, so we don't ping "OK" back and forth
+		    }
+		    else
+		    {
+			System.out.println("GOT OK!");
+		    }
 
 		    idle = true;
 		}
@@ -194,8 +201,8 @@ public class SerialCommunicator {
 	    if (!idle) {//only handle the start of a packet!
 		return;
 	    }
-		//TODO: I should make the communication separate from the data interpretation
-		handlePacket();
+	    //TODO: I should make the communication separate from the data interpretation
+	    handlePacket();
 
 	}
 
@@ -214,6 +221,32 @@ public class SerialCommunicator {
 
     public class SerialWriter implements Runnable {
 
+	private int unprocessedRequestCount = 0;//number of outgoing requests we haven't received "OK" to.
+	private int maxUnprocessedRequestCount = 5;//maximum number of outgoing request that we haven't received confirmation to, for which we still allow sending new request
+	private final long outgoingRequestTimeout = 500;//how long we are willing to wait for a reply before giving up
+	private final Object lock1 = new Object();
+	private final Object reqCountLock = new Object();
+
+	public void informAboutProcessedRequest() {
+	    synchronized (reqCountLock) {
+		if (unprocessedRequestCount != 0) {//should never happen tho
+		    unprocessedRequestCount--;
+		}
+	    }
+	}
+
+	private void increaseUnprocessedRequestCount() {
+	    synchronized (reqCountLock) {
+		unprocessedRequestCount += 1;
+	    }
+	}
+
+	public int getUnprocessedRequestCount() {
+	    synchronized (reqCountLock) {
+		return unprocessedRequestCount;
+	    }
+	}
+
 	OutputStream out;
 
 	public SerialWriter(OutputStream out) {
@@ -221,6 +254,7 @@ public class SerialCommunicator {
 	}
 
 	public void sendOk() {
+	    System.out.println("sending ok");
 	    final int OK = 0;
 	    int[] a = {OK};
 	    try {
@@ -241,16 +275,40 @@ public class SerialCommunicator {
 
 	}
 
-	public synchronized void sendData(int[] data, boolean waitForConfirm) throws IOException {
-	    byte[] byteData = new byte[data.length];
-	    out.write(data.length);
-	    for (int i = 0; i < byteData.length; i++) {
-		byteData[i] = (byte) data[i];
-	    }
-	    out.write(byteData);
-	    int chksum = (int) calculateChecksum(data);
-	    out.write(chksum);
+	public boolean sendData(int[] data, boolean waitForConfirm) throws IOException {
+	    synchronized (lock1) {
+		if (getUnprocessedRequestCount() >= maxUnprocessedRequestCount) {
+		    if (!waitForConfirm) {
+			return false;
+		    } else {
+			long startTime = System.currentTimeMillis();
+			while (getUnprocessedRequestCount() >= maxUnprocessedRequestCount) {
+			    if (System.currentTimeMillis() > startTime + outgoingRequestTimeout) {
+				return false;
+			    }
+			    try {
+				Thread.sleep(1);//TODO: fix 
+			    } catch (InterruptedException ex) {
+				Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+			    }
+			}
+		    }
+		}
 
+		byte[] byteData = new byte[data.length];
+		out.write(data.length);
+		for (int i = 0; i < byteData.length; i++) {
+		    byteData[i] = (byte) data[i];
+		}
+		out.write(byteData);
+		int chksum = (int) calculateChecksum(data);
+		out.write(chksum);
+
+		if (data[0] != 0) {//if we are just sending "OK", we shouldn't expect a reply
+		    this.increaseUnprocessedRequestCount();
+		}
+		return true;
+	    }
 	}
 
 	private int calculateChecksum(int[] data) {
@@ -262,19 +320,19 @@ public class SerialCommunicator {
     }
 
     /*
-    public static void main(String[] args) {
-	dataOutBuffer = new ArrayList<>();
-	dataInBuffer = new ArrayList<>();
-	try {
-	    SerialCommunicator comm = new SerialCommunicator();
-	    comm.connect("COM3");
-	    SerialReader sr = comm.getReader();
+     public static void main(String[] args) {
+     dataOutBuffer = new ArrayList<>();
+     dataInBuffer = new ArrayList<>();
+     try {
+     SerialCommunicator comm = new SerialCommunicator();
+     comm.connect("COM3");
+     SerialReader sr = comm.getReader();
 
-	    //startComms();
-	} catch (Exception e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	}
-    }
-    */
+     //startComms();
+     } catch (Exception e) {
+     // TODO Auto-generated catch block
+     e.printStackTrace();
+     }
+     }
+     */
 }
