@@ -17,34 +17,37 @@ import shuntingyard.VirtualMachine;
  */
 public class PrintNumberUserFunctionToken extends AbstractBuiltInFunctionToken {
 
-	public PrintNumberUserFunctionToken(String tokenString) {
-		super(tokenString);
-		this.setReturnType(new ByteNumberToken("0"));//TODO: introduce void
-		VariableToken param1 = new VariableToken("number");
-		param1.setType(new FloatNumberToken());
-		this.addArgument(param1);
-	}
+    public PrintNumberUserFunctionToken(String tokenString) {
+	super(tokenString);
+	this.setReturnType(new ByteNumberToken("0"));//TODO: introduce void
+	VariableToken param1 = new VariableToken("number");
+	param1.setType(new FloatNumberToken());
+	this.addArgument(param1);
+    }
 
-	@Override
-	public void run(VirtualMachine vm) {
-		float numToPrint = vm.popFloatFromStack();
-		GUIVirtualMachine gvm = null;
-		if (vm instanceof GUIVirtualMachine) {
-			gvm = (GUIVirtualMachine) vm;
-			if ((Math.abs(numToPrint - (int) numToPrint)) < 0.0000001)//isn't a fraction then
-			{
-				gvm.getGUIPanel().showText(Integer.toString((int) numToPrint)+"\n");
-			} else {
+    @Override
+    public void run(VirtualMachine vm) {
+	float numToPrint = vm.popFloatFromStack();
+	GUIVirtualMachine gvm = null;
+	if (vm instanceof GUIVirtualMachine) {
+	    gvm = (GUIVirtualMachine) vm;
 
-				gvm.getGUIPanel().showText(Float.toString(numToPrint)+"\n");
-			}
-		}
-		vm.pushByteOnStack((byte) 0);//TODO: remove when we introduce void
-	}
+	    SerialCommunicator sc = ((GUIVirtualMachine) vm).getGUIPanel().getSerialCommunicator();
+	    sc.getWriter().sendInit2();
+	    if ((Math.abs(numToPrint - (int) numToPrint)) < 0.0000001)//isn't a fraction then
+	    {
+		gvm.getGUIPanel().showText(Integer.toString((int) numToPrint) + "\n");
+	    } else {
 
-	@Override
-	public byte getBaseCode() {
-		return (byte) 128;
+		gvm.getGUIPanel().showText(Float.toString(numToPrint) + "\n");
+	    }
 	}
+	vm.pushByteOnStack((byte) 0);//TODO: remove when we introduce void
+    }
+
+    @Override
+    public byte getBaseCode() {
+	return (byte) 128;
+    }
 
 }

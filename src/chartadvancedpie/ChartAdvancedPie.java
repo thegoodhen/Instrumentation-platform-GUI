@@ -167,6 +167,7 @@ public class ChartAdvancedPie extends Application{
 		//System.out.println(v);
 	}
 
+	@Deprecated
 	private void parseXml() {
 		byte currentByte = 0;
 		int currentTag = -1;
@@ -190,6 +191,7 @@ public class ChartAdvancedPie extends Application{
 		}
 	}
 
+	@Deprecated
 	int processTag() {
 		if (xmlAsBytes[index] == BEGIN_TAG) {
 			index++;
@@ -204,6 +206,7 @@ public class ChartAdvancedPie extends Application{
 	 * @return whether the byte in question is a tag start or tag end mark
 	 * or not
 	 */
+	@Deprecated
 	private boolean isTagMark(byte mark) {
 		return (mark & 0xFF) <= END_TAG;
 	}

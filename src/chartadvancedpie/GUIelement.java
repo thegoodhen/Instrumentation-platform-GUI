@@ -47,7 +47,10 @@ public abstract class GUIelement extends Container implements Subscriber {
     private boolean enabled = true;
     private boolean selected = false;
     private boolean visible = true;
+    private boolean remoteControlled = false;
+
     private boolean matchedLastSearch = true;
+    private int moduleGUIID = 0;//the ID assigned to the GUIelement by a module
     private String name = "Generic GUI Element";
     private String uniqueName;
     //private String tags = "";
@@ -58,10 +61,19 @@ public abstract class GUIelement extends Container implements Subscriber {
     double dragStartMouseX;
     private double lastMousePressY;
     double dragStartMouseY;
-    private Color col1 = Color.rgb(51,77,92);//Color.ALICEBLUE;
-    private Color col2 = Color.rgb(223,90,73);//Color.BLACK;
-    private Color col3 = Color.rgb(69,178,157);//Color.PURPLE;
+    private Color col1 = Color.rgb(51, 77, 92);//Color.ALICEBLUE;
+    private Color col2 = Color.rgb(223, 90, 73);//Color.BLACK;
+    private Color col3 = Color.rgb(69, 178, 157);//Color.PURPLE;
     private Color col4 = Color.rgb(239, 201, 76);//Color.AQUA;
+    long lastTimeRedrawn = 0;
+
+    public int getModuleGUIID() {
+	return this.moduleGUIID;
+    }
+
+    public void setModuleGUIID(int ID) {
+	this.moduleGUIID = ID;
+    }
 
     public void addProperty(Property p) {
 	name2IdMap.put(p.getName(), p.getId());
@@ -69,7 +81,6 @@ public abstract class GUIelement extends Container implements Subscriber {
 	id2PropertyMap.put(p.getId(), p);
 	property2idMap.put(p, p.getId());
     }
-
 
     public void addProperty(Property p, GUIAction ga) {
 	this.addProperty(p);
@@ -273,14 +284,6 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.id2PropertyMap = new HashMap<>();
 	FloatProperty valp = new FloatProperty(0, "Value", 0.0F, this);
 
-	valp.setSetterPropertyCallback(new PropertyCallback<Float>() {
-	    @Override
-	    public void run(Property<Float> p) {
-		//System.out.println("odpalen setter");
-		p.sendValue();
-	    }
-
-	});
 	this.addProperty(valp);
 
 	//this.addFloatProperty(0, "Value", 0);
@@ -379,7 +382,29 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.addIntegerProperty(14, "Width", 100);
 	this.addIntegerProperty(15, "Height", 20);
 	this.addStringProperty(16, "Tags", "");
-	this.lastPositionDrawnTo=new FloatPoint(0,0);
+
+	IntegerProperty pRemote = new IntegerProperty(17, "RemoteControlled", 0, this);
+
+	pRemote.setSetterPropertyCallback(new PropertyCallback<Integer>() {
+	    @Override
+	    public void run(Property<Integer> p) {
+		GUIelement.this.remoteControlled = (p.getValueSilent() == 1);
+	    }
+
+	});
+
+	pRemote.setGetterPropertyCallback(new PropertyCallback<Integer>() {
+	    @Override
+	    public void run(Property<Integer> p) {
+		//GUIelement.this.remoteControlled=(p.getValueSilent()==1);
+		GUIelement.this.getPropertyByName("RemoteControlled").setValueSilent(remoteControlled ? 1 : 0);
+	    }
+
+	});
+
+	this.addProperty(pRemote);
+
+	this.lastPositionDrawnTo = new FloatPoint(0, 0);
     }
 
     public GUIelement(GUITab gut) {
@@ -534,13 +559,14 @@ public abstract class GUIelement extends Container implements Subscriber {
 
     public void requestRepaint() {
 
-	Platform.runLater(new Runnable() {
-	    public void run() {
+	if (System.currentTimeMillis() > lastTimeRedrawn + 30) {//prevent the element from requesting a redraw too often
+	    lastTimeRedrawn=System.currentTimeMillis();
+	    Platform.runLater(() -> {
 		if (GUIelement.this.isVisible()) {
 		    GUIelement.this.gut.repaintElement(GUIelement.this);
 		}
-	    }
-	});
+	    });
+	}
     }
 
     public void paint(GraphicsContext gc, double x, double y) {

@@ -28,6 +28,7 @@ public abstract class Property<T> {
     private ArrayList<Token> setEvent;
     private GUIelement ge;
     private PropertyCallback getterPropertyCallback = null;
+    private boolean updatesToModule = false;
 
     public PropertyCallback getGetterPropertyCallback() {
 	return getterPropertyCallback;
@@ -46,23 +47,30 @@ public abstract class Property<T> {
     }
     private PropertyCallback setterPropertyCallback = null;
 
+    public boolean updatesModule() {
+	return updatesToModule;
+    }
+
+    public void setIfIShouldUpdateToModule(boolean shouldIt) {
+	this.updatesToModule = shouldIt;
+    }
+
     public void sendValue() {
 	//System.out.println("zkousim odpalit setr (svetr)");
 	int data[] = new int[7];
-	Integer geId = this.ge.getGUIPanel().GUIIDMap.get(ge);
-	if(geId!=11)
-	{
+	//Integer geId = this.ge.getGUIPanel().GUIIDMap.get(ge);
+	Integer geId = ge.getModuleGUIID();
+	if (!updatesToModule) {
 	    return;
 	}
 	System.out.println("SETTING WOOOOOOOO WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO WOOOOOOO");
 	if (geId != null) {
-	    data[0]=(byte)3;//command to write value
-	    data[1]=(byte)(int)geId;
-	    data[2]=(byte)this.getId();
-	    byte[] floatBytes=HelpByteMethods.getFloatBytes((float)(Float)this.getValueSilent());
-	    for(int i=0;i<4;i++)
-	    {
-		data[i+3]=floatBytes[i];
+	    data[0] = (byte) 3;//command to write value
+	    data[1] = (byte) (int) geId;
+	    data[2] = (byte) this.getId();
+	    byte[] floatBytes = HelpByteMethods.getFloatBytes((float) (Float) this.getValueSilent());
+	    for (int i = 0; i < 4; i++) {
+		data[i + 3] = floatBytes[i];
 	    }
 	}
 	try {
@@ -180,6 +188,9 @@ public abstract class Property<T> {
 	    }
 	    if (setterPropertyCallback != null) {
 		setterPropertyCallback.run(this);
+	    }
+	    if (updatesToModule) {
+		sendValue();
 	    }
 	}
 	if (userCallbacks) {

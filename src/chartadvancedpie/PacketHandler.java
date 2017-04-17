@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.paint.Color;
 import shuntingyard.HelpByteMethods;
 
 /**
@@ -31,7 +32,7 @@ public class PacketHandler {
     public PacketHandler() {
 	resolverList = new ArrayList<>();
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 30; i++) {
 	    resolverList.add(null);
 	}
 
@@ -60,7 +61,7 @@ public class PacketHandler {
 		 }
 			
 		 }*/
-		for (int i = 1; i < data.length - 5; i++) {
+		for (int i = 1; i < data.length - 5; i+=6) {
 		    byte guiElementID = (byte) data[i];
 		    byte propertyID = (byte) data[i + 1];
 		    byte fl1 = (byte) data[i + 2];
@@ -70,8 +71,8 @@ public class PacketHandler {
 
 		    byte[] theArr = {fl1, fl2, fl3, fl4};
 		    float f = HelpByteMethods.constructFloat(theArr);
-		    //System.out.println("guiElementID is: " + guiElementID);
-		    //System.out.println("propertyID is: " + propertyID);
+		    System.out.println("guiElementID is: " + guiElementID);
+		    System.out.println("propertyID is: " + propertyID);
 		    //System.out.println("value is: " + f);
 		    //guiElementID=8;
 		    //propertyID=0;
@@ -87,6 +88,80 @@ public class PacketHandler {
 
 	}
 	);
+
+	resolverList.add(12, new Resolver()//add GUI element
+	{
+	    @Override
+	    public void resolve(RequestNew rn) {
+		int[] data = rn.getData();
+		byte GUIType = (byte) data[1];
+		byte ModuleGUIID = (byte) data[2];//ID assigned to the GUI element by the module
+
+		GUITab gt = gp.getCurrentGUITab();
+		//gt.insertGUIelement(gt.getFocusedGUIElementIndex(), gp.getCurrentRegisterContentAndReset(), false);
+		GUIelement ge;
+
+		switch (GUIType)//TODO: handle using reflection
+		{
+		    case 0://SLIDER
+			ge = new GUISlider(gt);
+			break;
+		    case 1:// NUD
+			ge = new GUINumericUpDown(gt);
+			break;
+		    case 2: //chkbox
+			ge = new GUICheckBox(gt);
+			break;
+		    case 10:
+			ge = new GUIDisplay(gt);
+			break;
+		    case 11:
+			ge = new GUIStatsDisplay(gt);
+			break;
+		    case 12:
+			ge = new GUIChart(gt);
+			break;
+		    case 20:
+			ge = new GUITimer(gt);
+			break;
+		    case 21:
+			ge = new GUIPID(gt);
+			break;
+		    default:
+			ge = null;
+
+		}
+
+		if (ge != null) {
+		    gt.addGUIelement(ge, gt.getFocusedGUIElementIndex());
+		    ge.setModuleGUIID(ModuleGUIID);
+		    int resultingID = gp.GUIIDMap.get(ge);
+		    ge.getPropertyByName("Color1").setValue(ColorManager.get().floatFromColor(Color.RED));
+		    gp.getSerialCommunicator().getWriter().sendGUIElementRenumber(ModuleGUIID, (byte) resultingID);
+		    System.out.println("type: " + GUIType + "ID: " + ModuleGUIID + ", assigned ID: " + resultingID);
+		}
+		//gp.getSerialCommunicator().getWriter().informAboutProcessedRequest();
+	    }
+	}
+	);//This is number 12
+
+	resolverList.add(20, new Resolver()//schedule automatic property update (the property should send its value to the module).
+	{
+	    @Override
+	    public void resolve(RequestNew rn) {
+
+		int[] data = rn.getData();
+		byte GUIID = (byte) data[1];
+		byte propertyID = (byte) data[2];//ID assigned to the GUI element by the module
+
+		GUIelement ge = gp.ID2GUIMap.get((int) GUIID);
+		Property p = ge.getPropertyById(propertyID);
+		p.setIfIShouldUpdateToModule(true);
+
+		System.out.println("Got request to inform about property change");
+	    }
+	}
+	);//This is number 0
 
     }
 

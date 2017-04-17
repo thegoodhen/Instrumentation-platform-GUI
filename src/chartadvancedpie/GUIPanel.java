@@ -570,6 +570,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	sc = new SerialCommunicator(this);
 	try {
 	    sc.connect("COM3");
+	    //Thread.sleep(5000);
+	    sc.getWriter().sendInit();
 	} catch (Exception ex) {
 	    Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
 	}

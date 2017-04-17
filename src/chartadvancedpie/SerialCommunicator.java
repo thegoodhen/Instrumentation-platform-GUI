@@ -163,7 +163,10 @@ public class SerialCommunicator {
 		    this.clearBuffer();
 		    SerialCommunicator.this.getWriter().sendNOTOk();
 		    idle = true;
-		} else {
+		} else {//Integrity OK
+		    if (data[0] == 12) {
+			System.out.println("KOKOKOKOKOKODAK!!!! KOKON KOKON");
+		    }
 		    //System.out.println("Integrity ok!");
 		    while (!ph.offer(new RequestNew(data, this.ph.gp))) {
 			try {
@@ -175,9 +178,7 @@ public class SerialCommunicator {
 		    //System.out.println("Sending OK");
 		    if (data[0] != 0) {
 			SerialCommunicator.this.getWriter().sendOk();//only send "OK" if we haven't just received "OK", otherwise ignore, so we don't ping "OK" back and forth
-		    }
-		    else
-		    {
+		    } else {
 			System.out.println("GOT OK!");
 		    }
 
@@ -273,6 +274,38 @@ public class SerialCommunicator {
 		Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
 	    }
 
+	}
+
+	public void sendInit() {
+	    int[] data = {10};
+	    try {
+		sendData(data, true);
+	    } catch (IOException ex) {
+		Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+	    }
+	}
+
+
+
+	public void sendInit2() {
+	    
+	    int[] data = {9};
+	    try {
+		sendData(data, true);
+	    } catch (IOException ex) {
+		Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+	    }
+	    
+	}
+
+	void sendGUIElementRenumber(byte origNumber, byte targetNumber)//TODO: maybe it should be int, int or byte, int
+	{
+	    int[] data = {12, origNumber, targetNumber};
+	    try {
+		sendData(data, true);
+	    } catch (IOException ex) {
+		Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+	    }
 	}
 
 	public boolean sendData(int[] data, boolean waitForConfirm) throws IOException {
