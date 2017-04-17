@@ -23,6 +23,7 @@ public abstract class JumpAction extends NamedGUIAction{
 		this.setCount(gp.getRepeatCount(false));
 		doAction();
 		JumpHistoryManager.get(gp).addAction(this);
+		gp.resetCurrentCommandText();
 		gp.resetRepeatCount();
 	}
 

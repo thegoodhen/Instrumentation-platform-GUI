@@ -46,8 +46,13 @@ public class EvalAtUserFunctionToken extends AbstractBuiltInFunctionToken {
 	    vm.pushFloatOnStack((float) -1);
 	} else {
 	    String lineLetter = vm.fetchStringFromHeap(lineLetterLocation);
-	    PlotLine pl = ((GUIChart) ge).getLine(lineLetter);
-	    float val=(float)pl.evaluateYatX(targetValue);
+	    PlotLine pl = ((GUIChart) ge).getLine(lineLetter, false);
+	    float val;
+	    if (pl != null) {
+		val = (float) pl.evaluateYatX(targetValue);
+	    } else {
+		val = 0;//NaN?
+	    }
 	    vm.pushFloatOnStack(val);
 	}
     }

@@ -13,150 +13,150 @@ import java.util.HashMap;
  */
 public class Menu {
 
-	private GUIPanel gp;
-	private HashMap<String, NamedGUIAction> actionMap;
-	private Menu superMenu;
-	private String name;
-	private boolean persistent = true;
+    private GUIPanel gp;
+    private HashMap<String, NamedGUIAction> actionMap;
+    private Menu superMenu;
+    private String name;
+    private boolean persistent = true;
 
-	public Menu(GUIPanel gp, String s, boolean persistent) {
-		this.persistent=persistent;
-		this.gp = gp;
-		this.setString(s);
-		actionMap = new HashMap<>();
-		this.setSuperMenu(this);
+    public Menu(GUIPanel gp, String s, boolean persistent) {
+	this.persistent = persistent;
+	this.gp = gp;
+	this.setString(s);
+	actionMap = new HashMap<>();
+	this.setSuperMenu(this);
+    }
+
+    public void setGUIPanel(GUIPanel gp) {
+	this.gp = gp;
+    }
+
+    public NamedGUIAction getAction(String s) {
+	return actionMap.get(s);
+    }
+
+    public GUIPanel getGUIPanel() {
+	return this.gp;
+    }
+
+    public void addAction(String keystroke, NamedGUIAction ga) {
+	actionMap.put(keystroke, ga);
+	//this.addAction(keystroke, ga, true);
+    }
+
+    /*
+     public void addAction(String keystroke, NamedGUIAction ga, boolean closeWhenDone) {
+     if (!closeWhenDone) {
+     actionMap.put(keystroke, ga);
+     } else {
+     NamedGUIAction performAndCloseAction = new NamedGUIAction(ga.getName()) {
+     @Override
+     public void doAction() {
+     ga.doAction();
+     Menu.this.close();
+     }
+
+     @Override
+     public void doAction(int repeatCount) {
+     ga.doAction(repeatCount);
+     Menu.this.close();
+     gp.resetRepeatCount();
+     //Menu.this.gp.setMenu(Menu.this.superMenu);
+
+     }
+     };
+     actionMap.put(keystroke, performAndCloseAction);
+     }
+
+     }
+     */
+    public void addSubMenu(String keystroke, Menu m) {
+	openSubMenuAction osma = new openSubMenuAction(m, this);
+	m.setSuperMenu(this);
+	actionMap.put(keystroke, osma);
+    }
+
+    public void setSuperMenu(Menu superMenu) {
+	this.superMenu = superMenu;
+    }
+
+    public void showMenu() {
+	gp.showText("---------------------------------\n");
+	for (String s : actionMap.keySet()) {
+	    NamedGUIAction nga = actionMap.get(s);
+	    gp.showText(s + ": " + nga.getName() + "\n");
 	}
+    }
 
-	public void setGUIPanel(GUIPanel gp) {
-		this.gp = gp;
+    public void handleAction(String keystroke) {
+	GUIAction ga = actionMap.get(keystroke);
+	if (ga != null) {
+	    ga.doActionWithHandling(gp);
 	}
-
-	public NamedGUIAction getAction(String s)
+	if (!(ga instanceof openSubMenuAction))//if we opened a submenu, we should never close this menu
 	{
-		return actionMap.get(s);
+	    this.suggestClosing();
 	}
+    }
 
-	public GUIPanel getGUIPanel()
-	{
-		return this.gp;
+    public void suggestClosing() {
+
+	if (persistent == false) {
+	    close();
 	}
+    }
 
-	public void addAction(String keystroke, NamedGUIAction ga) {
-			actionMap.put(keystroke, ga);
-		//this.addAction(keystroke, ga, true);
-	}
-
+    public void handle(String keystroke) {
 	/*
-	public void addAction(String keystroke, NamedGUIAction ga, boolean closeWhenDone) {
-		if (!closeWhenDone) {
-			actionMap.put(keystroke, ga);
-		} else {
-			NamedGUIAction performAndCloseAction = new NamedGUIAction(ga.getName()) {
-				@Override
-				public void doAction() {
-					ga.doAction();
-					Menu.this.close();
-				}
+	 if (!keystroke.equals("x")) {//TODO: try esc
+	 handleAction(keystroke);
+	 } else {
+	 //close();//I implemented escaping elsewhere, this is now deprecated
+	 }
+	 */
+	handleAction(keystroke);
+    }
 
-				@Override
-				public void doAction(int repeatCount) {
-					ga.doAction(repeatCount);
-					Menu.this.close();
-					gp.resetRepeatCount();
-					//Menu.this.gp.setMenu(Menu.this.superMenu);
+    public void close() {
 
-				}
-			};
-			actionMap.put(keystroke, performAndCloseAction);
-		}
+	this.gp.setMenu(this.superMenu);
+	this.superMenu.suggestClosing();
+    }
 
-	}
-	*/
+    private void setString(String s) {
+	this.name = s;
+    }
 
-	public void addSubMenu(String keystroke, Menu m) {
-		openSubMenuAction osma = new openSubMenuAction(m, this);
-		m.setSuperMenu(this);
-		actionMap.put(keystroke, osma);
-	}
+    public String getString() {
+	return this.name;
+    }
 
-	public void setSuperMenu(Menu superMenu) {
-		this.superMenu = superMenu;
+    protected class openSubMenuAction extends NamedGUIAction {
+
+	Menu m;
+
+	public openSubMenuAction(Menu m, Menu superMenu) {
+	    super("> " + m.getString());
+	    this.m = m;
+	    m.setSuperMenu(superMenu);
 	}
 
-	public void showMenu()
-	{
-			gp.showText("---------------------------------\n");
-		for (String s : actionMap.keySet()) {
-			NamedGUIAction nga = actionMap.get(s);
-			gp.showText(s + ": " + nga.getName()+"\n");
-		}
+	@Override
+	public void doAction() {
+	    gp.setMenu(m);
 	}
 
-	public void handleAction(String keystroke) {
-		GUIAction ga = actionMap.get(keystroke);
-		if (ga != null) {
-			ga.doActionWithHandling(gp);
-		} 
-		if(!(ga instanceof openSubMenuAction) )//if we opened a submenu, we should never close this menu
-		{
-			this.suggestClosing();
-		}
-	}
-
-	public void suggestClosing()
-	{
-
-			if (persistent == false) {
-				close();
-			}
-	}
-
-	public void handle(String keystroke) {
-	    /*
-		if (!keystroke.equals("x")) {//TODO: try esc
-			handleAction(keystroke);
-		} else {
-			//close();//I implemented escaping elsewhere, this is now deprecated
-		}
-		    */
-			handleAction(keystroke);
-	}
-
-	public void close() {
-
-		this.gp.setMenu(this.superMenu);
-		this.superMenu.suggestClosing();
-	}
-
-	private void setString(String s) {
-		this.name = s;
-	}
-
-	public String getString() {
-		return this.name;
-	}
-
-	protected class openSubMenuAction extends NamedGUIAction {
-
-		Menu m;
-
-		public openSubMenuAction(Menu m, Menu superMenu) {
-			super("> " + m.getString());
-			this.m = m;
-			m.setSuperMenu(superMenu);
-		}
-
-		@Override
-		public void doAction() {
-			gp.setMenu(m);
-		}
-
-
+	@Override
+	public void doActionWithHandling(GUIPanel gp) {
+	    Menu.this.gp = gp;
+	    this.setCount(gp.getRepeatCount(false));
+	    doAction();
 
 	}
 
-	public void setPersistent(boolean persistent)
-	{
-		this.persistent=persistent;
-	}
+    }
+
+    public void setPersistent(boolean persistent) {
+	this.persistent = persistent;
+    }
 }

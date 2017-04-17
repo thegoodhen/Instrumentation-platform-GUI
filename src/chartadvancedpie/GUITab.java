@@ -489,7 +489,14 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	//String name=getUniqueName(index);
 	GUIList.get(index).setFocused(false);
 	GUIList.remove(index);
-	//return name;
+	if (index < GUIList.size()) {
+	    GUIList.get(index).setFocused(true);
+	    selectedElementIndex = index;
+	} else //return name;
+	{
+	    GUIList.get(GUIList.size() - 1).setFocused(true);
+	    selectedElementIndex = GUIList.size() - 1;
+	}
     }
 
     public String getUniqueName(int index) {
@@ -567,7 +574,6 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	    traverseElements(true);
 	}
 
-
 	FloatPoint lastPos = GUIList.get(selectedElementIndex).getLastPositionDrawnTo();
 
 	double maxYpos = this.getGUIPanel().getCanvas().getHeight() * 0.9;
@@ -579,7 +585,6 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	if (lastPos.y < minYpos) {
 	    this.scrollOffset += (minYpos - lastPos.y);
 	}
-
 
     }
 
@@ -672,7 +677,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		    this.focusGUIelement(ge);
 		} else//was focused, we pass the press to it
 		{
-			ge.sendMousePress(event);
+		    ge.sendMousePress(event);
 		}
 		this.paintGUIelements();
 		break;
@@ -685,13 +690,16 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
     }
 
     void repaintElement(GUIelement ge) {
+	if (!this.equals(this.getGUIPanel().getCurrentGUITab())) {//ignore if we aren't even on the correct tab	
+	    return;
+	}
 
 	GraphicsContext gc = canvas.getGraphicsContext2D();
 	gc.setFill(Color.BLACK);//clear everything
-	double x=ge.getLastPositionDrawnTo().x;
-	double y=ge.getLastPositionDrawnTo().y;
-	double geW=ge.getWidth();
-	double geH=ge.getHeight();
+	double x = ge.getLastPositionDrawnTo().x;
+	double y = ge.getLastPositionDrawnTo().y;
+	double geW = ge.getWidth();
+	double geH = ge.getHeight();
 	gc.fillRect(x, y, geW, geH);
 	ge.paint(gc, x, y);
 

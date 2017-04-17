@@ -16,11 +16,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
@@ -29,7 +32,10 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -47,8 +53,16 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     Canvas canvas;
     VBox vb;
     TextArea cmdLine;
-    TextArea statusLine;
+    TextArea infoTextArea;
     TextArea editorTextArea;
+
+    private Label vFlagStatusBlimp;
+    private Label modeStatusBlimp;
+    private Label typedKeysBlimp;
+    private Label repeatCountBlimp;
+    private Label registerBlimp;
+    private Label recordingStatusBlimp;
+
     private int selectedElementIndex = 0;
     ArrayList<GUIelement> GUIList = new ArrayList<>();
     ArrayList<GUITab> tabList = new ArrayList<>();
@@ -60,6 +74,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     private GUIVirtualMachine vm;
 
     PanelKeyEventHandler pkeh;
+
+    private String currentCommandText = "";
 
     HashMap<String, GUIelement> quickMarkMap = new HashMap<>();
     HashMap<String, String> registerMap = new HashMap<>();
@@ -143,6 +159,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     protected void setCurrentRegister(String register) {
 	this.currentRegister = register;
+	if (!lFlag) {
+	    this.registerBlimp.setText("(%)");
+	} else {
+	    this.registerBlimp.setText(register);
+	}
     }
 
     public Position getCurrentPosition() {
@@ -257,7 +278,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     public void setCurrentRegisterContentAndReset(String content) {
 	setRegisterContent(this.currentRegister, content);
 	this.lFlag = false;
-	this.currentRegister = UNNAMED_REGISTER;
+	this.setCurrentRegister(UNNAMED_REGISTER);
+	//this.currentRegister = UNNAMED_REGISTER;
     }
 
     /**
@@ -269,7 +291,8 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
      */
     public String getCurrentRegisterContentAndReset() {
 	String returnString = getRegisterContent(this.currentRegister);
-	this.currentRegister = UNNAMED_REGISTER;
+	//this.currentRegister = UNNAMED_REGISTER;
+	this.setCurrentRegister(UNNAMED_REGISTER);
 	this.lFlag = false;
 	return returnString;
     }
@@ -309,6 +332,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     public void resetRepeatCount() {
 	this.repeatCountString = "";
+	repeatCountBlimp.setText("(1)");
 	this.nFlag = false;
     }
 
@@ -325,9 +349,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     }
 
     public void showText(String text) {
-	if (this.statusLine != null) {
-	    this.statusLine.appendText(text);
-	    this.statusLine.end();
+	if (this.infoTextArea != null) {
+	    this.infoTextArea.appendText(text);
+	    this.infoTextArea.end();
 	}
     }
 
@@ -354,7 +378,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	cmdLine = new TextArea("Slepice");
 
 	cmdLine.setPrefRowCount(10);
-	statusLine = new TextArea("Kokodak") {
+	infoTextArea = new TextArea("Kokodak") {
 	    @Override
 	    public void requestFocus() {
 
@@ -376,10 +400,42 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		//cmdLine.setPrefRowCount(1);
 
 	//statusLine.setRotate(40);//wow, funky
-	statusLine.setEditable(false);
-	statusLine.setPrefRowCount(200);
-	statusLine.setFocusTraversable(false);
-	vb.getChildren().addAll(cmdLine, statusLine);
+	infoTextArea.setEditable(false);
+	infoTextArea.setPrefRowCount(200);
+	infoTextArea.setFocusTraversable(false);
+
+	vFlagStatusBlimp = new Label("vFlag: OFF");
+	vFlagStatusBlimp.setTextFill(Color.YELLOW);
+	vFlagStatusBlimp.setStyle("-fx-background-color: black");
+
+	modeStatusBlimp = new Label("[NORMAL]");
+	modeStatusBlimp.setTextFill(Color.WHITE);
+	modeStatusBlimp.setStyle("-fx-background-color: black");
+
+	typedKeysBlimp = new Label("abcd");
+	typedKeysBlimp.setTextFill(Color.WHITE);
+	typedKeysBlimp.setStyle("-fx-background-color: black");
+
+	repeatCountBlimp = new Label("1");
+	repeatCountBlimp.setTextFill(Color.WHITE);
+	repeatCountBlimp.setStyle("-fx-background-color: black");
+
+	registerBlimp = new Label("(%)");
+	registerBlimp.setTextFill(Color.WHITE);
+	registerBlimp.setStyle("-fx-background-color: black");
+
+	recordingStatusBlimp = new Label("");
+	recordingStatusBlimp.setTextFill(Color.RED);
+	recordingStatusBlimp.setStyle("-fx-background-color: black");
+	TilePane hb = new TilePane();
+	hb.setHgap(10);
+
+	hb.setStyle("-fx-background-color: black");
+	hb.setOrientation(Orientation.HORIZONTAL);
+
+	hb.getChildren().addAll(recordingStatusBlimp, modeStatusBlimp, vFlagStatusBlimp, registerBlimp, repeatCountBlimp, typedKeysBlimp);
+
+	vb.getChildren().addAll(cmdLine, infoTextArea, hb);
 	canvas.setFocusTraversable(true);
 	// Clear away portions as the user drags the mouse
 	canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
@@ -706,6 +762,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		@Override
 		public void doAction() {
 		    currentGUITab.editCurrentComponent(true);
+		    modeStatusBlimp.setText("[EDIT]");
+		    modeStatusBlimp.setTextFill(Color.BLACK);
+		    modeStatusBlimp.setStyle("-fx-background-color: greenyellow");
+
 		}
 	    };
 
@@ -811,7 +871,17 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 
 	public void handle(String eventText, boolean respectMappings) {
+	    if (respectMappings && (!isDigit(eventText))) {
+		GUIPanel.this.currentCommandText += eventText;
+		currentCommandText = currentCommandText.replaceAll("\\r|\\n", "");
+		if (currentCommandText.length() > 8) {
+		    currentCommandText = currentCommandText.substring(0, 8);
+		}
+		GUIPanel.this.typedKeysBlimp.setText(currentCommandText);
+	    }
+	    typedKeysBlimp.setTextFill(Color.WHITE);
 	    if (GUIPanel.this.getCmdLine().isFocused()) {
+
 		if (eventText.equals("<ENTER>")) {
 		    sendEnterPressForCmdLine(false);
 		    return;
@@ -860,6 +930,17 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    if (eventText.equals("V")) {
 		vFlag = !vFlag;
 		System.out.println("V is now:" + (vFlag ? "on" : "off"));
+
+		vFlagStatusBlimp.setText("vFlag: " + (vFlag ? "on" : "off"));
+
+		if (!vFlag) {
+		    vFlagStatusBlimp.setTextFill(Color.YELLOW);
+		    vFlagStatusBlimp.setStyle("-fx-background-color: black");
+		} else {
+		    vFlagStatusBlimp.setTextFill(Color.BLACK);
+		    vFlagStatusBlimp.setStyle("-fx-background-color: yellow");
+		}
+
 	    } else if (eventText.equals("\"")) {
 		GUIPanel.this.pickRegisterMenu.setSuperMenu(GUIPanel.this.currentMenu);
 		GUIPanel.this.currentMenu = (GUIPanel.this.pickRegisterMenu);
@@ -867,6 +948,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    } else if (isDigit(eventText) && !((GUIPanel.this.currentMenu) instanceof RegisterSelectionMenu)) { //instanceof, so we allow numeric registers... Stupid hotfix, I know
 		System.out.println("pressed num: " + eventText);
 		GUIPanel.this.repeatCountString += eventText;
+		repeatCountBlimp.setText(repeatCountString);
 		System.out.println("Current num: " + GUIPanel.this.repeatCountString);
 		nFlag = true;
 	    } else {
@@ -877,7 +959,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 
 	private boolean isDigit(String s) {
-	    return (s.length() == 1 && s.charAt(0) > 47 && s.charAt(0) < 58);
+	    return (s.length() == 1 && s.charAt(0) > '0' && s.charAt(0) < '9');
 	}
 
 	private void runCommand(KeyCode code, Object object) {
@@ -929,10 +1011,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	if (respectVFlag) {
 	    if (vFlag) {
 		returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
+		if (returnList.isEmpty()) {
+		    //System.out.println("KOKOKOKOKOKO WARNING WARNING LOL");
+		    this.showError("Warning: vFlag is on, but no elements were selected!");//Fail, this aint visible
+		}
 	    } else {
 		returnList.add(this.getCurrentGUITab().getFocusedGUIElement());
 	    }
-	    vFlag = false;
+	    //vFlag = false;
 	} else {
 	    returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
 	}
@@ -956,6 +1042,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     protected void startRecordingMacro(String register) {
 	this.isRecordingAMacro = true;
 	this.currentMacroRegister = register;
+	this.recordingStatusBlimp.setText("[REC: " + register + "]");
 	//Macro m = new Macro();
 	this.currentMacro = new KeySequence("");
 	//this.macroMap.put(register, m);
@@ -963,6 +1050,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     protected void stopRecordingMacro() {
 	this.setRegisterContent(currentMacroRegister, currentMacro.toString());
+	this.recordingStatusBlimp.setText("");
 	this.isRecordingAMacro = false;
     }
 
@@ -1000,6 +1088,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return tabList.size() - 1;
     }
 
+    public Label getModeStatusBlimp() {
+	return this.modeStatusBlimp;
+    }
+
     public void addAction(String s, GUIAbstractAction gaa) {
 	actionMap.put(s, gaa);
     }
@@ -1008,12 +1100,28 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return this.currentMenu;
     }
 
+    public void resetCurrentCommandText() {
+	this.currentCommandText = "";
+    }
+
     public void setMenu(Menu m) {
 	if (pkeh != null && m != null) {
 	    if (m.equals(pkeh.getMainMenu())) {
 		setCurrentlyEditedGUIelement(null);//when we end editing the component, we are
 		//in the "normal mode"
+		if (modeStatusBlimp != null) {
+		    modeStatusBlimp.setStyle("-fx-background-color: black");
+		    modeStatusBlimp.setTextFill(Color.WHITE);
+		    this.modeStatusBlimp.setText(("[NORMAL]"));
+		    //typedKeysBlimp.setTextFill(Color.DARKGRAY);
+		    GUIPanel.this.typedKeysBlimp.setText("");
+		    this.currentCommandText = "";
+		    GUIPanel.this.resetRepeatCount();
+		    //GUIPanel.this.setCurrentRegister("%");
+		    ////this.setRegister("%");
+		}
 	    }
+
 	}
 	this.currentMenu = m;
 	m.showMenu();

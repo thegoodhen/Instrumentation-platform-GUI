@@ -48,6 +48,7 @@ public class GUIAction extends GUIAbstractAction{
 		count=gp.getRepeatCount(false);
 		doAction();
 		gp.resetRepeatCount();//TODO: not sure why this was commented out... maybe by uncommenting it, I have summoned the devils upon us
+		gp.resetCurrentCommandText();
 		//gp.resetRepeatCount();
 	}
 

@@ -125,11 +125,11 @@ public class GUIChart extends GUIelement {
 		new TimerTask() {
 		    @Override
 		    public void run() {
-			System.out.println("kokodak");
+			//System.out.println("kokodak");
 			if (sampleEvent != null) {
-			    Platform.runLater(() -> {//TODO: only surround the necessary stuff in runLater!
+			    //Platform.runLater(() -> {//TODO: only surround the necessary stuff in runLater!
 				GUIChart.this.getGUIPanel().handleCallBack(sampleEvent);//call the user event
-			    });
+			    //});
 			    GUIChart.this.sampleAllRelevant();
 			}
 		    }
@@ -427,17 +427,17 @@ public class GUIChart extends GUIelement {
 	    @Override
 	    public void doAction() {
 		/*
-		ArrayList<Double> test = GUIChart.this.parseDoublesFromString("-1.2,\t 2.3, \t 3.4,  kokon slepice   4.5 10e05, 		50.35, 10.3e10");
-		ArrayList<Double> test2 = GUIChart.this.parseDoublesFromString("2, -3, 4");
-		ArrayList<Double> test3 = GUIChart.this.parseDoublesFromString("-2,3,-4e05");
-		ArrayList<Double> test4 = GUIChart.this.parseDoublesFromString("1 000, -2 000, 3 000");
-		ArrayList<Double> test5 = GUIChart.this.parseDoublesFromString("-1, 000, 000; 2, 000, 000; -3, 000; -5e04");
-		ArrayList<Double> test6 = GUIChart.this.parseDoublesFromString("1,2, -2,3, 3,4, -5,6");
-		ArrayList<Double> test7 = GUIChart.this.parseDoublesFromString("1,2 -2,3 3,4 -5,6");
-		ArrayList<Double> test8 = GUIChart.this.parseDoublesFromString("123,45; 23,232; 343,43");//TODO:FIX THIS
-		*/
-		String s=GUIChart.this.getGUIPanel().getCurrentRegisterContentAndReset();
-		PlotLine pl=new PlotLine(s,currentLineChar,GUIChart.this);
+		 ArrayList<Double> test = GUIChart.this.parseDoublesFromString("-1.2,\t 2.3, \t 3.4,  kokon slepice   4.5 10e05, 		50.35, 10.3e10");
+		 ArrayList<Double> test2 = GUIChart.this.parseDoublesFromString("2, -3, 4");
+		 ArrayList<Double> test3 = GUIChart.this.parseDoublesFromString("-2,3,-4e05");
+		 ArrayList<Double> test4 = GUIChart.this.parseDoublesFromString("1 000, -2 000, 3 000");
+		 ArrayList<Double> test5 = GUIChart.this.parseDoublesFromString("-1, 000, 000; 2, 000, 000; -3, 000; -5e04");
+		 ArrayList<Double> test6 = GUIChart.this.parseDoublesFromString("1,2, -2,3, 3,4, -5,6");
+		 ArrayList<Double> test7 = GUIChart.this.parseDoublesFromString("1,2 -2,3 3,4 -5,6");
+		 ArrayList<Double> test8 = GUIChart.this.parseDoublesFromString("123,45; 23,232; 343,43");//TODO:FIX THIS
+		 */
+		String s = GUIChart.this.getGUIPanel().getCurrentRegisterContentAndReset();
+		PlotLine pl = new PlotLine(s, currentLineChar, GUIChart.this);
 		GUIChart.this.addLine(pl);
 		//GUIChart.this.linesList.put(currentLineChar, pl);
 		System.out.println("kdak");
@@ -702,8 +702,8 @@ public class GUIChart extends GUIelement {
 	{
 	    this.scaleAlongOrigin(1 + deltaY * amount, 1 + deltaY * amount, eventX - fp.x, eventY - fp.y);
 	}
+	this.requestRepaint();
     }
-
 
     public void increaseValue(boolean forward, boolean fast) {
 	byte increase = 1;
@@ -942,8 +942,8 @@ public class GUIChart extends GUIelement {
 	    //minX = 0;
 
 	    for (PlotLine pl : lines) {
-		minX=pl.getHistogramMin();
-		maxX=pl.getHistogramMax();
+		minX = pl.getHistogramMin();
+		maxX = pl.getHistogramMax();
 	    }
 	} else {
 	    int totalPointsCount = 0;
@@ -1077,7 +1077,7 @@ public class GUIChart extends GUIelement {
 	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), x, y, maxX, maxY);
 	    //gc.setStroke(pl.getColor());
 	}
-	PlotLine pl = this.getLine("%");
+	PlotLine pl = this.getLine("%",false);
 	if (pl != null) {
 	    paintSingleLine(pl, gc, Color.rgb(0, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, x, y, maxX, maxY);
 	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), x, y, maxX, maxY);
@@ -1200,7 +1200,7 @@ public class GUIChart extends GUIelement {
 			gc.setStroke(pl.getColor());
 			gc.setLineWidth(1);
 			//gc.strokeLine(x1, y1, x1, y1 + 5);
-			gc.strokeLine(x1, y, x1, y+this.getHeight());
+			gc.strokeLine(x1, y, x1, y + this.getHeight());
 			gc.strokeText(Float.toString((float) currentRectangleStart), x1, y1);
 			currentRectangleStart += binWidth;
 		    }
@@ -1359,22 +1359,36 @@ public class GUIChart extends GUIelement {
 	}
     }
 
-    public PlotLine getLine(String letter) {
+    /**
+     * If the line with this letter exists, return it; otherwise create it and
+     * return it.
+     *
+     * @param letter
+     * @return
+     */
+    public PlotLine getLine(String letter, boolean createIfNonexistant) {
 	char ch;
 	if (letter.equals("%")) {
 	    ch = this.currentLineChar;
 	} else {
 	    ch = letter.charAt(0);
 	}
-	return this.linesList.get(ch);
+
+	PlotLine pl = this.linesList.get(ch);
+	if (pl == null && createIfNonexistant) {
+	    pl = new PlotLine(GUIChart.this.currentLineChar, GUIChart.this);
+	    GUIChart.this.addLine(pl);
+	}
+
+	return pl;
     }
 
     public boolean setLineProperty(String lineLetter, int propertyId, float value) {
-	return this.getLine(lineLetter).setProperty(propertyId, value);
+	return this.getLine(lineLetter, true).setProperty(propertyId, value);
     }
 
     public FloatProperty getLineProperty(String lineLetter, int propertyId) {
-	return this.getLine(lineLetter).getProperty(propertyId);
+	return this.getLine(lineLetter, true).getProperty(propertyId);
     }
 
     public String getSampleEventString() {
@@ -1399,5 +1413,6 @@ public class GUIChart extends GUIelement {
 	double deltaY = event.getSceneY() - dragStartMouseY;
 	this.setPlotX((float) (this.dragStartPlotX + deltaX));
 	this.setPlotY((float) (this.dragStartPlotY + deltaY));
+	this.requestRepaint();
     }
 }
