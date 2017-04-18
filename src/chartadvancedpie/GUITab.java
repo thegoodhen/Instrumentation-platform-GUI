@@ -181,6 +181,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 		returnList.add(ge);
 	    }
 	}
+
 	return returnList;
     }
 
@@ -478,8 +479,16 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
     }
 
     public void addGUIelement(GUIelement ge, int position) {
+	position++;
+	if (position > GUIList.size()) {
+	    position = GUIList.size();
+	}
+	if (position < 0) {
+	    position = 0;
+	}
 	ge.setGUITab(this);
 	GUIList.add(position, ge);
+	this.selectedElementIndex=position;
 	ge.recalculateUniqueName(this);//TODO: this will cause a huge mess, fix it
 	this.getGUIPanel().registerGUIelement(ge);
 
@@ -487,6 +496,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 
     public void removeGUIelement(int index) {
 	//String name=getUniqueName(index);
+	GUIList.get(selectedElementIndex).setFocused(false);
 	GUIList.get(index).setFocused(false);
 	GUIList.remove(index);
 	if (index < GUIList.size()) {

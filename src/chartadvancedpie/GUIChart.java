@@ -673,11 +673,8 @@ public class GUIChart extends GUIelement {
 	}
 	int autoScaleMode = (int) this.getPropertyByName("AutoScaleMode").getValue();
 	if (autoScaleMode == 2) {
-	    Platform.runLater(new Runnable() {
-		public void run() {
-		    autoScaleY();
-		}
-
+	    Platform.runLater(() -> {
+		autoScaleY();
 	    });
 	}
 	if (autoScaleMode == 3) {

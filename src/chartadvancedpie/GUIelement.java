@@ -49,6 +49,10 @@ public abstract class GUIelement extends Container implements Subscriber {
     private boolean visible = true;
     private boolean remoteControlled = false;
 
+    private double min=0;
+
+    private double max=100;
+
     private boolean matchedLastSearch = true;
     private int moduleGUIID = 0;//the ID assigned to the GUIelement by a module
     private String name = "Generic GUI Element";
@@ -176,6 +180,14 @@ public abstract class GUIelement extends Container implements Subscriber {
 	return (x > fp.x && x < fp.x + this.getWidth() && y > fp.y && y < fp.y + this.getHeight());
     }
 
+    public float getMin() {
+	return (float)min;
+    }
+
+    public float getMax() {
+	return (float)max;
+    }
+
     @Deprecated
     private class setPropertyAction extends EditAction {
 
@@ -284,11 +296,48 @@ public abstract class GUIelement extends Container implements Subscriber {
 	this.id2PropertyMap = new HashMap<>();
 	FloatProperty valp = new FloatProperty(0, "Value", 0.0F, this);
 
+	valp.setSetterPropertyCallback(new PropertyCallback<Float>(){
+		@Override
+		public void run(Property<Float> p)
+		{
+		    float theVal=p.getValueSilent();
+		    if(theVal<GUIelement.this.getMin())
+		    {
+			p.setValueSilent(getMin());
+		    }
+
+		    if(theVal>GUIelement.this.getMax())
+		    {
+			p.setValueSilent(getMax());
+		    }
+		}
+	});
+
 	this.addProperty(valp);
 
 	//this.addFloatProperty(0, "Value", 0);
-	this.addFloatProperty(1, "Max", 100);
-	this.addFloatProperty(2, "Min", 0);
+	FloatProperty maxp = new FloatProperty(1, "Max", 100F, this);
+
+	maxp.setSetterPropertyCallback(new PropertyCallback<Float>(){
+		@Override
+		public void run(Property<Float> p)
+		{
+		    max=p.getValueSilent();
+		}
+	});
+	FloatProperty minp = new FloatProperty(2, "Min", 0F, this);
+
+	minp.setSetterPropertyCallback(new PropertyCallback<Float>(){
+		@Override
+		public void run(Property<Float> p)
+		{
+		    max=p.getValueSilent();
+		}
+	});
+	this.addProperty(minp);
+	this.addProperty(maxp);
+	//this.addFloatProperty(1, "Max", 100);
+	//this.addFloatProperty(2, "Min", 0);
 	this.addFloatProperty(3, "Step", 1);
 	this.addStringProperty(4, "Name", "Generic gui element");
 	this.addStringProperty(5, "UniqueName", "GUI_GENERIC");
@@ -611,7 +660,7 @@ public abstract class GUIelement extends Container implements Subscriber {
     }
 
     public float getValue() {
-	return ((FloatProperty) this.getPropertyByName("Value")).getValueSilent();
+	return ((FloatProperty) this.getPropertyByName("Value")).getValue(true, false);
     }
 
     public int getHeight() {

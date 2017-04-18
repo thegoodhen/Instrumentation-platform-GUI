@@ -12,8 +12,11 @@ import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.sg.prism.NGNode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -62,6 +65,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     private Label repeatCountBlimp;
     private Label registerBlimp;
     private Label recordingStatusBlimp;
+    private final Label errorStatusBlimp;
 
     private int selectedElementIndex = 0;
     ArrayList<GUIelement> GUIList = new ArrayList<>();
@@ -357,7 +361,17 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     public void showError(String text) {
 	showText(text + "\n");//TODO: make it red
+	setErrorStatus();
+	Timer clearErrorTimer = new Timer();
 
+	TimerTask theTask = new TimerTask() {
+	    @Override
+	    public void run() {
+		GUIPanel.this.resetErrorStatus();
+	    }
+	};
+
+	clearErrorTimer.schedule(theTask, 3000);
     }
 
     public CanvasPane getCanvasPane() {
@@ -427,13 +441,18 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	recordingStatusBlimp = new Label("");
 	recordingStatusBlimp.setTextFill(Color.RED);
 	recordingStatusBlimp.setStyle("-fx-background-color: black");
+
+	errorStatusBlimp = new Label("");
+	errorStatusBlimp.setTextFill(Color.BLACK);
+	errorStatusBlimp.setStyle("-fx-background-color: red");
+
 	TilePane hb = new TilePane();
 	hb.setHgap(10);
 
 	hb.setStyle("-fx-background-color: black");
 	hb.setOrientation(Orientation.HORIZONTAL);
 
-	hb.getChildren().addAll(recordingStatusBlimp, modeStatusBlimp, vFlagStatusBlimp, registerBlimp, repeatCountBlimp, typedKeysBlimp);
+	hb.getChildren().addAll(recordingStatusBlimp, modeStatusBlimp, vFlagStatusBlimp, registerBlimp, repeatCountBlimp, typedKeysBlimp, errorStatusBlimp);
 
 	vb.getChildren().addAll(cmdLine, infoTextArea, hb);
 	canvas.setFocusTraversable(true);
@@ -596,9 +615,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//vm.setProgram(c.getByteCodeAL());
 	//vm.runProgram();
 	String userCode = "";
-	this.globalMapManager.addMapping("j", "k");
-	this.globalMapManager.addMapping("k", "j");
-	this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
+	//this.globalMapManager.addMapping("j", "k");
+	//this.globalMapManager.addMapping("k", "j");
+	//this.globalMapManager.addMapping("=", ":CGE.setValue(50)<ENTER>");
 	//this.recompileEventsForAll();
 
 	final Stage dialog = new Stage();
@@ -631,6 +650,14 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	} catch (Exception ex) {
 	    Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
 	}
+    }
+
+    public void setErrorStatus() {
+	Platform.runLater(() -> this.errorStatusBlimp.setText("ERROR!"));
+    }
+
+    public void resetErrorStatus() {
+	Platform.runLater(() -> this.errorStatusBlimp.setText(""));
     }
 
     public void recompileUserCode() {
@@ -984,7 +1011,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		    }
 		} else {
 		    GUIelement backupGE = this.getGUIPanel().getCurrentGUITab().getFocusedGUIElement();
-		    for (GUIelement ge : this.getGUIPanel().getCurrentGUITab().getSelectedGUIelementsList()) {
+		    for (GUIelement ge : this.getGUIPanel().getSelectedGUIelementsList(true)) {
 			this.getGUIPanel().getCurrentGUITab().focusGUIelement(ge);
 
 			try {
@@ -1012,7 +1039,6 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	    if (vFlag) {
 		returnList = this.getCurrentGUITab().getSelectedGUIelementsList();
 		if (returnList.isEmpty()) {
-		    //System.out.println("KOKOKOKOKOKO WARNING WARNING LOL");
 		    this.showError("Warning: vFlag is on, but no elements were selected!");//Fail, this aint visible
 		}
 	    } else {

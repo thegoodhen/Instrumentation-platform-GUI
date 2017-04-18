@@ -136,7 +136,7 @@ public class PacketHandler {
 		    gt.addGUIelement(ge, gt.getFocusedGUIElementIndex());
 		    ge.setModuleGUIID(ModuleGUIID);
 		    int resultingID = gp.GUIIDMap.get(ge);
-		    ge.getPropertyByName("Color1").setValue(ColorManager.get().floatFromColor(Color.RED));
+		    //ge.getPropertyByName("Color1").setValue(ColorManager.get().floatFromColor(Color.RED));
 		    gp.getSerialCommunicator().getWriter().sendGUIElementRenumber(ModuleGUIID, (byte) resultingID);
 		    System.out.println("type: " + GUIType + "ID: " + ModuleGUIID + ", assigned ID: " + resultingID);
 		}
