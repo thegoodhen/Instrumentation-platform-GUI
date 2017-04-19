@@ -49,9 +49,9 @@ public abstract class GUIelement extends Container implements Subscriber {
     private boolean visible = true;
     private boolean remoteControlled = false;
 
-    private double min=0;
+    private double min=Float.MIN_VALUE;
 
-    private double max=100;
+    private double max=Float.MAX_VALUE;
 
     private boolean matchedLastSearch = true;
     private int moduleGUIID = 0;//the ID assigned to the GUIelement by a module

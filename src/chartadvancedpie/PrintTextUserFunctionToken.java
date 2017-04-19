@@ -41,8 +41,8 @@ public class PrintTextUserFunctionToken extends AbstractBuiltInFunctionToken {
 	}
 	if (vm instanceof GUIVirtualMachine) {
 	    ((GUIVirtualMachine) vm).getGUIPanel().showText(sb.toString() + "\n");
-	    SerialCommunicator sc = ((GUIVirtualMachine) vm).getGUIPanel().getSerialCommunicator();
-	    sc.getWriter().sendInit();
+	    //SerialCommunicator sc = ((GUIVirtualMachine) vm).getGUIPanel().getSerialCommunicator();
+	    //sc.getWriter().sendInit();
 	}
 	vm.pushByteOnStack((byte) 0);//TODO: remove when we introduce void
     }

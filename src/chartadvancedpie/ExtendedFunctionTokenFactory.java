@@ -59,6 +59,7 @@ public class ExtendedFunctionTokenFactory extends DelegatingFactory{
 		this.addSubFactory(new AddToRegisterUserFunctionTokenFactory());
 		this.addSubFactory(new CopyRegisterUserFunctionTokenFactory());
 		this.addSubFactory(new RegistersUserFunctionTokenFactory());
+		this.addSubFactory(new ConnectToUserFunctionTokenFactory());
 		//super();
 		//TODO: write the custom functions here
 	}

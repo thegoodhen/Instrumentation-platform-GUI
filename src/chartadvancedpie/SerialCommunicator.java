@@ -67,7 +67,7 @@ public class SerialCommunicator {
     void connect(String portName) throws Exception {
 	CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 	if (portIdentifier.isCurrentlyOwned()) {
-	    System.out.println("Error: Port is currently in use");
+	    throw new Exception("Error: Port is currently in use");
 	} else {
 	    CommPort commPort = portIdentifier.open(this.getClass().getName(), 2000);
 

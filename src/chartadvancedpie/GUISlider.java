@@ -27,6 +27,8 @@ public class GUISlider extends GUIelement {
     public GUISlider(GUITab gut) {
 	super(gut);
 	this.setGUIPanel(gut.getGUIPanel());
+	this.getPropertyByName("Min").setValue(0F, true, false);
+	this.getPropertyByName("Max").setValue(100F, true, false);
 
 	//super(r);
 	//actionMap.put("l", testAction);

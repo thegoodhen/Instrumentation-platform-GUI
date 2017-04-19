@@ -32,8 +32,8 @@ public class PrintNumberUserFunctionToken extends AbstractBuiltInFunctionToken {
 	if (vm instanceof GUIVirtualMachine) {
 	    gvm = (GUIVirtualMachine) vm;
 
-	    SerialCommunicator sc = ((GUIVirtualMachine) vm).getGUIPanel().getSerialCommunicator();
-	    sc.getWriter().sendInit2();
+	    //SerialCommunicator sc = ((GUIVirtualMachine) vm).getGUIPanel().getSerialCommunicator();
+	    //sc.getWriter().sendInit2();
 	    if ((Math.abs(numToPrint - (int) numToPrint)) < 0.0000001)//isn't a fraction then
 	    {
 		gvm.getGUIPanel().showText(Integer.toString((int) numToPrint) + "\n");

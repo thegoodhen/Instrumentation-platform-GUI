@@ -120,6 +120,10 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return this.sc;
     }
 
+    public void setSerialCommunicator(SerialCommunicator sc) {
+	this.sc=sc;
+    }
+
     public GUIelement getCurrentlyEditedGUIelement() {
 	return this.currentlyEditedGUIelement;
     }
@@ -642,6 +646,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	dialogVbox.getChildren().add(btn);
 	dialog.show();
 	System.out.println(HintManager.get(this).fillString("I TAB1_GS"));
+	/*
 	sc = new SerialCommunicator(this);
 	try {
 	    sc.connect("COM3");
@@ -650,6 +655,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	} catch (Exception ex) {
 	    Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
 	}
+	*/
     }
 
     public void setErrorStatus() {
