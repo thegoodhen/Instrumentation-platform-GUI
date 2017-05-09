@@ -7,8 +7,12 @@ package chartadvancedpie;
 
 import java.util.ArrayList;
 
+
+
 /**
- *
+ * Utility class, responsible for the preparation of the keyboard shortcuts,
+ * related to searching between GUI elements to select them, or for
+ * filtering (hiding) them, when they match given criteria.
  * @author thegoodhen
  */
 public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {
@@ -65,6 +69,10 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
     }
 
+    /**
+     * Abstraction for actions, that will perform an operation
+     * on GUI elements, that match a given string in some way.
+     */
     private abstract class searchAction extends NamedGUIAction {
 
 	private int setOperation = RegexUtils.SET_ON_MATCH;
@@ -74,10 +82,18 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	    this.setOperation = setOperation;
 	}
 
+	/**
+	 * Focuses the commandLine, prompting user to enter a string;
+	 * ensures a live preview of the elements affected is provided as the user types this string.
+	 * Once the user hits enter, takes the string which was typed into the
+	 * commandLine and does some action with all the elements, matching
+	 * the given string.
+	 * 
+	 */
 	public void doAction() {
 	    gp.getCmdLine().requestFocus();
 	    gp.addCmdLineListener((observable, oldValue, newValue) -> {
-		performSearch(modifyInputString(newValue));
+		updateSearch(modifyInputString(newValue));
 	    });
 	    gp.enterPressAction = new NamedGUIAction("confirm query") {
 		@Override
@@ -89,30 +105,87 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
 	}
 
+	/**
+	 * Method, which can optionally be used to modify the string, given
+	 * by the user, before it gets passed for further processing.
+	 * For example, the updateSearch method expects a regular expression, so if the user wants to
+	 * enter a literal string, RegexUtils.makeRegexLiteral method can be used
+	 * to modify this string, so it will be treated as a literal string.
+	 * @see RegexUtils.makeRegexLiteral
+	 * @see updateSearch
+	 * @see confirmSearchAction
+	 * @param inputString
+	 * @return 
+	 */
 	public abstract String modifyInputString(String inputString);
 
-	public void performSearch(String regex) {
+	/**
+	 * Callback method which should be called everytime the user types
+	 * additional letter in the commandLine.
+	 * @param regex the string written in the commandLine, treated as a regex;
+	 * if it's not desirable to treat it as a regex, it has to be edited by the modifyInputString
+	 * method, before it's passed to this method.
+	 */
+	public void updateSearch(String regex) {
 	    gp.getCurrentGUITab().setPreviewRegex(regex, setOperation);
 	}
 
-	public void confirmSearchAction() {
-	    EditHistoryManager.get(gp).startUndoGroup();
-	    gp.getCurrentGUITab().applySearch(setOperation);
-	    EditHistoryManager.get(gp).endUndoGroup();
-	}
+	/**
+	 * Method, which should be called when the user presses enter, confirming
+	 * the text they entered in the commandLine (the so-called query string).
+	 */
+	public abstract void confirmSearchAction() ;
 
+	/**
+	 * Returns the set operation (as in, operation in set theory), 
+	 * relevant to this searchAction.  
+	 * In  other words, whether the elements that match this search should be
+	 * added to the elements that matched the previous search, whether they
+	 * should replace them, or something else. 
+	 * @see LiteralSelectionAction
+	 * @see RegexUtils
+	 * @return 
+	 */
 	public int getSetOperation() {
 	    return this.setOperation;
 	}
 
     }
 
+
+
+
+    /**
+     * Abstract for actions, that prompt the user to enter some string,
+     * and then use this string to select some GUI elements.
+     */
+    private abstract class selectionAction extends searchAction {
+
+	public selectionAction(String name, int setOperation) {
+	    super(name, setOperation);
+	}
+
+	@Override
+	public void confirmSearchAction() {
+	    EditHistoryManager.get(gp).startUndoGroup();
+	    gp.getCurrentGUITab().applySelection(this.getSetOperation());
+	    EditHistoryManager.get(gp).endUndoGroup();
+	}
+
+    }
+
+
+    /**
+     * Abstract for actions, that prompt the user to enter some string,
+     * and then use this string to hide some GUI elements.
+     */
     private abstract class filterAction extends searchAction {
 
 	public filterAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
+	@Override
 	public void confirmSearchAction() {
 	    EditHistoryManager.get(gp).startUndoGroup();
 	    gp.getCurrentGUITab().applyFilter(this.getSetOperation());
@@ -121,9 +194,13 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
     }
 
-    private class regexSearchAction extends searchAction {
+    /**
+     * Class for selecting elements, that match a given regex.
+     * @see selectionAction
+     */
+    private class RegexSelectionAction extends selectionAction {
 
-	public regexSearchAction(String name, int setOperation) {
+	public RegexSelectionAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
@@ -133,9 +210,13 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	}
     }
 
-    private class fuzzySearchAction extends searchAction {
+    /**
+     * Class for selecting elements, that match a given fuzzy string.
+     * @see selectionAction
+     */
+    private class FuzzySelectionAction extends selectionAction {
 
-	public fuzzySearchAction(String name, int setOperation) {
+	public FuzzySelectionAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
@@ -145,9 +226,13 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	}
     }
 
-    private class literalSearchAction extends searchAction {
+    /**
+     * Class for selecting elements, that match a given literal string.
+     * @see selectionAction
+     */
+    private class LiteralSelectionAction extends selectionAction {
 
-	public literalSearchAction(String name, int setOperation) {
+	public LiteralSelectionAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
@@ -158,9 +243,13 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
     }
 
-    private class regexFilterAction extends filterAction {
+    /**
+     * Class for filtering (showing and hiding) elements, that match a given regex.
+     * @see selectionAction
+     */
+    private class RegexFilterAction extends filterAction {
 
-	public regexFilterAction(String name, int setOperation) {
+	public RegexFilterAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
@@ -170,9 +259,13 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	}
     }
 
-    private class fuzzyFilterAction extends filterAction {
+    /**
+     * Class for filtering (showing and hiding) elements, that match a given fuzzy string.
+     * @see selectionAction
+     */
+    private class FuzzyFilterAction extends filterAction {
 
-	public fuzzyFilterAction(String name, int setOperation) {
+	public FuzzyFilterAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
@@ -182,9 +275,13 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	}
     }
 
-    private class literalFilterAction extends filterAction {
+    /**
+     * Class for filtering (showing and hiding) elements, that match a given literal string.
+     * @see selectionAction
+     */
+    private class LiteralFilterAction extends filterAction {
 
-	public literalFilterAction(String name, int setOperation) {
+	public LiteralFilterAction(String name, int setOperation) {
 	    super(name, setOperation);
 	}
 
@@ -195,6 +292,7 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
     }
 
+    @Override
     public void prepareShortcuts(GUIKeyEventHandler gkeh) {
 	Menu m = gkeh.getMainMenu();
 	gp = gkeh.getGUIPanel();
@@ -218,7 +316,7 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	    }
 	};
 
-	m.addAction("/", new regexSearchAction("search using regex", RegexUtils.SET_ON_MATCH));
+	m.addAction("/", new RegexSelectionAction("search using regex", RegexUtils.SET_ON_MATCH));
 
 	/**
 	 * Search related stuff below
@@ -233,35 +331,29 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 
 	searchMenu.addSubMenu("+", addToSearchMenu);
 	searchMenu.addSubMenu("-", subtractFromSearchMenu);
-	searchMenu.addAction(
-		"f", new fuzzySearchAction("fuzzy search", RegexUtils.SET_ON_MATCH));
-	searchMenu.addAction(
-		"r", new regexSearchAction("search using regex", RegexUtils.SET_ON_MATCH));
-	searchMenu.addAction(
-		"l", new literalSearchAction("search for a literal string", RegexUtils.SET_ON_MATCH));
+	searchMenu.addAction("f", new FuzzySelectionAction("fuzzy search", RegexUtils.SET_ON_MATCH));
+	searchMenu.addAction("r", new RegexSelectionAction("search using regex", RegexUtils.SET_ON_MATCH));
+	searchMenu.addAction("l", new LiteralSelectionAction("search for a literal string", RegexUtils.SET_ON_MATCH));
 
-	searchMenu.addAction(
-		"F", new fuzzySearchAction("MISMATCH fuzzy search", RegexUtils.SET_ON_MISMATCH));
-	searchMenu.addAction(
-		"R", new regexSearchAction("MISMATCH search using regex", RegexUtils.SET_ON_MISMATCH));
-	searchMenu.addAction(
-		"L", new literalSearchAction("MISMATCH search for a literal string", RegexUtils.SET_ON_MISMATCH));
+	searchMenu.addAction("F", new FuzzySelectionAction("MISMATCH fuzzy search", RegexUtils.SET_ON_MISMATCH));
+	searchMenu.addAction("R", new RegexSelectionAction("MISMATCH search using regex", RegexUtils.SET_ON_MISMATCH));
+	searchMenu.addAction("L", new LiteralSelectionAction("MISMATCH search for a literal string", RegexUtils.SET_ON_MISMATCH));
 
-	addToSearchMenu.addAction("f", new fuzzySearchAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
-	addToSearchMenu.addAction("r", new regexSearchAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
-	addToSearchMenu.addAction("l", new literalSearchAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
+	addToSearchMenu.addAction("f", new FuzzySelectionAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
+	addToSearchMenu.addAction("r", new RegexSelectionAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
+	addToSearchMenu.addAction("l", new LiteralSelectionAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
 
-	addToSearchMenu.addAction("F", new fuzzySearchAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
-	addToSearchMenu.addAction("R", new regexSearchAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
-	addToSearchMenu.addAction("L", new literalSearchAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
+	addToSearchMenu.addAction("F", new FuzzySelectionAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
+	addToSearchMenu.addAction("R", new RegexSelectionAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
+	addToSearchMenu.addAction("L", new LiteralSelectionAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
 
-	subtractFromSearchMenu.addAction("f", new fuzzySearchAction("remove items matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MATCH));
-	subtractFromSearchMenu.addAction("r", new regexSearchAction("remove items matching regex query from search", RegexUtils.SUBTRACT_ON_MATCH));
-	subtractFromSearchMenu.addAction("l", new literalSearchAction("remove items matching a literal string from search", RegexUtils.SUBTRACT_ON_MATCH));
+	subtractFromSearchMenu.addAction("f", new FuzzySelectionAction("remove items matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MATCH));
+	subtractFromSearchMenu.addAction("r", new RegexSelectionAction("remove items matching regex query from search", RegexUtils.SUBTRACT_ON_MATCH));
+	subtractFromSearchMenu.addAction("l", new LiteralSelectionAction("remove items matching a literal string from search", RegexUtils.SUBTRACT_ON_MATCH));
 
-	subtractFromSearchMenu.addAction("F", new fuzzySearchAction("remove items NOT matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
-	subtractFromSearchMenu.addAction("R", new regexSearchAction("remove items NOT matching regex query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
-	subtractFromSearchMenu.addAction("L", new literalSearchAction("remove items NOT matching a literal string from search", RegexUtils.SUBTRACT_ON_MISMATCH));
+	subtractFromSearchMenu.addAction("F", new FuzzySelectionAction("remove items NOT matching fuzzy query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
+	subtractFromSearchMenu.addAction("R", new RegexSelectionAction("remove items NOT matching regex query from search", RegexUtils.SUBTRACT_ON_MISMATCH));
+	subtractFromSearchMenu.addAction("L", new LiteralSelectionAction("remove items NOT matching a literal string from search", RegexUtils.SUBTRACT_ON_MISMATCH));
 
 	m.addSubMenu(
 		"v", searchMenu);
@@ -276,35 +368,29 @@ public class FilteringAndSearchingKeyboardShortcutPreparer implements IKeyboardS
 	filterMenu.addSubMenu("+", addToFilterMenu);
 	filterMenu.addSubMenu("-", subtractFromFilterMenu);
 	filterMenu.addAction("f", hideFocusedElementAction);
-	filterMenu.addAction(
-		"s", new fuzzyFilterAction("fuzzy filter", RegexUtils.SET_ON_MATCH));
-	filterMenu.addAction(
-		"r", new regexFilterAction("filter using regex", RegexUtils.SET_ON_MATCH));
-	filterMenu.addAction(
-		"l", new literalFilterAction("filter using a literal string", RegexUtils.SET_ON_MATCH));
+	filterMenu.addAction("s", new FuzzyFilterAction("fuzzy filter", RegexUtils.SET_ON_MATCH));
+	filterMenu.addAction("r", new RegexFilterAction("filter using regex", RegexUtils.SET_ON_MATCH));
+	filterMenu.addAction("l", new LiteralFilterAction("filter using a literal string", RegexUtils.SET_ON_MATCH));
 
-	filterMenu.addAction(
-		"S", new fuzzyFilterAction("filter on MISMATCH of fuzzy filter", RegexUtils.SET_ON_MISMATCH));
-	filterMenu.addAction(
-		"R", new regexFilterAction("filter on MISMATCH with regex", RegexUtils.SET_ON_MISMATCH));
-	filterMenu.addAction(
-		"L", new literalFilterAction("filter on MISMATCH with a literal string", RegexUtils.SET_ON_MISMATCH));
+	filterMenu.addAction("S", new FuzzyFilterAction("filter on MISMATCH of fuzzy filter", RegexUtils.SET_ON_MISMATCH));
+	filterMenu.addAction("R", new RegexFilterAction("filter on MISMATCH with regex", RegexUtils.SET_ON_MISMATCH));
+	filterMenu.addAction("L", new LiteralFilterAction("filter on MISMATCH with a literal string", RegexUtils.SET_ON_MISMATCH));
 
-	addToFilterMenu.addAction("s", new fuzzyFilterAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
-	addToFilterMenu.addAction("r", new regexFilterAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
-	addToFilterMenu.addAction("l", new literalFilterAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
+	addToFilterMenu.addAction("s", new FuzzyFilterAction("add items matching fuzzy query", RegexUtils.ADD_ON_MATCH));
+	addToFilterMenu.addAction("r", new RegexFilterAction("add items matching regex query", RegexUtils.ADD_ON_MATCH));
+	addToFilterMenu.addAction("l", new LiteralFilterAction("add items matching a literal string", RegexUtils.ADD_ON_MATCH));
 
-	addToFilterMenu.addAction("S", new fuzzyFilterAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
-	addToFilterMenu.addAction("R", new regexFilterAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
-	addToFilterMenu.addAction("L", new literalFilterAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
+	addToFilterMenu.addAction("S", new FuzzyFilterAction("add items NOT matching fuzzy query", RegexUtils.ADD_ON_MISMATCH));
+	addToFilterMenu.addAction("R", new RegexFilterAction("add items NOT matching regex query", RegexUtils.ADD_ON_MISMATCH));
+	addToFilterMenu.addAction("L", new LiteralFilterAction("add items NOT matching a literal string", RegexUtils.ADD_ON_MISMATCH));
 
-	subtractFromFilterMenu.addAction("s", new fuzzyFilterAction("remove items matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MATCH));
-	subtractFromFilterMenu.addAction("r", new regexFilterAction("remove items matching regex query from filter", RegexUtils.SUBTRACT_ON_MATCH));
-	subtractFromFilterMenu.addAction("l", new literalFilterAction("remove items matching a literal string from filter", RegexUtils.SUBTRACT_ON_MATCH));
+	subtractFromFilterMenu.addAction("s", new FuzzyFilterAction("remove items matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MATCH));
+	subtractFromFilterMenu.addAction("r", new RegexFilterAction("remove items matching regex query from filter", RegexUtils.SUBTRACT_ON_MATCH));
+	subtractFromFilterMenu.addAction("l", new LiteralFilterAction("remove items matching a literal string from filter", RegexUtils.SUBTRACT_ON_MATCH));
 
-	subtractFromFilterMenu.addAction("S", new fuzzyFilterAction("remove items NOT matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
-	subtractFromFilterMenu.addAction("R", new regexFilterAction("remove items NOT matching regex query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
-	subtractFromFilterMenu.addAction("L", new literalFilterAction("remove items NOT matching a literal string from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+	subtractFromFilterMenu.addAction("S", new FuzzyFilterAction("remove items NOT matching fuzzy query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+	subtractFromFilterMenu.addAction("R", new RegexFilterAction("remove items NOT matching regex query from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
+	subtractFromFilterMenu.addAction("L", new LiteralFilterAction("remove items NOT matching a literal string from filter", RegexUtils.SUBTRACT_ON_MISMATCH));
 
 	m.addSubMenu(
 		"f", filterMenu);

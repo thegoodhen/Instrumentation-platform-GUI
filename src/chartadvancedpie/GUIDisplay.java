@@ -106,6 +106,7 @@ public class GUIDisplay extends GUIelement {
 	ram.setSuperMenu(this.getMenu());
     }
 
+    /*
     public String getName() {
 	return "Display";
     }
@@ -114,6 +115,7 @@ public class GUIDisplay extends GUIelement {
     public String getGUIelementName() {
 	return "DISPLAY";
     }
+    */
 
     public void paint(GraphicsContext gc, double x, double y) {
 	super.paint(gc, x, y);

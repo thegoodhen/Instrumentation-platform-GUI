@@ -12,7 +12,8 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * Take a register, provided as the first string argument, and append text to it,
+ * provided as a second string argument.
  * @author thegoodhen
  */
 public class AddToRegisterUserFunctionToken extends AbstractBuiltInFunctionToken {

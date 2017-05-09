@@ -14,6 +14,8 @@ import shuntingyard.VirtualMachine;
 
 /**
  *
+ * CLUC built-in function to force casting from float to integer,
+ * forcing a lossy conversion if necessary.
  * @author thegoodhen
  */
 public class CastToIntUserFunctionToken extends AbstractBuiltInFunctionToken {

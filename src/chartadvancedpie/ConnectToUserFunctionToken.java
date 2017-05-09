@@ -16,7 +16,9 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC built-in function, used to initialize the connection to a module.
+ * Has one string argument, which is the name of serial port of the module which we should
+ * connect to - for instance, "COM3" on Windows, or /dev/ttyUSB0 on Linux
  * @author thegoodhen
  */
 public class ConnectToUserFunctionToken extends AbstractBuiltInFunctionToken {

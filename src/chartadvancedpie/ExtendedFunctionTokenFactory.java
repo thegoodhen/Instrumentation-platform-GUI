@@ -18,7 +18,8 @@ import shuntingyard.StackByteUserFunctionTokenFactory;
 import shuntingyard.StackIntUserFunctionTokenFactory;
 import shuntingyard.Token;
 /**
- * This is pretty much a copy of the original FunctionTokenFactory; instead, it should * extend it. That's to be done. TODO. TOOOODOOOOO! :3
+ * DelegatingFactory, used to create all built-in function tokens, specific for
+ * the GUI.
  * @author thegoodhen
  */
 public class ExtendedFunctionTokenFactory extends DelegatingFactory{

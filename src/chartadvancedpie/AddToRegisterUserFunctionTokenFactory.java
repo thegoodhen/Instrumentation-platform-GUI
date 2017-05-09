@@ -9,7 +9,7 @@ import shuntingyard.Token;
 import shuntingyard.TokenFactory;
 
 /**
- *
+ * Factory object for the AddToRegisterUserFunctionToken
  * @author thegoodhen
  */
 public class AddToRegisterUserFunctionTokenFactory extends TokenFactory {

@@ -133,6 +133,13 @@ public class DotNotationParser extends ExpressionParser {
 	return originalString.substring(0, finalIndex);
     }
 
+    /**
+     * given a call to a getter or a setter, returns whatever is between
+     * the parenthesis of this call, correctly handling the parenthesis
+     * pairs.
+     * @param getterOrSetterString
+     * @return 
+     */
 private String getArgs(String getterOrSetterString)
 {
    Pattern p=Pattern.compile("\\((.*)\\)");

@@ -61,7 +61,7 @@ public class PacketHandler {
 		 }
 			
 		 }*/
-		for (int i = 1; i < data.length - 5; i+=6) {
+		for (int i = 1; i < data.length - 5; i += 6) {
 		    byte guiElementID = (byte) data[i];
 		    byte propertyID = (byte) data[i + 1];
 		    byte fl1 = (byte) data[i + 2];
@@ -71,8 +71,17 @@ public class PacketHandler {
 
 		    byte[] theArr = {fl1, fl2, fl3, fl4};
 		    float f = HelpByteMethods.constructFloat(theArr);
+		    byte[] s2ndArr=HelpByteMethods.getFloatBytes(f);
 		    System.out.println("guiElementID is: " + guiElementID);
 		    System.out.println("propertyID is: " + propertyID);
+		    if (propertyID == 7) {
+
+			System.out.println("value is: " + f);
+			for(byte b:theArr)
+			{
+			    System.out.println("kokodak prdel"+b);
+			}
+		    }
 		    //System.out.println("value is: " + f);
 		    //guiElementID=8;
 		    //propertyID=0;
@@ -82,6 +91,49 @@ public class PacketHandler {
 			if (p != null) {
 			    p.setValue(f);
 			}
+		    }
+		}
+	    }
+
+	}
+	);
+
+	resolverList.add(5, new Resolver() {
+	    @Override
+	    public void resolve(RequestNew rn) {
+		System.out.println("new string set req");
+		int[] data = rn.getData();
+		/*
+		 if(Math.random()>0.9)
+		 {
+		 try {
+		 Thread.sleep((long) (Math.random()*100));
+		 } catch (InterruptedException ex) {
+		 Logger.getLogger(PacketHandler.class.getName()).log(Level.SEVERE, null, ex);
+		 }
+			
+		 }*/
+		byte guiElementID = (byte) data[1];
+		byte propertyID = (byte) data[2];
+		StringBuilder sb = new StringBuilder();
+		for (int i = 3; i < data.length; i++) {
+		    char currentChar = (char) data[i];
+		    if (currentChar == 0)//null terminator
+		    {
+			break;
+		    }
+		    sb.append(currentChar);
+
+		}
+		System.out.println(sb.toString() + "shall be saved to " + guiElementID + "into" + propertyID);
+		GUIelement ge = gp.ID2GUIMap.get((int) guiElementID);
+		if (ge != null) {
+		    Property p = ge.getPropertyById(propertyID);//TODO: maaaaybe handle integer properthies and byte and and...
+		    if (p != null) {
+			if (p instanceof StringProperty) {
+			    p.setValue(sb.toString());
+			}
+			//p.setValue(f);
 		    }
 		}
 	    }

@@ -22,6 +22,13 @@ public class EditHistoryManager {
     private static compositeEditAction currentCompositeAction = null;
     private final GUIPanel gp;
 
+    /**
+     * Utility class for managing undo groups. Sometimes many consecutive
+     * actions happen, for instance when executing a user code. However,
+     * it is still desirable to undo all of those actions in "one go", that is,
+     * with a single undo. This utility class is intended to group multiple edit
+     * actions, so they can be undone at once.
+     */
     private class compositeEditAction extends EditAction {
 
 	ArrayList<EditAction> eaList = new ArrayList<>();
@@ -54,6 +61,11 @@ public class EditHistoryManager {
 	this.gp=gp;
     }
 
+    /**
+     * Singleton pattern getter.
+     * @param gp
+     * @return 
+     */
     public static EditHistoryManager get(GUIPanel gp) {
 	if (instance == null) {
 	    instance = new EditHistoryManager(gp);
@@ -63,16 +75,34 @@ public class EditHistoryManager {
 	}
     }
 
+    /**
+     * Indicate that the next actions recorded by calls to the addAction
+     * method, up to the first call to the endUndoGroup function, should
+     * be treated as a single action (undone at once, when requested).
+     * @see endUndoGroup
+     * @see addAction
+     */
     public void startUndoGroup() {
 	undoGroupOpen = true;
 	currentCompositeAction = new compositeEditAction();
     }
 
+    /**
+     * Indicate that this is the end of the current undo group.
+     * @see startUndoGroup
+     */
     public void endUndoGroup() {
 	undoGroupOpen = false;
 	historyList.push(currentCompositeAction);
     }
 
+    /**
+     * Add action to the current undo group, if any, or to the list of actions, if none
+     * undo group is currently active. This allows such action to be undone later.
+     * @see startUndoGroup
+     * @see endUndoGroup
+     * @param ea 
+     */
     public void addAction(EditAction ea) {
 	if (undoGroupOpen) {
 	    currentCompositeAction.addAction(ea);
@@ -81,6 +111,10 @@ public class EditHistoryManager {
 	}
     }
 
+    /**
+     * Undoes last action and jumps to the position, related to this undone
+     * action.
+     */
     public void undoLastAction() {
 	EditAction ea = historyList.pop();
 	ea.undoAction();

@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 
 /**
  *
+ * Class related to handling requests from the child module when communicating with it.
+ * The way requests are handled has since been reimplemented.
  * @author thegoodhen
  */
 public class ByteWriteRequest extends Request{

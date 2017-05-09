@@ -22,7 +22,7 @@ public class SendGlobalKeysUserFunctionTokenFactory extends TokenFactory {
 
 	@Override
 	public Token generateInstance(String tokenString) {
-		return new SendKeysUserFunctionToken(tokenString);
+		return new SendGlobalKeysUserFunctionToken(tokenString);
 	}
 
 

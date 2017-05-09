@@ -12,7 +12,10 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC built-in function, used to copy content between registers.
+ * Accepts 2 string arguments. First one is the source register (from which we
+ * want to copy) and the second one is the target register (to which we want to
+ * copy).
  * @author thegoodhen
  */
 public class CopyRegisterUserFunctionToken extends AbstractBuiltInFunctionToken {

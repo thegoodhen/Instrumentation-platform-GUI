@@ -6,7 +6,8 @@
 package chartadvancedpie;
 
 /**
- *
+ * Exception intended to be thrown if something goes wrong, during the communication
+ * between the main module (PC) and the child modules.
  * @author thegoodhen
  */
 class CommunicationException extends Exception {

@@ -79,6 +79,8 @@ public class GUIStatsDisplay extends GUIelement {
 	this.addProperthies();
 	//super(r);
 
+	this.getPropertyByName("Width").setValue(500, true, false);
+
 	statGenerator rawValueStatGen = new statGenerator("Raw value") {
 	    @Override
 	    public double getStat() {

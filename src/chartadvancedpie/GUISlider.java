@@ -29,6 +29,7 @@ public class GUISlider extends GUIelement {
 	this.setGUIPanel(gut.getGUIPanel());
 	this.getPropertyByName("Min").setValue(0F, true, false);
 	this.getPropertyByName("Max").setValue(100F, true, false);
+	this.getPropertyByName("Name").setValue("Slider", true, false);
 
 	//super(r);
 	//actionMap.put("l", testAction);
@@ -209,9 +210,11 @@ public class GUISlider extends GUIelement {
 	ram.setSuperMenu(this.getMenu());
     }
 
+    /*
     public String getName() {
 	return "slider";
     }
+    */
 
     public void increaseValue(float step) {
 	this.setValue(this.getValue() + step);
@@ -230,10 +233,12 @@ public class GUISlider extends GUIelement {
 	super.update();
     }
 
+    
     @Override
     public String getGUIelementName() {
 	return "SLIDER";
     }
+    
 
     public void paint(GraphicsContext gc, double x, double y) {
 	super.paint(gc, x, y);

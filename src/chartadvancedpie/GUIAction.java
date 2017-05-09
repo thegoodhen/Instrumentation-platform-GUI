@@ -7,7 +7,7 @@ package chartadvancedpie;
  */
 
 /**
- *
+ * Action, affecting or related to the GUI elements.
  * @author thegoodhen
  */
 public class GUIAction extends GUIAbstractAction{
@@ -27,11 +27,23 @@ public class GUIAction extends GUIAbstractAction{
 		}
 	}
 	
+	/**
+	 * Get the count associated with this action.
+	 * When the doAction method is called, a number is optionally assigned to it.
+	 * This is the user-provided number, which usually indicates, how many times
+	 * the action should be run. This getter can be used to later access this number.
+	 * @return 
+	 */
 	public int getCount()
 	{
 		return count;
 	}
 
+	/**
+	 * Sets the count.
+	 * @see getCount
+	 * @param count 
+	 */
 	protected void setCount(int count)
 	{
 		this.count=count;
@@ -42,6 +54,11 @@ public class GUIAction extends GUIAbstractAction{
 		return this.gp;
 	}
 
+	/**
+	 * Call doAction, optionally also doing some other stuff, such as
+	 * reseting the repeat count or calling undo system related functionality.
+	 * @param gp 
+	 */
 	public void doActionWithHandling(GUIPanel gp)
 	{
 		this.gp=gp;

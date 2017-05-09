@@ -6,7 +6,8 @@
 package chartadvancedpie;
 
 /**
- *
+ * Abstraction for any action, which didn't just result in the change of focus
+ * or the way data is viewed, but actually changed properties of elements or more.
  * @author thegoodhen
  */
 public abstract class EditAction extends NamedGUIAction {
@@ -17,6 +18,13 @@ public abstract class EditAction extends NamedGUIAction {
 	super(name);
     }
 
+    /**
+     * Get the Position object, assigned to this action. The position determines,
+     * which tab was the user viewing, and which element was focused, when this
+     * action happened. This is useful for storing the changelist.
+     * @return the Position object, representing the currently focused element,
+     * when this action happened.
+     */
     public Position getPosition() {
 	return this.pos;
     }
@@ -31,6 +39,10 @@ public abstract class EditAction extends NamedGUIAction {
 	gp.resetCurrentCommandText();
     }
 
+    /**
+     * Undo this action. This method is a part of the UNDO mechanism, which
+     * needs to be reimplemented.
+     */
     public abstract void undoAction();
 
 }

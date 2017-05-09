@@ -6,7 +6,8 @@
 package chartadvancedpie;
 
 /**
- *
+ * Utility class, responsible for the preparation of the keyboard shortcuts,
+ * related to motions, that is, for traversing the list of GUI elements.
  * @author thegoodhen
  */
 public class BasicMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {

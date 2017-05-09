@@ -13,7 +13,8 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC built-in function to force casting from float or integer to byte,
+ * forcing a lossy conversion if necessary.
  * @author thegoodhen
  */
 public class CastToByteUserFunctionToken extends AbstractBuiltInFunctionToken {

@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- *
+ *@deprecated 
+ * Deprecated class, related to the old way GUI was loaded from the connected
+ * child module
  * @author thegoodhen
  */
 public class Container {

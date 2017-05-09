@@ -6,7 +6,7 @@
 package chartadvancedpie;
 
 /**
- *
+ * Class for storing a pair of doubles; these represent a point in 2D coordinate space.
  * @author thegoodhen
  */
 public class FloatPoint {

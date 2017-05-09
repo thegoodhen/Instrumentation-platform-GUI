@@ -227,6 +227,8 @@ public abstract class Property<T> {
 	    if (constructor.getParameterTypes().length == 4) {
 		try {
 		    Property<T> p = (Property<T>) constructor.newInstance(id, name, value, ge);
+		    //p.setGetterPropertyCallback(getterPropertyCallback);
+		    //p.setSetterPropertyCallback(setterPropertyCallback);
 		    return p;
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
 		    Logger.getLogger(GUIelement.class.getName()).log(Level.SEVERE, null, ex);

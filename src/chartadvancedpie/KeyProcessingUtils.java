@@ -65,6 +65,7 @@ public class KeyProcessingUtils {
 		}
 	    }
 	}
+	System.out.println("Return string was: "+returnString);
 	return returnString;
     }
 

@@ -23,6 +23,7 @@ import javafx.scene.paint.Paint;
 import shuntingyard.Token;
 
 /**
+ * GUI element, used for displaying multiple plot lines at once or histograms.
  *
  * @author thegoodhen
  */
@@ -87,6 +88,12 @@ public class GUIChart extends GUIelement {
 	//actionMap.put("h", testAction2);
     }
 
+    /**
+     * Add a new line, setting the color of it in such a way, that it's easily
+     * distinguishable from the other colors of lines already in the chart.
+     *
+     * @param pl
+     */
     public void addLine(PlotLine pl) {
 	this.linesList.put(pl.getCharacter(), pl);
 	pl.lineColor = ColorManager.get().getNthColor(linesList.size());
@@ -100,6 +107,9 @@ public class GUIChart extends GUIelement {
 
      }
      */
+    /**
+     * Stops recording of all lines.
+     */
     public void stopRecording() {
 	if (!isRecording) {
 	    return;
@@ -110,6 +120,11 @@ public class GUIChart extends GUIelement {
 
     }
 
+    /**
+     * Starts an automatic recording of all relevant lines.
+     *
+     * @see sampleAllRelevant
+     */
     public void startRecording() {
 	if (isRecording) {
 	    return;
@@ -128,7 +143,7 @@ public class GUIChart extends GUIelement {
 			//System.out.println("kokodak");
 			if (sampleEvent != null) {
 			    //Platform.runLater(() -> {//TODO: only surround the necessary stuff in runLater!
-				GUIChart.this.getGUIPanel().handleCallBack(sampleEvent);//call the user event
+			    GUIChart.this.getGUIPanel().handleCallBack(sampleEvent);//call the user event
 			    //});
 			    GUIChart.this.sampleAllRelevant();
 			}
@@ -136,11 +151,25 @@ public class GUIChart extends GUIelement {
 		}, 0, 100);
     }
 
+    /**
+     * Sets the current line character to the one provided.
+     *
+     * @param c the character to set the current line char to.
+     */
     public void setCurrentLineChar(char c) {
 	this.currentLineChar = c;
     }
 
-    void selectNextLine(int nth, boolean onlyThoseContainingData) {
+    /**
+     * Focus next line n times (nth next line, alphabetically ordered by their
+     * letters). For instance(focusNextLine(2,true) focuses line "c", if line
+     * "a" was focused. Negative n is valid, and focuses a previous line.
+     *
+     * @param nth
+     * @param onlyThoseContainingData if false, also selects ghost lines (those
+     * that have not yet been initialized).
+     */
+    void focusNextLine(int nth, boolean onlyThoseContainingData) {
 	int dir = nth;
 
 	if (nth > 0) {
@@ -163,7 +192,7 @@ public class GUIChart extends GUIelement {
 	    }
 	    PlotLine pl = this.linesList.get(currentLineChar);
 	    while (pl == null || (!this.linesList.get(currentLineChar).isVisible()) || (pl.getPointCount() == 0)) {
-		selectNextLine(dir, false);
+		focusNextLine(dir, false);
 		pl = this.linesList.get(currentLineChar);
 	    }
 	}
@@ -246,6 +275,9 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for scaling up along the X axis
+	 */
 	NamedGUIAction scaleXUpAction = new NamedGUIAction("hscale++") {
 	    @Override
 	    public void doAction() {
@@ -257,6 +289,9 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for scaling down along the X axis
+	 */
 	NamedGUIAction scaleXDownAction = new NamedGUIAction("hscale--") {
 	    @Override
 	    public void doAction() {
@@ -268,6 +303,9 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for scaling up along the Y axis
+	 */
 	NamedGUIAction scaleYUpAction = new NamedGUIAction("vscale++") {
 	    @Override
 	    public void doAction() {
@@ -279,6 +317,9 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for scaling down along the Y axis
+	 */
 	NamedGUIAction scaleYDownAction = new NamedGUIAction("vscale--") {
 	    @Override
 	    public void doAction() {
@@ -290,48 +331,67 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for focusing the next existing line.
+	 */
 	NamedGUIAction nextExistingLine = new NamedGUIAction("next existing line") {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(this.getCount(), true);
+		GUIChart.this.focusNextLine(this.getCount(), true);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
 	    }
 	};
+
+	/**
+	 * Action for focusing the previous existing line.
+	 */
 	NamedGUIAction prevExistingLine = new NamedGUIAction("previous existing line") {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(-this.getCount(), true);
+		GUIChart.this.focusNextLine(-this.getCount(), true);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
 	    }
 	};
+
+	/**
+	 * Action for focusing the next line, whether it exists (=has data and
+	 * is initialized) or not.
+	 */
 	NamedGUIAction nextLine = new NamedGUIAction("next line") {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(this.getCount(), false);
+		GUIChart.this.focusNextLine(this.getCount(), false);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
 	    }
 	};
 
+	/**
+	 * Action for focusing the previous line, whether it exists (=has data
+	 * and is initialized) or not.
+	 */
 	NamedGUIAction prevLine = new NamedGUIAction("previous line") {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
-		GUIChart.this.selectNextLine(-this.getCount(), false);
+		GUIChart.this.focusNextLine(-this.getCount(), false);
 		System.out.println(GUIChart.this.currentLineChar);
 		GUIChart.super.update();
 
 	    }
 	};
 
+	/**
+	 * Action for moving the viewed portion of the chart down.
+	 */
 	NamedGUIAction moveDown = new NamedGUIAction("move down") {
 	    @Override
 	    public void doAction() {
@@ -342,6 +402,9 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for moving the viewed portion of the chart up.
+	 */
 	NamedGUIAction moveUp = new NamedGUIAction("move up") {
 	    @Override
 	    public void doAction() {
@@ -351,6 +414,10 @@ public class GUIChart extends GUIelement {
 
 	    }
 	};
+
+	/**
+	 * Action for moving the viewed portion of the chart left.
+	 */
 	NamedGUIAction moveLeft = new NamedGUIAction("move up") {
 	    @Override
 	    public void doAction() {
@@ -360,7 +427,11 @@ public class GUIChart extends GUIelement {
 
 	    }
 	};
-	NamedGUIAction moveRight = new NamedGUIAction("move up") {
+
+	/**
+	 * Action for moving the viewed portion of the chart right.
+	 */
+	NamedGUIAction moveRight = new NamedGUIAction("move right") {
 	    @Override
 	    public void doAction() {
 		//GUIChart.this.setPlotScaleX((float) GUIChart.this.getPlotScaleX() * 0.99F);
@@ -370,6 +441,10 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for forcing the sampling (adding a sample at the current
+	 * location) for all the relevant lines.
+	 */
 	NamedGUIAction sampleAction = new NamedGUIAction("sample line(s)") {
 	    @Override
 	    public void doAction() {
@@ -399,6 +474,10 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for coppying the currently focused line into a given register.
+	 *
+	 */
 	NamedGUIAction yankAction = new NamedGUIAction("yank (copy) current line") {
 	    @Override
 	    public void doAction() {
@@ -423,6 +502,11 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for pasting a line from a given register, overwriting it,
+	 * creating it, if it doesn't exist yet (ghost was focused).
+	 *
+	 */
 	NamedGUIAction pasteOverwriteAction = new NamedGUIAction("paste with overwriting") {
 	    @Override
 	    public void doAction() {
@@ -459,6 +543,9 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for selecting/unselecting all lines.
+	 */
 	NamedGUIAction selectAllAction = new NamedGUIAction("select/deselect all") {
 	    @Override
 	    public void doAction() {
@@ -481,6 +568,10 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for inverting the current selection (unselecting selected and
+	 * selecting unselected).
+	 */
 	NamedGUIAction invertSelectionAction = new NamedGUIAction("invertSelection") {
 	    @Override
 	    public void doAction() {
@@ -496,6 +587,11 @@ public class GUIChart extends GUIelement {
 	    }
 	};
 
+	/**
+	 * Action for turning the recording of the given lines on or off,
+	 * toggling between the two. Can operate on multiple lines when the
+	 * vFlag is on.
+	 */
 	NamedGUIAction toggleRecordingAction = new NamedGUIAction("Toggle recording") {
 	    @Override
 	    public void doAction() {
@@ -543,6 +639,9 @@ public class GUIChart extends GUIelement {
 
 	};
 
+	/**
+	 * Action for stopping the recording of all lines at once.
+	 */
 	NamedGUIAction stopAllRecordingAction = new NamedGUIAction("Stop all recording") {
 	    @Override
 	    public void doAction() {
@@ -558,7 +657,10 @@ public class GUIChart extends GUIelement {
 
 	};
 
-	NamedGUIAction autoScaleAction = new NamedGUIAction("Autoscale selection") {
+	/**
+	 * Action for autoscaling the selection along the Y axis.
+	 */
+	NamedGUIAction autoScaleAction = new NamedGUIAction("Autoscale selection along Y") {
 	    @Override
 	    public void doAction() {
 		autoScaleY();
@@ -566,6 +668,9 @@ public class GUIChart extends GUIelement {
 
 	};
 
+	/**
+	 * Action for autoscaling the selection along the X axis.
+	 */
 	NamedGUIAction autoScaleXAction = new NamedGUIAction("Autoscale selection along X") {
 	    @Override
 	    public void doAction() {
@@ -617,6 +722,13 @@ public class GUIChart extends GUIelement {
 
     }
 
+    /**
+     * Autoscales the chart along the X axis. This means the currently visible
+     * local minimum in X will be taken, the currently visible local maximum in
+     * X will be taken and the chart will be repositioned and scaled in such a
+     * way, that these 2 are positioned on the screen with left and right
+     * margins, specified by the autoScalePaddingCoeff constant.
+     */
     public void autoScaleX() {
 
 	double maxDrawnY = (GUIChart.this.getPlotY()) / GUIChart.this.getPlotScaleY();
@@ -642,6 +754,13 @@ public class GUIChart extends GUIelement {
 
     }
 
+    /**
+     * Autoscales the chart along the Y axis. This means the currently visible
+     * local minimum in Y will be taken, the currently visible local maximum in
+     * Y will be taken and the chart will be repositioned and scaled in such a
+     * way, that these 2 are positioned on the screen with up and down margins,
+     * specified by the autoScalePaddingCoeff constant.
+     */
     public void autoScaleY() {
 	double minDrawnX = -(GUIChart.this.getPlotX()) / GUIChart.this.getPlotScaleX();
 	double maxDrawnX = (GUIChart.this.getWidth() - (GUIChart.this.getPlotX())) / GUIChart.this.getPlotScaleX();
@@ -664,6 +783,13 @@ public class GUIChart extends GUIelement {
 
     }
 
+    /**
+     * Adds a data point to all selected lines on their respective cursor
+     * positions (if there are any selected and the vFlag is on), or to the
+     * currently focused line otherwise. Then optionally performs autoscaling.
+     * Whether or not it does that and how exactly will it perform the
+     * autoscale, depends on the AutoScaleMode property.
+     */
     public void sampleAllRelevant() {
 	for (Map.Entry<Character, PlotLine> entry : GUIChart.this.linesList.entrySet()) {
 	    PlotLine pl = entry.getValue();
@@ -772,6 +898,13 @@ public class GUIChart extends GUIelement {
 	return cb;
     }
 
+    /**
+     * Get a PlotLine object, provided a char. If this char is '%', return the
+     * currently focused line.
+     *
+     * @param c the letter of the line to be returned
+     * @return line, which has the letter provided by the c
+     */
     public PlotLine getPlotLineByChar(char c) {
 	if (c == '%') {
 	    return this.linesList.get(this.currentLineChar);
@@ -780,6 +913,28 @@ public class GUIChart extends GUIelement {
 	}
     }
 
+    /**
+     * Draws a rectangle on a GraphicsContext gc, clamping its size between
+     * minX, minY and maxX, maxY. Use fillcolor and stroke color to determine
+     * the color of the fill and the outline. Use Color.TRANSPARENT to not draw
+     * any outline or fill.
+     *
+     * @param gc - the graphic context to draw to
+     * @param x1 - the X position of the upper left corner of the rectangle.
+     * @param y1 - the Y position of the upper left corner of the rectangle.
+     * @param x2 - the X position of the lower right corner of the rectangle
+     * @param y2 - the Y position of the lower right corner of the rectangle
+     * @param minX - the minimum X position to draw to. The part of the
+     * rectangle left to this X will get cropped (won't display).
+     * @param minY - the minimum Y position to draw to. The part of the
+     * rectangle down to this Y will get cropped (won't display).
+     * @param maxX - the maximum X position to draw to. The part of the
+     * rectangle right to this X will get cropped (won't display).
+     * @param maxY - the maximum Y position to draw to. The part of the
+     * rectangle up to this Y will get cropped (won't display).
+     * @param fillCol - the color to use for the fill
+     * @param strokeCol - the color to use for the stroke (outline)
+     */
     private void strokeBorderedRectangle(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double minY, double maxX, double maxY, Color fillCol, Color strokeCol) {
 	FloatPoint p1 = new FloatPoint(x1, y1);
 	FloatPoint p2 = new FloatPoint(x2, y2);
@@ -820,6 +975,26 @@ public class GUIChart extends GUIelement {
 	return Math.max(preferredWidth, (int) (this.getGUIPanel().getCanvas().getWidth() * 0.8));
     }
 
+    /**
+     * Draws a line on a GraphicsContext gc, clamping its size between minX,
+     * minY and maxX, maxY. Use fillcolor and stroke color to determine the
+     * color of the fill and the outline. Use Color.TRANSPARENT to not draw any
+     * outline or fill.
+     *
+     * @param gc - the graphic context to draw to
+     * @param x1 - the X position of the upper left point of the line
+     * @param y1 - the Y position of the upper left point of the line
+     * @param x2 - the X position of the lower right point of the line
+     * @param y2 - the Y position of the lower right point of the line
+     * @param minX - the minimum X position to draw to. The part of the line
+     * left to this X will get cropped (won't display).
+     * @param minY - the minimum Y position to draw to. The part of the line
+     * down to this Y will get cropped (won't display).
+     * @param maxX - the maximum X position to draw to. The part of the line
+     * right to this X will get cropped (won't display).
+     * @param maxY - the maximum Y position to draw to. The part of the line up
+     * to this Y will get cropped (won't display).
+     */
     private void strokeBorderedLine(GraphicsContext gc, double x1, double y1, double x2, double y2, double minX, double maxX, double minY, double maxY) {
 	double xSmaller = Math.min(x1, x2);
 	double xBigger = Math.max(x1, x2);
@@ -880,6 +1055,24 @@ public class GUIChart extends GUIelement {
 	}
     }
 
+    /**
+     * Finds the Y coordinate of an intersection of a line, specified by two
+     * points (x1, y1, x2, y2) with a vertical line, points of which have a
+     * given X.
+     *
+     * @param x1 - the x coordinate of the first point, which determines the
+     * line
+     * @param y1 - the x coordinate of the first point, which determines the
+     * line
+     * @param x2 - the x coordinate of the first point, which determines the
+     * line
+     * @param y2 - the x coordinate of the first point, which determines the
+     * line
+     * @param lineX - the x coordinate of all the points, that define the
+     * vertcal line.
+     * @return the X coordinate of an intersection of a line, specified by two
+     * points (x1, y1, x2, y2) with a
+     */
     double findVertLineIntersect(double x1, double y1, double x2, double y2, double lineX) {
 	double A = (y1 - y2) / (x1 - x2);
 	double B = y1 - A * x1;
@@ -887,6 +1080,25 @@ public class GUIChart extends GUIelement {
 	return A * lineX + B;
     }
 
+    /**
+     * Finds the X coordinate of an intersection of a line, specified by two
+     * points (x1, y1, x2, y2) with a horizontal line, points of which have a
+     * given Y.
+     *
+     * @param x1 - the x coordinate of the first point, which determines the
+     * line
+     * @param y1 - the x coordinate of the first point, which determines the
+     * line
+     * @param x2 - the x coordinate of the first point, which determines the
+     * line
+     * @param y2 - the x coordinate of the first point, which determines the
+     * line
+     * @param lineY - the y coordinate of all the points, that define the
+     * horizontal line.
+     * @return the X coordinate of an intersection of a line, specified by two
+     * points (x1, y1, x2, y2) with a horizontal line, points of which have a
+     * given Y.
+     */
     double findHorLineIntersect(double x1, double y1, double x2, double y2, double lineY) {
 	double A = (y1 - y2) / (x1 - x2);
 	double B = y1 - A * x1;
@@ -894,42 +1106,98 @@ public class GUIChart extends GUIelement {
 	return (lineY - B) / A;
     }
 
+    /**
+     * Get the PlotX property, used to determine the X position of the chart
+     * origin the point at which the axis are (0, 0)
+     *
+     * @return the PlotX property, used to determine the X position of the chart
+     * origin the point at which the axis are (0, 0)
+     */
     double getPlotX() {
 	FloatProperty fp = (FloatProperty) this.getPropertyByName("PlotX");
 	return fp.getValue();
     }
 
+    /**
+     * Get the PlotY property, used to determine the X position of the chart
+     * origin the point at which the axis are (0, 0)
+     *
+     * @return the PlotY property, used to determine the X position of the chart
+     * origin the point at which the axis are (0, 0)
+     */
     double getPlotY() {
 	FloatProperty fp = (FloatProperty) this.getPropertyByName("PlotY");
 	return fp.getValue();
     }
 
+    /**
+     * Set the PlotX property, used to determine the X position of the chart
+     * origin the point at which the axis are (0, 0)
+     */
     void setPlotX(float x) {
 	this.getPropertyByName("PlotX").setValue(x);
     }
 
+    /**
+     * Set the PlotY property, used to determine the Y position of the chart
+     * origin the point at which the axis are (0, 0)
+     */
     void setPlotY(float y) {
 	this.getPropertyByName("PlotY").setValue(y);
     }
 
+    /**
+     * Get the PlotScaleX property, used to determine how many pixels correspond
+     * to a step of size 1 on the X axis.
+     *
+     * @return the PlotScaleX property, used to determine how many pixels
+     * correspond to a step of size 1 on the X axis.
+     */
     double getPlotScaleX() {
 	FloatProperty fp = (FloatProperty) this.getPropertyByName("PlotScaleX");
 	return fp.getValue();
     }
 
+    /**
+     * Get the PlotScaleY property, used to determine how many pixels correspond
+     * to a step of size 1 on the Y axis.
+     *
+     * @return the PlotScaleY property, used to determine how many pixels
+     * correspond to a step of size 1 on the Y axis.
+     */
     double getPlotScaleY() {
 	FloatProperty fp = (FloatProperty) this.getPropertyByName("PlotScaleY");
 	return fp.getValue();
     }
 
+    /**
+     * Set the PlotScaleX property, used to determine how many pixels correspond
+     * to a step of size 1 on the X axis.
+     */
     void setPlotScaleX(float x) {
 	this.getPropertyByName("PlotScaleX").setValue(x);
     }
 
+    /**
+     * Set the PlotScaleY property, used to determine how many pixels correspond
+     * to a step of size 1 on the Y axis.
+     *
+     */
     void setPlotScaleY(float y) {
 	this.getPropertyByName("PlotScaleY").setValue(y);
     }
 
+    /**
+     * Automatically scale the view along the X axis so that the given lines fit
+     * in. Will scale the X axis to correctly position the local minimum and
+     * maximum in X axis, located between the provided minY and maxY.
+     *
+     * @param lines - the collection of lines
+     * @param minY - the minimum Y of the interval, in which a local X minimum
+     * should be found.
+     * @param maxY - the minimum Y of the interval, in which a local X maximum
+     * should be found.
+     */
     //TODO: some refactoring would come in handy, as code duplication is always bad
     void autoScaleXForRange(Collection<PlotLine> lines, double minY, double maxY) {
 	double maxX = Double.NEGATIVE_INFINITY;
@@ -983,6 +1251,17 @@ public class GUIChart extends GUIelement {
 	//double maxY=Double.NEGATIVE_INFINITY;
     }
 
+    /**
+     * Automatically scale the view along the Y axis so that the given lines fit
+     * in. Will scale the Y axis to correctly position the local minimum and
+     * maximum in Y axis, located between the provided minX and maxX.
+     *
+     * @param lines - the collection of lines
+     * @param minX - the minimum X of the interval, in which a local Y minimum
+     * should be found.
+     * @param maxX - the minimum X of the interval, in which a local Y maximum
+     * should be found.
+     */
     void autoScaleYForRange(Collection<PlotLine> lines, double minX, double maxX) {
 	double maxY = Double.NEGATIVE_INFINITY;
 	double minY = Double.POSITIVE_INFINITY;
@@ -1042,7 +1321,21 @@ public class GUIChart extends GUIelement {
 	//double maxY=Double.NEGATIVE_INFINITY;
     }
 
-    public void paintSingleLine(PlotLine pl, GraphicsContext gc, Color c, double lineWidth, double x, double y, double maxX, double maxY) {
+    /**
+     * Paint a single line pl on the provided GraphicsContext gc, with a Color
+     * c, line width lineWidth, clamped by minX, minY, maxX, maxY
+     *
+     * @param pl the PlotLine object to draw
+     * @param gc the GraphicsContext to draw to
+     * @param c the color to draw the line with
+     * @param lineWidth the width of the line to draw
+     * @param minX - the minimum X to draw to. The drawn line will get clamped
+     * by this coordinate.
+     * @param minY - the minimum X to draw to. The drawn line will get clamped
+     * @param maxX - the minimum X to draw to. The drawn line will get clamped
+     * @param maxY - the minimum X to draw to. The drawn line will get clamped
+     */
+    public void paintSingleLine(PlotLine pl, GraphicsContext gc, Color c, double lineWidth, double minX, double minY, double maxX, double maxY) {
 	if (pl == null) {
 	    return;
 	}
@@ -1050,38 +1343,62 @@ public class GUIChart extends GUIelement {
 	if (!pl.getPoints().isEmpty()) {
 	    FloatPoint fp1 = pl.getPoints().firstEntry().getValue();
 	    for (FloatPoint fp : pl.getPoints().values()) {
-		if (Double.isNaN(-fp1.y * this.getPlotScaleY() + y + getPlotY())) {
+		if (Double.isNaN(-fp1.y * this.getPlotScaleY() + minY + getPlotY())) {
 		    System.out.println("pipka kdaka");
 		}
 		//gc.setLineWidth(4);
 		double lwBackup = gc.getLineWidth();
 		gc.setLineWidth(lineWidth);
 		gc.setStroke(c);
-		strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + x + getPlotX(), -fp1.y * this.getPlotScaleY() + y + getPlotY(), fp.x * this.getPlotScaleX() + x + getPlotX(), -fp.y * this.getPlotScaleY() + y + getPlotY(), x, maxX, y, maxY);
-		paintCursor(gc, c, pl.getCursorX() * this.getPlotScaleX() + getPlotX() + x, -pl.getCursorY() * this.getPlotScaleY() + getPlotY() + y, maxX, maxY);
+		strokeBorderedLine(gc, fp1.x * this.getPlotScaleX() + minX + getPlotX(), -fp1.y * this.getPlotScaleY() + minY + getPlotY(), fp.x * this.getPlotScaleX() + minX + getPlotX(), -fp.y * this.getPlotScaleY() + minY + getPlotY(), minX, maxX, minY, maxY);
+		paintCursor(gc, c, pl.getCursorX() * this.getPlotScaleX() + getPlotX() + minX, -pl.getCursorY() * this.getPlotScaleY() + getPlotY() + minY);
 		fp1 = fp;
 		gc.setLineWidth(lwBackup);
 	    }
 	}
     }
 
-    public void paintLines(GraphicsContext gc, double x, double y, double maxX, double maxY) {
+    /**
+     * Paint all visible lines, clamping the parts outside the ranges determined
+     * by minX, minY, maxX, maxY
+     *
+     * @param gc - the GraphicsContext to draw to
+     * @param minX - the minimum X to draw to. The drawn line will get clamped
+     * by this coordinate.
+     * @param minY - the minimum X to draw to. The drawn line will get clamped
+     * @param maxX - the minimum X to draw to. The drawn line will get clamped
+     * @param maxY - the minimum X to draw to. The drawn line will get clamped
+     */
+    public void paintLines(GraphicsContext gc, double minX, double minY, double maxX, double maxY) {
 	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
 	    PlotLine pl = entry.getValue();
 	    if (pl.isSelected()) {
-		paintSingleLine(pl, gc, Color.rgb(255, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, x, y, maxX, maxY);
+		paintSingleLine(pl, gc, Color.rgb(255, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, minX, minY, maxX, maxY);
 	    }
-	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), x, y, maxX, maxY);
+	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), minX, minY, maxX, maxY);
 	    //gc.setStroke(pl.getColor());
 	}
-	PlotLine pl = this.getLine("%",false);
+	PlotLine pl = this.getLine("%", false);
 	if (pl != null) {
-	    paintSingleLine(pl, gc, Color.rgb(0, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, x, y, maxX, maxY);
-	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), x, y, maxX, maxY);
+	    paintSingleLine(pl, gc, Color.rgb(0, 255, 0, 0.75), pl.getLineWidth() * 2 + 2, minX, minY, maxX, maxY);
+	    paintSingleLine(pl, gc, pl.getColor(), pl.getLineWidth(), minX, minY, maxX, maxY);
 	}
     }
 
-    public void paintCursor(GraphicsContext gc, Color c, double x, double y, double maxX, double maxY) {
+    /**
+     * Paint the line cursor, on position defined by x,y, with color c, to the
+     * GraphicsContext gc. If the position is outside this chart, ignore (return
+     * immediatelly).
+     *
+     * @param gc
+     * @param c
+     * @param x
+     * @param y
+     */
+    public void paintCursor(GraphicsContext gc, Color c, double x, double y) {
+	if (!isWithinBounds(x, y)) {
+	    return;
+	}
 	//y = -y;
 	gc.setLineWidth(2);
 	gc.setStroke(c);
@@ -1091,27 +1408,61 @@ public class GUIChart extends GUIelement {
 	gc.strokeLine(x, y + 2, x, y + 6);
     }
 
-    public void paintSingleHistogram(GraphicsContext gc, PlotLine pl, Color fillCol, Color strokeCol, double x, double y, double maxX, double maxY) {
+    /**
+     * Paint a single histogram, stored in the PlotLine pl, as a series of
+     * rectangles, given a fill color and a stroke color and also minimum and
+     * maximum positions, beyond which the histogram should never be drawn.
+     *
+     * @param gc - the GraphicsContext to draw to
+     * @param pl - the PlotLine to extract the Histogram from
+     * @param fillCol - the color, with which the bins in the histogram should
+     * be filled
+     * @param strokeCol - the color, with which the outline of the histogram
+     * should be stroked
+     * @param minX - the minimum X position to draw to. The part of the
+     * rectangle left to this X will get cropped (won't display).
+     * @param minY - the minimum Y position to draw to. The part of the
+     * rectangle down to this Y will get cropped (won't display).
+     * @param maxX - the maximum X position to draw to. The part of the
+     * rectangle right to this X will get cropped (won't display).
+     * @param maxY - the maximum Y position to draw to. The part of the
+     * rectangle up to this Y will get cropped (won't display).
+     */
+    public void paintSingleHistogram(GraphicsContext gc, PlotLine pl, Color fillCol, Color strokeCol, double minX, double minY, double maxX, double maxY) {
 
 	if (!pl.getHistogramBins().isEmpty()) {
 	    double binWidth = Math.abs(pl.getHistogramMax() - pl.getHistogramMin()) / pl.getHistogramBinsCount();
 	    //FloatPoint fp1 = pl.getPoints().get(0);
 	    double currentRectangleStart = pl.getHistogramMin();
 	    for (int i : pl.getHistogramBins()) {
-		double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
+		double x1 = minX + getPlotX() + currentRectangleStart * this.getPlotScaleX();
 		double x2 = x1 + binWidth * this.getPlotScaleX();
-		double y1 = getPlotY() + y;
+		double y1 = getPlotY() + minY;
 		double y2 = y1 - i * getPlotScaleY();
 		//Color col = fillCol;//pl.getColor();
 		//col = col.deriveColor(0, 1, 1, opacity);
-		strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY, fillCol, strokeCol);
+		strokeBorderedRectangle(gc, x1, y1, x2, y2, minX, minY, maxX, maxY, fillCol, strokeCol);
 
 		currentRectangleStart += binWidth;
 	    }
 	}
     }
 
-    public void paintHistograms(GraphicsContext gc, double x, double y, double maxX, double maxY) {
+    /**
+     * Paint histograms for all of the lines, currently visible.
+     *
+     * @see paintSingleHistogram
+     * @param gc
+     * @param minX - the minimum X position to draw to. The part of the
+     * rectangle left to this X will get cropped (won't display).
+     * @param minY - the minimum Y position to draw to. The part of the
+     * rectangle down to this Y will get cropped (won't display).
+     * @param maxX - the maximum X position to draw to. The part of the
+     * rectangle right to this X will get cropped (won't display).
+     * @param maxY - the maximum Y position to draw to. The part of the
+     * rectangle up to this Y will get cropped (won't display).
+     */
+    public void paintHistograms(GraphicsContext gc, double minX, double minY, double maxX, double maxY) {
 
 	ArrayList<PlotLine> linesToDrawList = new ArrayList<>();
 	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
@@ -1129,14 +1480,27 @@ public class GUIChart extends GUIelement {
 	    if (pl.isSelected()) {
 		strokeCol = Color.YELLOW;
 	    }
-	    paintSingleHistogram(gc, pl, fillCol, strokeCol, x, y, maxX, maxY);
+	    paintSingleHistogram(gc, pl, fillCol, strokeCol, minX, minY, maxX, maxY);
 	}
 	PlotLine currentLine = this.getPlotLineByChar(currentLineChar);
 	Color fillCol = Color.TRANSPARENT;
 	Color strokeCol = Color.GREENYELLOW;
-	paintSingleHistogram(gc, currentLine, fillCol, strokeCol, x, y, maxX, maxY);
+	paintSingleHistogram(gc, currentLine, fillCol, strokeCol, minX, minY, maxX, maxY);
     }
 
+    /**
+     * Draws the letters of the individual lines, with additional info (such as,
+     * whether those lines are selected, visible, whether they exist and more).
+     * The position on which this legend should be drawn is dictated by the x
+     * and y params. The legend then gets drawn to the provided GraphicsContext
+     * gc.
+     *
+     * @param gc - the GraphicsContext to draw to
+     * @param x - the x position, at which the upper left point of the legend
+     * text should be located
+     * @param y - the y position, at which the upper left point of the legend
+     * text should be located
+     */
     public void drawLegend(GraphicsContext gc, double x, double y) {
 	int i = 0;
 	for (Map.Entry<Character, PlotLine> entry : this.linesList.entrySet()) {
@@ -1151,7 +1515,21 @@ public class GUIChart extends GUIelement {
 	}
     }
 
-    public void paintTicks(GraphicsContext gc, double x, double y, double maxX, double maxY) {
+    /**
+     * Paint the chart axes with the ticks. The density in which the ticks
+     * should be painted is calculated automatically.
+     *
+     * @param gc the GraphicsContext to which the axes should be drawn
+     * @param minX the minimum X, determining the bounds, beyond which nothing
+     * should be drawn
+     * @param minY the minimum Y, determining the bounds, beyond which nothing
+     * should be drawn
+     * @param maxX the maximum X, determining the bounds, beyond which nothing
+     * should be drawn
+     * @param maxY the maximum Y, determining the bounds, beyond which nothing
+     * should be drawn
+     */
+    public void paintTicks(GraphicsContext gc, double minX, double minY, double maxX, double maxY) {
 
 	double pixelXTickSize = (this.getPlotScaleX() * currentXTickSize);
 	double pixelYTickSize = (this.getPlotScaleY() * currentYTickSize);
@@ -1181,23 +1559,23 @@ public class GUIChart extends GUIelement {
 		    //FloatPoint fp1 = pl.getPoints().get(0);
 		    double currentRectangleStart = pl.getHistogramMin();
 		    while (currentRectangleStart <= pl.getHistogramMax()) {
-			double x1 = x + getPlotX() + currentRectangleStart * this.getPlotScaleX();
+			double x1 = minX + getPlotX() + currentRectangleStart * this.getPlotScaleX();
 			//double x2 = x1 + binWidth * this.getPlotScaleX();
 			double y1;
 			if (iterator % 2 != 0)//1,3,5,7...
 			{
-			    y1 = y + iterator * -5 + getHeight();//draw first, third, fifth, seventh... tick line on the down side
+			    y1 = minY + iterator * -5 + getHeight();//draw first, third, fifth, seventh... tick line on the down side
 
 			} else {
-			    y1 = y + iterator * 5;//draw the other tick lines on the up side 
+			    y1 = minY + iterator * 5;//draw the other tick lines on the up side 
 			}
 			//double y2 = y1 - i * getPlotScaleY();
-			//strokeBorderedRectangle(gc, x1, y1, x2, y2, x, y, maxX, maxY);
+			//strokeBorderedRectangle(gc, x1, y1, x2, y2, minX, minY, maxX, maxY);
 
 			gc.setStroke(pl.getColor());
 			gc.setLineWidth(1);
 			//gc.strokeLine(x1, y1, x1, y1 + 5);
-			gc.strokeLine(x1, y, x1, y + this.getHeight());
+			gc.strokeLine(x1, minY, x1, minY + this.getHeight());
 			gc.strokeText(Float.toString((float) currentRectangleStart), x1, y1);
 			currentRectangleStart += binWidth;
 		    }
@@ -1270,12 +1648,12 @@ public class GUIChart extends GUIelement {
 
 	    for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentXTickSize) {
 		{
-		    if (x + getPlotX() + i * getPlotScaleX() > x && x + getPlotX() + i * getPlotScaleX() < x + getWidth()) {
+		    if (minX + getPlotX() + i * getPlotScaleX() > minX && minX + getPlotX() + i * getPlotScaleX() < minX + getWidth()) {
 			//col = col.deriveColor(0, 1, 1, opacity);
-			//gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
+			//gc.strokeLine(minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight(), minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight() + 5);
 			gc.setStroke(this.getColor2());
-			gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + 5);
-			gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+			gc.strokeLine(minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight(), minX + getPlotX() + (i * getPlotScaleX()), minY + 5);
+			gc.strokeText(Float.toString((float) ((i))), minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight());
 		    }
 		}
 
@@ -1315,12 +1693,12 @@ public class GUIChart extends GUIelement {
 	for (double i = minTickNumberOnAxis; i <= maxTickNumberOnAxis; i += currentYTickSize) {
 	    {
 		gc.setStroke(this.getColor2());
-		if (y + getPlotY() + i * getPlotScaleY() > y && y + getPlotY() + i * getPlotScaleY() < y + getHeight()) {
-		    //gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + 5, y + getPlotY() + (i) * getPlotScaleY());
-		    gc.strokeLine(x, y + getPlotY() + (i * getPlotScaleY()), x + getWidth(), y + getPlotY() + (i) * getPlotScaleY());
-		    gc.strokeText(Float.toString((float) (-i)), x, y + getPlotY() + (i * getPlotScaleY()));
-		    //gc.strokeLine(x + getPlotX() + (i * getPlotScaleX()), y + getHeight(), x + getPlotX() + (i * getPlotScaleX()), y + getHeight() + 5);
-		    //gc.strokeText(Float.toString((float) ((i))), x + getPlotX() + (i * getPlotScaleX()), y + getHeight());
+		if (minY + getPlotY() + i * getPlotScaleY() > minY && minY + getPlotY() + i * getPlotScaleY() < minY + getHeight()) {
+		    //gc.strokeLine(minX, minY + getPlotY() + (i * getPlotScaleY()), minX + 5, minY + getPlotY() + (i) * getPlotScaleY());
+		    gc.strokeLine(minX, minY + getPlotY() + (i * getPlotScaleY()), minX + getWidth(), minY + getPlotY() + (i) * getPlotScaleY());
+		    gc.strokeText(Float.toString((float) (-i)), minX, minY + getPlotY() + (i * getPlotScaleY()));
+		    //gc.strokeLine(minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight(), minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight() + 5);
+		    //gc.strokeText(Float.toString((float) ((i))), minX + getPlotX() + (i * getPlotScaleX()), minY + getHeight());
 		}
 
 	    }
@@ -1380,14 +1758,47 @@ public class GUIChart extends GUIelement {
 	return pl;
     }
 
+    /**
+     * Set the float property, determined by its propertyId, of line, determined
+     * by its line letter, to the provided value
+     *
+     * @param lineLetter - the letter used to determine property of which line
+     * should be accessed
+     * @param propertyId - the ID, determining which property of the line should
+     * be accessed.
+     * @param value - the value the property should be set to
+     * @see Property.getId
+     * @return true if succesful, false otherwise
+     */
     public boolean setLineProperty(String lineLetter, int propertyId, float value) {
 	return this.getLine(lineLetter, true).setProperty(propertyId, value);
     }
 
+    /**
+     * Return the line property object, given the letter of the line, property
+     * of which we are accessing, and the ID, determining which property we are
+     * accessing.
+     *
+     * @param lineLetter - the letter used to determine property of which line
+     * should be accessed
+     * @param propertyId - the ID, determining which property of the line should
+     * be accessed.
+     *
+     * @return the line property object, given the letter of the line, property
+     * of which we are accessing, and the ID, determining which property we are
+     * accessing.
+     */
     public FloatProperty getLineProperty(String lineLetter, int propertyId) {
 	return this.getLine(lineLetter, true).getProperty(propertyId);
     }
 
+    /**
+     * Get the name for the CLUC callback user function, which can be placed in
+     * the user code to automatically get called, whenever some of the lines of
+     * this chart are sampled.
+     *
+     * @return
+     */
     public String getSampleEventString() {
 	return this.getUniqueName() + "_Sample();\n";
     }

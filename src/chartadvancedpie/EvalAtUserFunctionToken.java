@@ -14,7 +14,11 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC built-in function, used to evaluate the Y-value of a line in a chart,
+ * given the line letter and the X position.
+ * Expects an ID of the chart, string representing the letter of this line,
+ * and a float x position, in this order.
+ * Can be called as CHART.evalAt("lineLetter",xpos);
  * @author thegoodhen
  */
 public class EvalAtUserFunctionToken extends AbstractBuiltInFunctionToken {

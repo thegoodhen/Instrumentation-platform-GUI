@@ -12,7 +12,9 @@ import java.util.logging.Logger;
  */
 
 /**
- *
+ * @deprecated 
+ * Class related to handling requests from the child module when communicating with it.
+ * The way requests are handled has since been reimplemented.
  * @author thegoodhen
  */
 public class ByteRequest extends Request<Byte>{

@@ -516,9 +516,10 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	//this.getGUIPanel().registerMap.put(register, elementUniqueName);
     }
 
-    public void applySearch(int setOperation) {
+    @Override
+    public void applySelection(int setOperation) {
 	for (GUIelement ge : GUIList) {
-	    ge.applySearch(setOperation);
+	    ge.applySelection(setOperation);
 	    paintGUIelements();
 	}
     }
@@ -708,7 +709,7 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	gc.setFill(Color.BLACK);//clear everything
 	double x = ge.getLastPositionDrawnTo().x;
 	double y = ge.getLastPositionDrawnTo().y;
-	double geW = ge.getWidth();
+	double geW = ge.getWidth()*4;
 	double geH = ge.getHeight();
 	gc.fillRect(x, y, geW, geH);
 	ge.paint(gc, x, y);

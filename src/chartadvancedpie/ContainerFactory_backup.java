@@ -6,6 +6,8 @@
 package chartadvancedpie;
 
 /**
+ * @deprecated 
+ * Some backup of an existing file.
  *Factory class for creating Containers. This class doesn't use static methods, as doing so would 
  * render it difficult to put a container into another container.
  * @author thegoodhen

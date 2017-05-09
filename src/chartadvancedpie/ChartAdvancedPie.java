@@ -53,193 +53,196 @@ import javafx.stage.Stage;
  * @see javafx.scene.chart.PieChart
  * @see javafx.scene.chart.Chart
  */
-public class ChartAdvancedPie extends Application{
+public class ChartAdvancedPie extends Application {
 
-	final byte BEGIN_TAG = 0;
-	final byte BEGIN_TAG_EX = 1;
-	final byte BEGIN_TAG_EX2 = 2;
-	final byte END_TAG = 3;
+    final byte BEGIN_TAG = 0;
+    final byte BEGIN_TAG_EX = 1;
+    final byte BEGIN_TAG_EX2 = 2;
+    final byte END_TAG = 3;
 
-	final byte TAG_PLATFORM = 0;
-	final byte TAG_MODULE = 1;
-	final byte TAG_HUB = 2;
-	final byte TAG_CHANNELGROUP = 3;
-	final byte TAG_REGISTER = 4;
+    final byte TAG_PLATFORM = 0;
+    final byte TAG_MODULE = 1;
+    final byte TAG_HUB = 2;
+    final byte TAG_CHANNELGROUP = 3;
+    final byte TAG_REGISTER = 4;
 
-	private final String xml = "kokodak";
-	private byte[] xmlAsBytes = {BEGIN_TAG, TAG_MODULE, BEGIN_TAG, TAG_REGISTER, (byte) 184, 0b00010010, 86, 79, 76, 84, 83, 13, 0b01000100, (byte) 0b10000000, 0b00000010, BEGIN_TAG, GUIelement.SLIDER, END_TAG, END_TAG, END_TAG};
-	private int index = 0;
+    private final String xml = "kokodak";
+    private byte[] xmlAsBytes = {BEGIN_TAG, TAG_MODULE, BEGIN_TAG, TAG_REGISTER, (byte) 184, 0b00010010, 86, 79, 76, 84, 83, 13, 0b01000100, (byte) 0b10000000, 0b00000010, BEGIN_TAG, GUIelement.SLIDER, END_TAG, END_TAG, END_TAG};
+    private int index = 0;
 	//private final int BEGIN_TAG = 0;
-	//private final int END_TAG = 3;
-	LinkedList<Integer> tagStack;
+    //private final int END_TAG = 3;
+    LinkedList<Integer> tagStack;
 
-	public class HelloRunnable implements Runnable {
+    public class HelloRunnable implements Runnable {
 
-		private Module m;
+	private Module m;
 
-		public HelloRunnable(Module m) {
-			this.m = m;
-		}
-
-		public void run() {
-			while (true) {
-//TODO: optimize
-				for (Variable v : m.getVariableListRecursive()) {
-					v.postRequests();
-				}
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException ex) {
-					Logger.getLogger(ChartAdvancedPie.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		}
-
+	public HelloRunnable(Module m) {
+	    this.m = m;
 	}
 
-	private void init(Stage primaryStage) {
-		/*
-		 Group root = new Group();
-		 primaryStage.setScene(new Scene(root));
-		 root.getChildren().add(createChart());
-		 //xmlAsBytes=xml.getBytes(StandardCharsets.US_ASCII);
+	public void run() {
+	    while (true) {
+//TODO: optimize
+		for (Variable v : m.getVariableListRecursive()) {
+		    v.postRequests();
+		}
+		try {
+		    Thread.sleep(50);
+		} catch (InterruptedException ex) {
+		    Logger.getLogger(ChartAdvancedPie.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	    }
+	}
 
-		 //System.out.println("Kokodak");
-		 //System.out.println((int) ((byte) 184));
-		 byte a = (byte) 184;
-		 int b = a & 0xFF;
-		 //System.out.println(b);
-		 //Variable v = VariableFactory.create(xmlAsBytes, 0);
-		 tagStack=new LinkedList<>();
-		 //ContainerFactory cf=new ContainerFactory();
-		 //Container c=cf.create(xmlAsBytes, -1);
-		 */
+    }
 
-		primaryStage.setTitle("Canvas Doodle Test");
+    private void init(Stage primaryStage) {
+	/*
+	 Group root = new Group();
+	 primaryStage.setScene(new Scene(root));
+	 root.getChildren().add(createChart());
+	 //xmlAsBytes=xml.getBytes(StandardCharsets.US_ASCII);
+
+	 //System.out.println("Kokodak");
+	 //System.out.println((int) ((byte) 184));
+	 byte a = (byte) 184;
+	 int b = a & 0xFF;
+	 //System.out.println(b);
+	 //Variable v = VariableFactory.create(xmlAsBytes, 0);
+	 tagStack=new LinkedList<>();
+	 //ContainerFactory cf=new ContainerFactory();
+	 //Container c=cf.create(xmlAsBytes, -1);
+	 */
+
+	primaryStage.setTitle("Canvas Doodle Test");
 		//Group root = new Group();
 
 		// Draw background with gradient
-		//Rectangle rect = new Rectangle(400, 400);
-		//drawBackground(rect);
-		///root.getChildren().add(rect);
-
+	//Rectangle rect = new Rectangle(400, 400);
+	//drawBackground(rect);
+	///root.getChildren().add(rect);
 		// Create the Canvas, filled in with Blue
-		//reset(canvas, Color.BLUE);
-		// Add the Canvas to the Scene, and show the Stage
-		GUIPanel gp = new GUIPanel();
+	//reset(canvas, Color.BLUE);
+	// Add the Canvas to the Scene, and show the Stage
+	GUIPanel gp = new GUIPanel();
 
-		SplitPane sp=new SplitPane();
+	SplitPane sp = new SplitPane();
 
-		BorderPane root=new BorderPane(gp.getCanvasPane());
-		sp.getItems().add(root);
-		sp.getItems().add(gp.getVbox());
-		sp.setOrientation(Orientation.VERTICAL);
+	BorderPane root = new BorderPane(gp.getCanvasPane());
+	sp.getItems().add(root);
+	sp.getItems().add(gp.getVbox());
+	sp.setOrientation(Orientation.VERTICAL);
 
 		//root.getChildren().add(gp.getVbox());
-		//root.setBottom(gp.getVbox());
-		primaryStage.setResizable(true);
-		primaryStage.setScene(new Scene(sp, 400, 400));
-		primaryStage.show();
+	//root.setBottom(gp.getVbox());
+	primaryStage.setResizable(true);
+	primaryStage.setScene(new Scene(sp, 400, 400));
+	primaryStage.show();
 
-		ModuleFactory mf = new ModuleFactory();
-		Module m = mf.create(xmlAsBytes, 1);
-		ArrayList<GUIelement> elementList = m.getGUIelements();
-		for (GUIelement ge : elementList) {
-			gp.addGUIelement(ge);
-			//System.out.println("KOKODAK"+ge.toString());
-		}
-		System.out.println(m.toString());
+	ModuleFactory mf = new ModuleFactory();
+	Module m = mf.create(xmlAsBytes, 1);
+	ArrayList<GUIelement> elementList = m.getGUIelements();
+	for (GUIelement ge : elementList) {
+	    gp.addGUIelement(ge);
+	    //System.out.println("KOKODAK"+ge.toString());
+	}
+	System.out.println(m.toString());
 
-		/*
-		Request.setGUIPanel(gp);
-		try {
-			//new Request(null);
-			SerialCommunicatorObsolete sC = new SerialCommunicatorObsolete("COM3", 9600);
-		Request.startComms(sC);
-		} catch (Exception ex) {
-			Logger.getLogger(ChartAdvancedPie.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		//Request.startComms(null);
-		Request.offerIfResolved(new SyncRequest());
-		(new Thread(new HelloRunnable(m))).start();
-		*/
+	/*
+	 Request.setGUIPanel(gp);
+	 try {
+	 //new Request(null);
+	 SerialCommunicatorObsolete sC = new SerialCommunicatorObsolete("COM3", 9600);
+	 Request.startComms(sC);
+	 } catch (Exception ex) {
+	 Logger.getLogger(ChartAdvancedPie.class.getName()).log(Level.SEVERE, null, ex);
+	 }
+	 //Request.startComms(null);
+	 Request.offerIfResolved(new SyncRequest());
+	 (new Thread(new HelloRunnable(m))).start();
+	 */
 		//parseXml();
-		//System.out.println(v);
-	}
+	//System.out.println(v);
+    }
 
-	@Deprecated
-	private void parseXml() {
-		byte currentByte = 0;
-		int currentTag = -1;
-		for (index = 0; index < xmlAsBytes.length; index++) {
-			currentByte = xmlAsBytes[index];
-			if (isTagMark(currentByte)) {
-				if (currentByte != END_TAG) {
-					tagStack.push(currentTag);
-					currentTag = processTag();
-				} else//ending tag here
-				{
-					currentTag = tagStack.pop();
-				}
-
-			} else //not a tag, but a variable
-			{
-				Variable v = VariableFactory.create(xmlAsBytes, index);
-				System.out.println(v.toString());
-				index = VariableFactory.getNewIndex();
-			}
+    @Deprecated
+    private void parseXml() {
+	byte currentByte = 0;
+	int currentTag = -1;
+	for (index = 0; index < xmlAsBytes.length; index++) {
+	    currentByte = xmlAsBytes[index];
+	    if (isTagMark(currentByte)) {
+		if (currentByte != END_TAG) {
+		    tagStack.push(currentTag);
+		    currentTag = processTag();
+		} else//ending tag here
+		{
+		    currentTag = tagStack.pop();
 		}
-	}
 
-	@Deprecated
-	int processTag() {
-		if (xmlAsBytes[index] == BEGIN_TAG) {
-			index++;
-			return xmlAsBytes[index];//TODO: implement extended tag, etc.
-
-		}
-		return -1;
+	    } else //not a tag, but a variable
+	    {
+		Variable v = VariableFactory.create(xmlAsBytes, index);
+		System.out.println(v.toString());
+		index = VariableFactory.getNewIndex();
+	    }
 	}
+    }
 
-	/**
-	 *
-	 * @return whether the byte in question is a tag start or tag end mark
-	 * or not
-	 */
-	@Deprecated
-	private boolean isTagMark(byte mark) {
-		return (mark & 0xFF) <= END_TAG;
-	}
+    @Deprecated
+    /**
+     * Now deprecated method, related to the old way GUI was imported from the
+     * child module
+     */
+    int processTag() {
+	if (xmlAsBytes[index] == BEGIN_TAG) {
+	    index++;
+	    return xmlAsBytes[index];//TODO: implement extended tag, etc.
 
-	protected PieChart createChart() {
-		final PieChart pc = new PieChart(FXCollections.observableArrayList(
-			new PieChart.Data("Sun", 20),
-			new PieChart.Data("IBM", 12),
-			new PieChart.Data("HP", 25),
-			new PieChart.Data("Dell", 22),
-			new PieChart.Data("Apple", 30)
-		));
-		// setup chart
-		pc.setId("BasicPie");
-		pc.setTitle("Pie Chart Example");
-		return pc;
 	}
+	return -1;
+    }
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		init(primaryStage);
-		primaryStage.show();
-	}
+    /**
+     *
+     * @return whether the byte in question is a tag start or tag end mark or
+     * not
+     */
+    @Deprecated
+    private boolean isTagMark(byte mark) {
+	return (mark & 0xFF) <= END_TAG;
+    }
 
-	/**
-	 * The main() method is ignored in correctly deployed JavaFX
-	 * application. main() serves only as fallback in case the application
-	 * can not be launched through deployment artifacts, e.g., in IDEs with
-	 * limited FX support. NetBeans ignores main().
-	 *
-	 * @param args the command line arguments
-	 */
-	public static void main(String[] args) {
-		launch(args);
-	}
+    protected PieChart createChart() {
+	final PieChart pc = new PieChart(FXCollections.observableArrayList(
+		new PieChart.Data("Sun", 20),
+		new PieChart.Data("IBM", 12),
+		new PieChart.Data("HP", 25),
+		new PieChart.Data("Dell", 22),
+		new PieChart.Data("Apple", 30)
+	));
+	// setup chart
+	pc.setId("BasicPie");
+	pc.setTitle("Pie Chart Example");
+	return pc;
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+	init(primaryStage);
+	primaryStage.show();
+    }
+
+    /**
+     * The main() method is ignored in correctly deployed JavaFX application.
+     * main() serves only as fallback in case the application can not be
+     * launched through deployment artifacts, e.g., in IDEs with limited FX
+     * support. NetBeans ignores main().
+     *
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+	launch(args);
+    }
 }

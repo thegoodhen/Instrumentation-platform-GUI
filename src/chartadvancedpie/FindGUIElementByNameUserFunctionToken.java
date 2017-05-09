@@ -12,7 +12,8 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC built-in function, which returns an ID of an element, when its UNIQUENAME
+ * is provided as a string.
  * @author thegoodhen
  */
 public class FindGUIElementByNameUserFunctionToken extends AbstractBuiltInFunctionToken{

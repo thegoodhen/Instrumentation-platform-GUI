@@ -6,7 +6,9 @@
 package chartadvancedpie;
 
 /**
- *
+ * Utility class, responsible for the preparation of the keyboard shortcuts,
+ * related to undos. Since this is the part of the UNDO mechanism, it should be
+ * reimplemented.
  * @author thegoodhen
  */
 public class EditHistoryKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {

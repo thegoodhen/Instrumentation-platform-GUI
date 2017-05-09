@@ -331,7 +331,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 		@Override
 		public void run(Property<Float> p)
 		{
-		    max=p.getValueSilent();
+		    min=p.getValueSilent();
 		}
 	});
 	this.addProperty(minp);
@@ -339,7 +339,22 @@ public abstract class GUIelement extends Container implements Subscriber {
 	//this.addFloatProperty(1, "Max", 100);
 	//this.addFloatProperty(2, "Min", 0);
 	this.addFloatProperty(3, "Step", 1);
-	this.addStringProperty(4, "Name", "Generic gui element");
+	//this.addStringProperty(4, "Name", "Generic gui element");
+
+
+
+	StringProperty namep = new StringProperty(4, "Name", "Generic gui element", this);
+	namep.setSetterPropertyCallback(new PropertyCallback<String>(){
+		@Override
+		public void run(Property<String> p)
+		{
+		    System.out.println("ted se setlo jmeno na "+p.getValueSilent());
+		    name=p.getValueSilent();
+		}
+	});
+	this.addProperty(namep);
+
+
 	this.addStringProperty(5, "UniqueName", "GUI_GENERIC");
 	FloatProperty col1p = new FloatProperty(6, "Color1", 0.0F, this);
 
@@ -365,6 +380,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	col2p.setSetterPropertyCallback(new PropertyCallback<Float>() {
 	    @Override
 	    public void run(Property<Float> p) {
+		System.out.println("KODAK BARVICKY UJI UJI");
 		GUIelement.this.col2 = ColorManager.get().colorFromFloat(p.getValueSilent());
 	    }
 
@@ -786,7 +802,12 @@ public abstract class GUIelement extends Container implements Subscriber {
 
     public void copyPropertiesTo(GUIelement ge) {
 	for (Property p : this.id2PropertyMap.values()) {
-	    ge.addProperty(p.makeCopy());
+	    Property targetP=ge.getPropertyByName(p.getName());
+	    if(targetP!=null)
+	    {
+		targetP.setValue(p.getValue(), true, false);
+	    }
+	    //ge.addProperty(p.makeCopy());
 	}
     }
 
@@ -870,7 +891,7 @@ public abstract class GUIelement extends Container implements Subscriber {
 	}
     }
 
-    void applySearch(int setOperation) {
+    void applySelection(int setOperation) {
 
 	if (matchedLastSearch) {
 	    if (RegexUtils.isAdditiveOperation(setOperation)) {

@@ -6,7 +6,7 @@
 package chartadvancedpie;
 
 /**
- *
+ * An abstraction for an action, which accesses the GUI elements.
  * @author thegoodhen
  */
 public abstract class GUIAbstractAction {

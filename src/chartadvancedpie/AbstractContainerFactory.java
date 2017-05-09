@@ -6,6 +6,9 @@
 package chartadvancedpie;
 
 /**
+ * @deprecated 
+ * THIS CLASS IS NOW DEPRECATED. It was used as a part of the old parsing mechanism,
+ * perviously used to automatically build the GUI based on the data provided by a module.
  *Factory class for creating Containers. This class doesn't use static methods, as doing so would 
  * render it difficult to put a container into another container.
  * @author thegoodhen
