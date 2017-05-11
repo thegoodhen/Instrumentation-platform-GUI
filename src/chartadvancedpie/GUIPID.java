@@ -16,7 +16,7 @@ import javafx.scene.paint.Color;
 import shuntingyard.Token;
 
 /**
- *
+ * A GUI element - a regulator used for simple PID control.
  * @author thegoodhen
  */
 public class GUIPID extends GUIelement {
@@ -29,6 +29,10 @@ public class GUIPID extends GUIelement {
     private boolean isSampling = false;
     private Timer sampleTimer;
 
+    /**
+     * Internally calculate the output of the regulator, based on the values
+     * of the properties and the input.
+     */
     private void calculateOutput() {
 	double kp = (float) this.getPropertyByName("P").getValueSilent();
 	double ki = (float) this.getPropertyByName("I").getValueSilent();
@@ -77,6 +81,11 @@ public class GUIPID extends GUIelement {
     }
 
     //private int value=50;
+
+    /**
+     * Set the current regulation error - provide the input to the regulator.
+     * @param value the value to set the current regulation error to.
+     */
     public void setValue(int value)//TODO: change this to like IntegerProperty or something and make it generic! :3
     {
 	super.setValue(value);
@@ -108,6 +117,9 @@ public class GUIPID extends GUIelement {
 	    }
 	};
 
+	/**
+	 * The action to start or stop the automatic sampling of the input.
+	 */
 	NamedGUIAction startSamplingAction = new NamedGUIAction("Start/stop sampling") {
 	    @Override
 	    public void doAction() {
@@ -172,6 +184,9 @@ public class GUIPID extends GUIelement {
 	return "PID_REGULATOR";
     }
 
+    /**
+     * Start or stop the automatic sampling of data.
+     */
     public void startStopSampling() {
 	if (isSampling) {
 	    isSampling = false;
@@ -215,6 +230,10 @@ public class GUIPID extends GUIelement {
 	}
     }
 
+    /**
+     * Get the name of the callback function, which can automatically be called every sampling period.
+     * @return the name of the callback function, which can automatically be called every sampling period.
+     */
     public String getSampleEventString() {
 	return this.getUniqueName() + "_Sample();\n";
     }

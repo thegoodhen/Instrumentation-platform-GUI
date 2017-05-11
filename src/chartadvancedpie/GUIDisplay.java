@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 /**
- *
+ * A read-only GUI element, used to display a numeric value.
  * @author thegoodhen
  */
 public class GUIDisplay extends GUIelement {

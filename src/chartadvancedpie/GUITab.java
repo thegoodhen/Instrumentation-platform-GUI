@@ -25,7 +25,7 @@ import javafx.scene.paint.Color;
  *
  * @author thegoodhen
  */
-public class GUITab extends GUIelement implements IRepetitionCounter {
+public class GUITab {
 
     Canvas canvas;
     private int selectedElementIndex = 0;
@@ -37,37 +37,37 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
     HashMap<String, GUIelement> quickMarkMap = new HashMap<>();
     private int scrollOffset = 0;
     //private final GUIPanel gp;
+    private GUIPanel gp;
+    private String name = "";
 
-    public int getRepeatCount() throws RuntimeException {
-	if (repeatCountString.length() == 0) {
-	    return 1;
-	}
-	return Integer.parseInt(this.repeatCountString);
-    }
-
-    protected void setRepeatCount(int repeatCount) {
-	this.repeatCountString = Integer.toString(repeatCount);
-    }
-
-    public void resetRepeatCount() {
-	this.repeatCountString = "";
-    }
-
+    /**
+     * Adds the mark with a letter, determined by the string, to the currently
+     * focused GUI element. This mark concept is taken from Vim. Users can give
+     * GUI elements marks, which serve to focus this element later on.
+     *
+     * @param mark the mark letter to add
+     */
     void setMark(String mark) {
 	quickMarkMap.put(mark, GUIList.get(selectedElementIndex));
     }
 
+    /**
+     * Focus the element, which was previously assigned a mark. If this mark was
+     * a capital letter, allow changing the current tab to achieve this.
+     *
+     * @param mark
+     * @see #setMark()
+     */
     void jumpToMark(String mark) {
 	GUIelement targetElement = quickMarkMap.get(mark);
 	if (targetElement != null) {
 	    GUIList.get(selectedElementIndex).setFocused(false);
-	    targetElement.setFocused(true);
-	    this.focusGUIelement(GUIList.indexOf(targetElement));
+	    quickMarkMap.get(mark).setFocused(true);
 	}
     }
 
     public GUITab(GUIPanel gp, String name) {
-	super(null);
+	//super(null);
 	this.setName(name);
 	this.setGUIPanel(gp);
 	//pkeh = new PanelKeyEventHandler();
@@ -145,35 +145,34 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 
     }
 
-    public Canvas getCanvas() {
-	return canvas;
-    }
-
     /**
-     * Resets the canvas to its original look by filling in a rectangle covering
-     * its entire width and height. Color.BLUE is used in this demo.
-     *
-     * @param canvas The canvas to reset
-     * @param color The color to fill
+     * @return the currently focused GUIelement
      */
-    private void reset(Canvas canvas, Color color) {
-	GraphicsContext gc = canvas.getGraphicsContext2D();
-	gc.setFill(color);
-	gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-    }
-
     public GUIelement getFocusedGUIElement() {
 	return GUIList.get(selectedElementIndex);
     }
 
+    /**
+     * @return index in {@code GUIList} of the currently focused element.
+     */
     public int getFocusedGUIElementIndex() {
 	return selectedElementIndex;
     }
 
+    /**
+     * @param ge the GUIelement in question.
+     * @return index in {@code GUIList} of the provided element.
+     */
     public int getGUIElementIndex(GUIelement ge) {
 	return GUIList.indexOf(ge);
     }
 
+    /**
+     * Get the ArrayList, containing all the currently selected GUIelements. No
+     * particular ordering is imposed.
+     *
+     * @return the ArrayList, containing all the currently selected GUIelements.
+     */
     ArrayList<GUIelement> getSelectedGUIelementsList() {
 	ArrayList<GUIelement> returnList = new ArrayList<>();
 	for (GUIelement ge : GUIList) {
@@ -185,6 +184,23 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	return returnList;
     }
 
+    /**
+     * Insert a GUIelement, defined by the UniqueName provided, at the position
+     * provided, copying it first, if desired, and inserting the copy instead.
+     *
+     * @param currentGUIElementIndex where to insert the element; This is the
+     * exact position in the GUIList on which it will be placed. The GUIelement
+     * previously on this position and all the subsequent ones will be shifted
+     * to the right (1 will be added to their indices).
+     * @param name the UniqueName of the element which should be inserted
+     * @param copy whether a copy should be inserted instead (true) or not
+     * (false)
+     *
+     * @see GUIelement#makeCopy()
+     * @see #addGUIelement(chartadvancedpie.GUIelement, int)
+     * @see GUIelement#getUniqueName()
+     *
+     */
     void insertGUIelement(int currentGUIElementIndex, String name, boolean copy) {
 	GUIelement ge = this.getGUIPanel().GUINameMap.get(name);
 	if (ge != null) {
@@ -199,7 +215,6 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
-    @Override
     public GUIelement makeCopy() {
 	throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -460,24 +475,28 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
      }
      }
      */
-    public void handleActions(KeyEvent ke) {
-	GUIAbstractAction gaa = actionMap.get(ke.getText());
-	/*
-	 if (gaa != null) {
-	 gaa.doAction();
-	 }
-	 else
-	 {
-	 getFocusedGUIElement().handleActions(ke);
-	 }
-	 */
-	this.currentMenu.handle(ke.getText());
-    }
-
+    /**
+     * Append the provided {@code GUIelement} to the end of the {@code GUIList}
+     *
+     * @param ge the element to append.
+     */
     public void addGUIelement(GUIelement ge) {
 	this.addGUIelement(ge, GUIList.size());
     }
 
+    /**
+     * Insert a GUIelement provided at the given position in the
+     * {@code GUIList}. This method is safe, in that it adds the provided
+     * GUIelement to the beginning of the GUIList if the position provided is
+     * less than 0, or to the end, if it is greater than {@code GUIList.size()}.
+     *
+     * @param ge the GUIelement to insert
+     * @param position where to insert the element; This is the exact position
+     * in the GUIList on which it will be placed. The GUIelement previously on
+     * this position and all the subsequent ones will be shifted to the right (1
+     * will be added to their indices).
+     *
+     */
     public void addGUIelement(GUIelement ge, int position) {
 	position++;
 	if (position > GUIList.size()) {
@@ -488,12 +507,18 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
 	ge.setGUITab(this);
 	GUIList.add(position, ge);
-	this.selectedElementIndex=position;
+	this.selectedElementIndex = position;
 	ge.recalculateUniqueName(this);//TODO: this will cause a huge mess, fix it
 	this.getGUIPanel().registerGUIelement(ge);
 
     }
 
+    /**
+     * Remove the GUIelement on the provided index in GUIList if any; ignore
+     * otherwise.
+     *
+     * @param index
+     */
     public void removeGUIelement(int index) {
 	//String name=getUniqueName(index);
 	GUIList.get(selectedElementIndex).setFocused(false);
@@ -509,14 +534,20 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
-    public String getUniqueName(int index) {
+    /*
+     public String getUniqueName(int index) {
 
-	return GUIList.get(index).getUniqueName();
-	//this.getGUIPanel().setCurrentRegisterContentAndReset(elementUniqueName);
-	//this.getGUIPanel().registerMap.put(register, elementUniqueName);
-    }
-
-    @Override
+     return GUIList.get(index).getUniqueName();
+     //this.getGUIPanel().setCurrentRegisterContentAndReset(elementUniqueName);
+     //this.getGUIPanel().registerMap.put(register, elementUniqueName);
+     }
+     */
+    /**
+     * calls {@link GUIelement#applySelection(int)} on all the elements of the
+     * {@code GUIList}.
+     *
+     * @param setOperation
+     */
     public void applySelection(int setOperation) {
 	for (GUIelement ge : GUIList) {
 	    ge.applySelection(setOperation);
@@ -524,6 +555,12 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * calls {@link GUIelement#applyFilter(int)} on all the elements of the
+     * {@code GUIList}.
+     *
+     * @param setOperation
+     */
     public void applyFilter(int setOperation) {
 	for (GUIelement ge : GUIList) {
 	    ge.applyFilter(setOperation);
@@ -531,6 +568,12 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * calls {@link GUIelement#setPreviewRegex(java.lang.String, int) } on all
+     * the elements of the {@code GUIList}.
+     *
+     * @param setOperation
+     */
     public void setPreviewRegex(String regex, int setOperation) {
 	for (GUIelement ge : GUIList) {
 	    ge.setPreviewRegex(regex, setOperation);
@@ -538,6 +581,10 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * Paint all the visible elements on this tab by calling their {@link GUIelement#paint(javafx.scene.canvas.GraphicsContext, double, double)
+     * } method.
+     */
     public void paintGUIelements() {
 	int offset = 50 + scrollOffset;
 	int fixedOffset = 10;
@@ -554,15 +601,17 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	}
     }
 
-    public void addAction(String s, GUIAbstractAction gaa) {
-	actionMap.put(s, gaa);
-    }
 
     /*
      public void setMenu(Menu m) {
      this.currentMenu = m;
      m.showMenu();
      }
+     */
+    /**
+     * Start editing the currently focused GUI element.
+     *
+     * @param interactive
      */
     public void editCurrentComponent(boolean interactive) {
 	GUIelement currentElement = GUITab.this.getFocusedGUIElement();
@@ -571,6 +620,13 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	GUITab.this.getGUIPanel().setMenu(currentElement.getMenu());
     }
 
+    /**
+     * Defocus the currently focused element and focus the element, given its
+     * index in the GUIList. If the provided index is invalid, focus the first
+     * next valid.
+     *
+     * @param index the index of the element in {@code GUIList} to focus.
+     */
     public void focusGUIelement(int index) {
 	GUIList.get(selectedElementIndex).setFocused(false);
 	if (index < 0) {
@@ -599,24 +655,48 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 
     }
 
+    /**
+     * Defocus the currently focused element and focus the given element in the {@code GUIList}.
+     * Ignore if null or no such element exists in the {@code GUIList}.
+     *
+     * @param ge the {@code GUIelement} to focus
+     */
     public void focusGUIelement(GUIelement ge) {
 	this.focusGUIelement(this.getGUIElementIndex(ge));
     }
 
+    /**
+     * @return {@code GUIList.size()}
+     */
     public int getGUIListSize() {
 	return this.GUIList.size();
     }
 
+    /**
+     * @return the {@code ArrayList} of {GUIelement}s, where all the elements
+     * of this tab are stored.
+     */
     public ArrayList<GUIelement> getGUIList() {
 	return this.GUIList;
     }
 
+    /**
+     * @deprecated
+     * @param irc 
+     */
     public void jumpToPercent(IRepetitionCounter irc) {
 	int percent = irc.getRepeatCount();
 	int newIndex = (int) Math.round(((float) GUIList.size() / 100) * percent);
 	focusGUIelement(newIndex);
     }
 
+    
+    /**
+     * Unfocus the currently focused element; then focus the nth next element after the one currently focused.
+     * This method also accepts negative argument; in such a case, it will focus the -nth previous element in the {@code GUIList}.
+     * Wrap around when the bounds of {@code GUIList} are met.
+     * @param steps n
+     */
     public void traverseElements(int steps) {
 	GUIList.get(selectedElementIndex).setFocused(false);
 	boolean forward = true;
@@ -632,6 +712,11 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	traverseElements(forward);
     }
 
+    /**
+     * Unfocus the currently focused element; then focus the next element (if the provided argument was true) or the previous one otherwise.
+     * Wrap around when the bounds of {@code GUIList} are met.
+     * @param forward whether the next element (true) or the previous one (false) should be focused.
+     */
     public void traverseElements(boolean forward) {
 	if (selectedElementIndex > GUIList.size() - 1) {
 	    selectedElementIndex = GUIList.size() - 1;
@@ -700,6 +785,12 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	this.getFocusedGUIElement().sendMouseDrag(event);
     }
 
+    /**
+     * Redraw the provided element by making a call to
+     * {@link GUIelement#paint()}, if it is on this tab, ignore otherwise.
+     *
+     * @param ge
+     */
     void repaintElement(GUIelement ge) {
 	if (!this.equals(this.getGUIPanel().getCurrentGUITab())) {//ignore if we aren't even on the correct tab	
 	    return;
@@ -709,10 +800,39 @@ public class GUITab extends GUIelement implements IRepetitionCounter {
 	gc.setFill(Color.BLACK);//clear everything
 	double x = ge.getLastPositionDrawnTo().x;
 	double y = ge.getLastPositionDrawnTo().y;
-	double geW = ge.getWidth()*4;
+	double geW = ge.getWidth() * 4;
 	double geH = ge.getHeight();
 	gc.fillRect(x, y, geW, geH);
 	ge.paint(gc, x, y);
 
+    }
+
+    /**
+     * Set the GUI panel this tab is on to the one provided.
+     *
+     * @param gp The GUIPanel this tab is on.
+     */
+    public final void setGUIPanel(GUIPanel gp) {
+	this.gp = gp;
+    }
+
+    public GUIPanel getGUIPanel() {
+	return this.gp;
+    }
+
+    /**
+     * @return the name of this tab
+     */
+    String getName() {
+	return this.name;
+    }
+
+    /**
+     * Set the name of this tab
+     *
+     * @param name
+     */
+    private void setName(String name) {
+	this.name = name;
     }
 }

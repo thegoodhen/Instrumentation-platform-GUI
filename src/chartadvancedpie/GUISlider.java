@@ -15,6 +15,8 @@ import shuntingyard.CompilerException;
 import shuntingyard.Token;
 
 /**
+ * A slider element used for setting or reading a value, wherever the exact
+ * value is not important and its relation to the min/max is.
  *
  * @author thegoodhen
  */
@@ -36,6 +38,10 @@ public class GUISlider extends GUIelement {
 	//actionMap.put("h", testAction2);
     }
 
+    /**
+     * Action for parsing a text, representing a number and setting the value to
+     * this extracted number.
+     */
     private class setValueFromTextAction extends NamedGUIAction {
 
 	public setValueFromTextAction(String name) {
@@ -57,6 +63,10 @@ public class GUISlider extends GUIelement {
 
 	}
 
+	/**
+	 * Action fired when the user types in the value which should be set and
+	 * hits enter.
+	 */
 	public void confirmSetValueAction() {
 	    try {
 		String program = "CGE.setValue(" + getGUIPanel().getCmdLine().getText() + ");\n";
@@ -83,6 +93,9 @@ public class GUISlider extends GUIelement {
     }
 
     @Override
+    /**
+     *Scrolling the mouse when this element is focused can be used to adjust the value.
+     */
     void sendMouseScroll(ScrollEvent event) {
 	double deltaY = event.getDeltaY();
 	double eventX = event.getSceneX();
@@ -91,9 +104,9 @@ public class GUISlider extends GUIelement {
 	float correctDelta;
 
 	if (deltaY > 0) {
-	    correctDelta= (float) (this.getPropertyByName("Step").getValueSilent());
+	    correctDelta = (float) (this.getPropertyByName("Step").getValueSilent());
 	} else {
-	    correctDelta= -((float) (this.getPropertyByName("Step").getValueSilent()));
+	    correctDelta = -((float) (this.getPropertyByName("Step").getValueSilent()));
 	}
 
 	increaseValue(correctDelta);//TODO: handle using actions so it's undoable!!!!
@@ -211,16 +224,20 @@ public class GUISlider extends GUIelement {
     }
 
     /*
-    public String getName() {
-	return "slider";
-    }
-    */
-
+     public String getName() {
+     return "slider";
+     }
+     */
+    /**
+     * Increase the current value by the step provided.
+     * @param step How much to increase the value by (can be a negative number)
+     */
     public void increaseValue(float step) {
 	this.setValue(this.getValue() + step);
 	super.update();
     }
 
+    @Deprecated
     public void increaseValue(boolean forward, boolean fast) {
 	byte increase = 1;
 	if (fast) {
@@ -233,12 +250,10 @@ public class GUISlider extends GUIelement {
 	super.update();
     }
 
-    
     @Override
     public String getGUIelementName() {
 	return "SLIDER";
     }
-    
 
     public void paint(GraphicsContext gc, double x, double y) {
 	super.paint(gc, x, y);
@@ -252,7 +267,7 @@ public class GUISlider extends GUIelement {
 	gc.fillRect(x, y, this.getWidth(), this.getHeight());
 	gc.setFill(this.getColor2());
 	//gc.setFill(Color.WHITE);
-	gc.fillRect(x, y, ((this.getValue()-getMin())/getMax())*this.getWidth(), this.getHeight());
+	gc.fillRect(x, y, ((this.getValue() - getMin()) / getMax()) * this.getWidth(), this.getHeight());
     }
 
 }

@@ -12,6 +12,21 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 /**
+ * GUI element used to display statistical information.
+ *
+ * When a new sample is added using the {@link addSample} function, it waits in
+ * so-called delayList first. After a user adjustable delay, it gets added to
+ * the workingList. This delay is determined by the {@code Delay}
+ * {@link Property}. It then gets automatically deleted from the workingList
+ * after another user-adjustable delay, determined by the {@code WindowWidth}
+ * {@link Property}. This happens during calls to the {@link updateStats}
+ * function.
+ *
+ * A statistic can then be calculated on all the samples in the workingList.
+ * This is handled by making a call to the {@link getCurrentStat} method. This
+ * method then makes call to the {statGenerator#getStat} method of the correct
+ * {@link statGenerator}, that is, to the one located on index {@code currentStatgenIndex}
+ * of {@code statGenList}.
  *
  * @author thegoodhen
  */
@@ -28,6 +43,9 @@ public class GUIStatsDisplay extends GUIelement {
     private ArrayList<statGenerator> statGenList;
     private double lastValue;
 
+    /**
+     * Abstract class used for objects, that can calculate some statistic.
+     */
     private abstract class statGenerator {
 
 	private String statName = "";
@@ -153,6 +171,15 @@ public class GUIStatsDisplay extends GUIelement {
 	statGenList.add(squaredSumStatGen);
     }
 
+    /**
+     * Switch to the nth next statistic in row. Number can be negative; in such
+     * a case, switch to the -nth previous. See the source code of the
+     * constructor with the GUITab parameter for the order in which the
+     * statistical funcitons are being switched between.
+     *
+     * @param number the n
+     * @see #this(GUITab gt)
+     */
     private void switchStats(int number) {
 	currentStatgenIndex += number;
 	if (currentStatgenIndex >= statGenList.size()) {
@@ -281,7 +308,7 @@ public class GUIStatsDisplay extends GUIelement {
 	 */
 	gc.setStroke(Color.WHITESMOKE);
 
-	float val=(float)this.getPropertyByName("Value").getValue(true, false);
+	float val = (float) this.getPropertyByName("Value").getValue(true, false);
 	gc.strokeText(Float.toString(val), x, y + 10);
 	String unitString = (this.timeInSamples ? "samples" : "seconds");
 	double delay = (float) this.getPropertyByName("Delay").getValueSilent();
@@ -304,11 +331,25 @@ public class GUIStatsDisplay extends GUIelement {
 	return cb;
     }
 
+    /**
+     * Schedule a sample to be added after a user adjustable delay by adding
+     * them to the delayList. Once {@link #updateStats()} is called, the samples
+     * in the delayList that have already been there for the user defined delay
+     * are moved to the working list.
+     *
+     * @see #updateStats()
+     * @param value the value of this sample
+     */
     private void addSample(Float value) {
 	delayList.addLast(new TimeStampedSample(value));
 	this.updateStats();
     }
 
+    /**
+     * Schedule a sample to be added to the working window immeditely.
+     *
+     * @param sample the TimeStampedSample representing this sample
+     */
     private void addSampleToWorkingList(TimeStampedSample sample) {
 	workingList.addLast(sample);
 	sum += sample.getValue();
@@ -318,6 +359,11 @@ public class GUIStatsDisplay extends GUIelement {
 	this.samplesSortedByValueList.sort(null);
     }
 
+    /**
+     * Perform the cleaning up of the working list. This will discard any
+     * samples from the working list, that are too old.
+     *
+     */
     private void clearUpWorkingList() {
 	if (!workingList.isEmpty()) {
 	    long delay = (long) ((float) this.getPropertyByName("Delay").getValueSilent()) * 1000;
@@ -334,6 +380,14 @@ public class GUIStatsDisplay extends GUIelement {
 	}
     }
 
+    /**
+     * Move samples, that have already been in the delayList for the user
+     * defined delay to the working list, also removing the samples from the
+     * workingList, that have been there for longer than the windowWidth. This
+     * method is automatically called from {@link getCurrentStat}
+     *
+     * @see #getCurrentStat()
+     */
     private void updateStats() {
 	if (delayList.isEmpty()) {
 	    clearUpWorkingList();
@@ -349,6 +403,10 @@ public class GUIStatsDisplay extends GUIelement {
 	}
     }
 
+    /**
+     * @return the currently selected statistical function on the data in
+     * workingList; If no samples are in the workingList, return 0.
+     */
     public double getCurrentStat() {
 	System.out.println("returning current stat");
 	this.updateStats();

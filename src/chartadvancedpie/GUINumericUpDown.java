@@ -59,7 +59,7 @@ public class GUINumericUpDown extends GUIelement {
 
     /**
      * Based on te dotPos field, this method takes a series of digits as string
-     * and adds the dot there
+     * and adds the dot there. It also adds a minus sign where applicable.
      *
      * @param dotlessString
      * @return
@@ -81,17 +81,34 @@ public class GUINumericUpDown extends GUIelement {
 
     }
 
+    /**
+     * Returns the string, representing the precise value of the number
+     * displayed on this element. Dot is used as a separator for the float
+     * number.
+     *
+     * @return the string, representing the precise value of the number
+     * displayed on this element.
+     */
     private String getNumberString() {
-	return String.format(Locale.US,"%.5f", preciseValue);
+	return String.format(Locale.US, "%.5f", preciseValue);
     }
 
+    /**
+     * Returns the string, representing the precise value of the number
+     * displayed on this element, with all non-numeric characters removed.
+     * @return the string, representing the precise value of the number
+     * displayed on this element, with all non-numeric characters removed.
+     */
     private String getDotLessString() {
 
-	String numAsString=getNumberString();
+	String numAsString = getNumberString();
 	numAsString = numAsString.replaceAll("[^0-9]", "");
 	return numAsString;
     }
 
+    /**
+     * Shifts the cursor to the left, changing which digit is currently being edited.
+     */
     NamedGUIAction cursorLeftAction = new NamedGUIAction("cursor to the left") {
 	@Override
 	public void doAction() {
@@ -106,6 +123,9 @@ public class GUINumericUpDown extends GUIelement {
 	}
     };
 
+    /**
+     * Shifts the cursor to the right, changing which digit is currently being edited.
+     */
     NamedGUIAction cursorRightAction = new NamedGUIAction("cursor to the right") {
 	@Override
 	public void doAction() {
@@ -119,6 +139,10 @@ public class GUINumericUpDown extends GUIelement {
 	}
     };
 
+    /**
+     * This action adds some number to the current number displayed, based on which digit is currently selected. If "hundreds"
+     * are selected, adds hundred, if tens, adds ten.
+     */
     NamedGUIAction cycleUpAction = new NamedGUIAction("cycle up (add)") {
 	@Override
 	public void doAction() {
@@ -127,6 +151,10 @@ public class GUINumericUpDown extends GUIelement {
 	}
     };
 
+    /**
+     * This action subracts some number from the current number displayed, based on which digit is currently selected. If "hundreds"
+     * are selected, subtracts hundred, if tens, subtracts ten.
+     */
     NamedGUIAction cycleDownAction = new NamedGUIAction("cycle down (subtract)") {
 	@Override
 	public void doAction() {
@@ -136,6 +164,9 @@ public class GUINumericUpDown extends GUIelement {
 	}
     };
 
+    /**
+     * This action clears the currently selected digit, setting it to 0.
+     */
     NamedGUIAction zeroCurrentDigit = new NamedGUIAction("zero current digit") {
 	@Override
 	public void doAction() {
@@ -158,27 +189,37 @@ public class GUINumericUpDown extends GUIelement {
 	this.addProperthies();
 	this.setName("UPDOWN");
 	this.setGUIPanel(gut.getGUIPanel());
-	elementTypeMappingManager=new MappingManager(gut.getGUIPanel());
+	elementTypeMappingManager = new MappingManager(gut.getGUIPanel());
     }
 
     public static MappingManager getElementTypeMappingManager() {
 	return elementTypeMappingManager;
     }
 
+    /**
+     * First remove the sign. Then get the (zero-based) index of the last digit
+     * before the dot.
+     * @return the (zero-based) index of the last digit before the dot, after the
+     * minus sign has been removed.
+     */
     private int getIndexOfLastDigitBeforeDot() {
 	//double val = (double) Math.abs((float) this.getPropertyByName("Value").getValueSilent());
 	/*
-	if (preciseValue < 10) {
-	    return 0;
-	} else {
-	    return (int) Math.floor(Math.log10(preciseValue));
-	}
-	*/
-	String s=this.getNumberString();
-	s=s.replace("-", "");
-	return s.indexOf(".")-1;
+	 if (preciseValue < 10) {
+	 return 0;
+	 } else {
+	 return (int) Math.floor(Math.log10(preciseValue));
+	 }
+	 */
+	String s = this.getNumberString();
+	s = s.replace("-", "");
+	return s.indexOf(".") - 1;
     }
 
+    /**
+     * update the fields, determining the current cursor and dot position, based on 
+     * the current value displayed.
+     */
     private void updateCursorAndDotPosition() {
 	int lastDigitBeforeDotIndex = getIndexOfLastDigitBeforeDot();
 	//double val = Math.abs((float) this.getPropertyByName("Value").getValueSilent());

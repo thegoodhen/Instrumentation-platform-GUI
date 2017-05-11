@@ -8,7 +8,7 @@ package chartadvancedpie;
 import javafx.scene.input.KeyEvent;
 
 /**
- *
+ * Interface for handlers of key presses.
  * @author thegoodhen
  */
 public interface GUIKeyEventHandler {

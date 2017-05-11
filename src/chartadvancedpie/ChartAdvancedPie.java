@@ -144,7 +144,7 @@ public class ChartAdvancedPie extends Application {
 	Module m = mf.create(xmlAsBytes, 1);
 	ArrayList<GUIelement> elementList = m.getGUIelements();
 	for (GUIelement ge : elementList) {
-	    gp.addGUIelement(ge);
+	    //gp.addGUIelement(ge);
 	    //System.out.println("KOKODAK"+ge.toString());
 	}
 	System.out.println(m.toString());

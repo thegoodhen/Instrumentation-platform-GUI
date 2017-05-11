@@ -48,10 +48,13 @@ import shuntingyard.CompilerException;
 import shuntingyard.Token;
 
 /**
+ * A panel with tabs. Keeps the information about the individual GUI elements
+ * and also handles the key presses. Also handles the individual tabs, on which
+ * the different elements can be placed.
  *
  * @author thegoodhen
  */
-public class GUIPanel extends GUIelement implements IRepetitionCounter {
+public class GUIPanel implements IRepetitionCounter {
 
     Canvas canvas;
     VBox vb;
@@ -107,42 +110,85 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
     private final CanvasPane canvasPane;
     private String userCode;
     private SerialCommunicator sc;
+    private HashMap<String, GUIAbstractAction> actionMap;
 
+    /**
+     * Parse the provided string as a sequence of key presses and perform
+     * actions accordingly.
+     *
+     * @param s
+     */
     public void handle(String s) {
 	this.pkeh.handle(s, false);
     }
 
+    /**
+     * Return the global mapping manager object, responsible for managing
+     * mappings, that are active when no components are being edited.
+     *
+     * @return the global mapping manager object, responsible for managing
+     * mappings, that are active when no components are being edited.
+     */
     public MappingManager getGlobalMappingManager() {
 	return this.globalMapManager;
     }
 
+    /**
+     * Return the serial communicator object, used to communicate with the child
+     * modules.
+     *
+     * @return the serial communicator object, used to communicate with the
+     * child modules.
+     */
     public SerialCommunicator getSerialCommunicator() {
 	return this.sc;
     }
 
+    /**
+     * Set the serial communicator object, used to communicate with the child
+     * modules.
+     */
     public void setSerialCommunicator(SerialCommunicator sc) {
-	this.sc=sc;
+	this.sc = sc;
     }
 
+    /**
+     * Return the currently edited GUI element if any, null otherwise.
+     *
+     * @return the currently edited GUI element if any, null otherwise.
+     */
     public GUIelement getCurrentlyEditedGUIelement() {
 	return this.currentlyEditedGUIelement;
     }
 
+    /**
+     * Set the currently edited GUI element to be the one provided.
+     */
     public void setCurrentlyEditedGUIelement(GUIelement ge) {
 	this.currentlyEditedGUIelement = ge;
     }
 
+    /**
+     * Switch to edit mode and start editing the provided GUI element.
+     */
     public void editElement(GUIelement ge) {
 	this.currentlyEditedGUIelement = ge;
 	ge.getMenu().setSuperMenu(getMenu());//so that escaping works correctly
 	this.setMenu(ge.getMenu());
     }
 
+    /**
+     * Return to normal mode, halting the ongoing edits of a component.
+     */
     public void stopEditing() {
 	this.currentlyEditedGUIelement = null;
 	this.setMenu(pkeh.getMainMenu());
     }
 
+    /**
+     * An action to change the register, which will be used to perform the
+     * action, which will immediately follow.
+     */
     private RegisterAction pickRegisterAction = new RegisterAction() {
 	@Override
 	public void doAction(String register) {
@@ -154,10 +200,21 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     private RegisterSelectionMenu pickRegisterMenu = new RegisterSelectionMenu(this, "pick register", pickRegisterAction);
 
+    /**
+     * Return the letter of the currently selected register.
+     *
+     * @return the letter of the currently selected register.
+     */
     public String getCurrentRegisterLetter() {
 	return this.currentRegister;
     }
 
+    /**
+     * Return the letter of the currently selected register. Then reset this
+     * letter to '%' (unnamed register).
+     *
+     * @return the letter of the currently selected register.
+     */
     public String getCurrentRegisterLetterAndReset() {
 	String s = this.getCurrentRegisterLetter();
 	this.currentRegister = UNNAMED_REGISTER;
@@ -165,6 +222,9 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return s;
     }
 
+    /**
+     * Set the letter of the currently selected register to be the one provided.
+     */
     protected void setCurrentRegister(String register) {
 	this.currentRegister = register;
 	if (!lFlag) {
@@ -174,11 +234,24 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * Return the Position object, representing which tab the user is currently
+     * on, and which component is currently focused.
+     *
+     * @return the Position object, representing which tab the user is currently
+     * on, and which component is currently focused.
+     */
     public Position getCurrentPosition() {
 	Position returnPosition = new Position(this.currentGUITab, this.currentGUITab.getFocusedGUIElement());
 	return returnPosition;
     }
 
+    /**
+     * Set the Position object, representing which tab the user is currently on,
+     * and which component is currently focused. This will change the current
+     * tab and focus the given element on it, if possible. Otherwise, it has no
+     * effect.
+     */
     public void setCurrentPosition(Position p) {
 	if (p != null) {
 	    this.setCurrentGUITab(p.getGUITab());
@@ -186,6 +259,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * Set the current GUI tab to the one specified. This will switch tabs. Has
+     * no effect, if the GUI tab provided is null, or if no such tab exists in
+     * the list of GUItabs, stored in the tabList field of this class.
+     *
+     */
     public void setCurrentGUITab(GUITab gt) {
 	int position = tabList.indexOf(gt);
 	boolean isValid = (gt != null && position != -1);
@@ -196,16 +275,35 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     }
 
+    /**
+     * Returns the GUITab object, representing the tab the user is currently
+     * viewing.
+     *
+     * @return the GUITab object, representing the tab the user is currently
+     * viewing.
+     */
     public GUITab getCurrentGUITab() {
 	return this.currentGUITab;
     }
 
+    /**
+     * Instruct all components to recompile the bytecode of their callbacks.
+     * This function should automatically be called whenever the user code
+     * changes.
+     */
     public void recompileEventsForAll() {
 	for (GUIelement ge : this.GUIIDMap.keySet()) {
 	    ge.recompileEvents();
 	}
     }
 
+    /**
+     * Returns the ID of the GUI element with the UNIQUENAME provided
+     *
+     * @param name
+     * @return the ID of the GUI element with the UNIQUENAME provided
+     * @see addGUIelement
+     */
     public int getGUIElementIDByName(String name) {
 	if (name.equals("CGE"))//short for "current gui element"
 	{
@@ -220,16 +318,41 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return -1;
     }
 
+    /**
+     * Get the compiler object, used by this panel to run user code and also
+     * compile the callbacks of the individual component.
+     *
+     * @return the compiler object, used by this panel to run user code and also
+     * compile the callbacks of the individual component.
+     */
     public GUICompiler getGUICompiler() {
 	return this.c;
     }
 
+    /**
+     * Run a program, defined by the provided bytecode (an ArrayList of Tokens).
+     *
+     * @param program the program to run, defined by its bytecode as ArrayList
+     * of Tokens.
+     * @return Always 0. TODO: Return 1 on error.
+     */
     public float handleCallBack(ArrayList<Token> program) {
 	this.vm.setProgram(program);
 	vm.runProgram();
 	return 0;
     }
 
+    /**
+     * Inform this GUIPanel about a new GUIelement. It should never be necessary
+     * to call this function manually, as it is automatically called whenever a
+     * new GUIelement is placed on a GUITab, which is located on this GUIPanel.
+     * A new unique ID is assigned to this element. Several hashmaps are
+     * updated, which make it easy to later reference this GUIelement by its ID
+     * (which is how user code or any CLUC code refers to the GUI element) and
+     * also by its Unique name.
+     *
+     * @param ge the GUIelement to add
+     */
     public void registerGUIelement(GUIelement ge) {
 	ge.setGUIPanel(this);
 	GUIIDMap.put(ge, totalGUIelementCount);
@@ -238,10 +361,40 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	totalGUIelementCount++;
     }
 
+    /**
+     * Return the repeat count, which should be used for the next action. Reset
+     * the repeat count to 1 afterwards. 
+     * 
+     * This is semantically identical to calling getRepeatCount(true).
+     * 
+     * The repeat count is a number, which
+     * can be provided by the user. Once provided, it is passed to the next
+     * action which is run by the user. This action can then use it; usually,
+     * the meaning of this number is the number of times said action should be
+     * executed.
+     * 
+     *
+     * @return the repeat count, which should be used for the next action.
+     * @throws RuntimeException
+     */
+    @Override
     public int getRepeatCount() throws RuntimeException {
 	return getRepeatCount(true);
     }
 
+    /**
+     * Return the repeat count, which should be used for the next action. Reset
+     * the repeat count to 1 afterwards. This repeat count is a number, which
+     * can be provided by the user. Once provided, it is passed to the next
+     * action which is run by the user. This action can then use it; usually,
+     * the meaning of this number is the number of times said action should be
+     * executed.
+     *
+     * @param reset whether or not should the repeat count be reset after it's
+     * returned.
+     * @return the repeat count, which should be used for the next action.
+     * @throws RuntimeException
+     */
     public int getRepeatCount(boolean reset) {
 
 	if (repeatCountString.length() == 0) {
@@ -254,10 +407,25 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     }
 
+    /**
+     * Get the virtual machine, used to executed the user code and the code from
+     * the commandLine.
+     * @return the virtual machine, used to executed the user code and the code from
+     * the commandLine.
+     */
     public GUIVirtualMachine GetGUIVirtualMachine() {
 	return this.vm;
     }
 
+    /**
+     * Get the content of the register, determined by the letter, provided as
+     * a string.
+     * 
+     * Also handles clipboard access and other special registers.
+     * @param registerName the letter (or character) of the register in question.
+     * @return the content of the register, determined by the letter, provided as
+     * a string.
+     */
     public String getRegisterContent(String registerName) {
 	if (registerName.equals("%")) {
 
@@ -305,6 +473,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	return returnString;
     }
 
+    /**
+     * Sets the content of register registerName to the String content provided.
+     * @param registerName the letter of register, content of which should be set
+     * @param content the new content
+     */
     public void setRegisterContent(String registerName, String content) {
 	if (registerName.charAt(0) >= 'a' && registerName.charAt(0) <= 'z')//change register
 	{
@@ -334,28 +507,31 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * Set the repeat count to the value provided
+     * @param repeatCount the value to set the repeat count to
+     * @see #getRepeatCount()
+     */
     protected void setRepeatCount(int repeatCount) {
 	this.repeatCountString = Integer.toString(repeatCount);
     }
 
+    /**
+     * Resets the repeat count
+     * @see #getRepeatCount()
+     */
     public void resetRepeatCount() {
 	this.repeatCountString = "";
 	repeatCountBlimp.setText("(1)");
 	this.nFlag = false;
     }
 
-    void setMark(String mark) {
-	quickMarkMap.put(mark, GUIList.get(selectedElementIndex));
-    }
 
-    void jumpToMark(String mark) {
-	GUIelement targetElement = quickMarkMap.get(mark);
-	if (targetElement != null) {
-	    GUIList.get(selectedElementIndex).setFocused(false);
-	    quickMarkMap.get(mark).setFocused(true);
-	}
-    }
 
+    /**
+     * Show given text at the statusWindow, at the bottom.
+     * @param text the text to show
+     */
     public void showText(String text) {
 	if (this.infoTextArea != null) {
 	    this.infoTextArea.appendText(text);
@@ -363,6 +539,11 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * Show given text at the statusWindow, at the bottom. Also flash
+     * a warning "ERROR" blimp in the statusLine.
+     * @param text the text to show
+     */
     public void showError(String text) {
 	showText(text + "\n");//TODO: make it red
 	setErrorStatus();
@@ -378,96 +559,145 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	clearErrorTimer.schedule(theTask, 3000);
     }
 
+    /**
+     * Returns the {@link CanvasPane}, which the GUI elements are drawn to.
+     * @treatAsPrivate
+     * @return  the {@link CanvasPane}, which the GUI elements are drawn to.
+     */
     public CanvasPane getCanvasPane() {
 	return this.canvasPane;
     }
 
     public GUIPanel() {
-	super(null);
+	//super(null);
 
+	actionMap = new HashMap<>();
 	pkeh = new PanelKeyEventHandler();
 	canvasPane = new CanvasPane(400, 200);
 	canvas = canvasPane.getCanvas();//new Canvas(400, 200);
-	canvas.widthProperty().addListener(observable -> this.getCurrentGUITab().paintGUIelements());
-	canvas.widthProperty().addListener(observable -> this.getCurrentGUITab().paintGUIelements());
+
+	canvas.widthProperty()
+		.addListener(observable -> this.getCurrentGUITab().paintGUIelements());
+	canvas.widthProperty()
+		.addListener(observable -> this.getCurrentGUITab().paintGUIelements());
 
 	vb = new VBox(8);
 	//vb.getChildren().add(canvas);
 	cmdLine = new TextArea("Slepice");
 
-	cmdLine.setPrefRowCount(10);
+	cmdLine.setPrefRowCount(
+		10);
 	infoTextArea = new TextArea("Kokodak") {
 	    @Override
 	    public void requestFocus() {
 
 	    }
 	};
-	cmdLine.setStyle("-fx-text-inner-color: gray;");
+
+	cmdLine.setStyle(
+		"-fx-text-inner-color: gray;");
 
 	editorTextArea = new TextArea("kokodak");
-	editorTextArea.setPrefRowCount(500);
+
+	editorTextArea.setPrefRowCount(
+		500);
 	//cmdLine.setOnKeyPressed(event -> pkeh.escapeKeyPressed(event.getCode(), null));
+
 	this.enterPressAction = new NamedGUIAction("confirm") {
 	    public void doAction() {
 
 	    }
 	};
 
-	cmdLine.setOnKeyPressed(event -> pkeh.keyPressed(event, null));
-	editorTextArea.setOnKeyPressed(event -> pkeh.userCodeEditorKeyPressed(event, null));
+	cmdLine.setOnKeyPressed(event
+		-> pkeh.keyPressed(event, null));
+	editorTextArea.setOnKeyPressed(event
+		-> pkeh.userCodeEditorKeyPressed(event, null));
 		//cmdLine.setPrefRowCount(1);
 
 	//statusLine.setRotate(40);//wow, funky
-	infoTextArea.setEditable(false);
-	infoTextArea.setPrefRowCount(200);
-	infoTextArea.setFocusTraversable(false);
+	infoTextArea.setEditable(
+		false);
+	infoTextArea.setPrefRowCount(
+		200);
+	infoTextArea.setFocusTraversable(
+		false);
 
 	vFlagStatusBlimp = new Label("vFlag: OFF");
+
 	vFlagStatusBlimp.setTextFill(Color.YELLOW);
-	vFlagStatusBlimp.setStyle("-fx-background-color: black");
+
+	vFlagStatusBlimp.setStyle(
+		"-fx-background-color: black");
 
 	modeStatusBlimp = new Label("[NORMAL]");
+
 	modeStatusBlimp.setTextFill(Color.WHITE);
-	modeStatusBlimp.setStyle("-fx-background-color: black");
+
+	modeStatusBlimp.setStyle(
+		"-fx-background-color: black");
 
 	typedKeysBlimp = new Label("abcd");
+
 	typedKeysBlimp.setTextFill(Color.WHITE);
-	typedKeysBlimp.setStyle("-fx-background-color: black");
+
+	typedKeysBlimp.setStyle(
+		"-fx-background-color: black");
 
 	repeatCountBlimp = new Label("1");
+
 	repeatCountBlimp.setTextFill(Color.WHITE);
-	repeatCountBlimp.setStyle("-fx-background-color: black");
+
+	repeatCountBlimp.setStyle(
+		"-fx-background-color: black");
 
 	registerBlimp = new Label("(%)");
+
 	registerBlimp.setTextFill(Color.WHITE);
-	registerBlimp.setStyle("-fx-background-color: black");
+
+	registerBlimp.setStyle(
+		"-fx-background-color: black");
 
 	recordingStatusBlimp = new Label("");
+
 	recordingStatusBlimp.setTextFill(Color.RED);
-	recordingStatusBlimp.setStyle("-fx-background-color: black");
+
+	recordingStatusBlimp.setStyle(
+		"-fx-background-color: black");
 
 	errorStatusBlimp = new Label("");
+
 	errorStatusBlimp.setTextFill(Color.BLACK);
-	errorStatusBlimp.setStyle("-fx-background-color: red");
+
+	errorStatusBlimp.setStyle(
+		"-fx-background-color: red");
 
 	TilePane hb = new TilePane();
-	hb.setHgap(10);
 
-	hb.setStyle("-fx-background-color: black");
+	hb.setHgap(
+		10);
+
+	hb.setStyle(
+		"-fx-background-color: black");
 	hb.setOrientation(Orientation.HORIZONTAL);
 
-	hb.getChildren().addAll(recordingStatusBlimp, modeStatusBlimp, vFlagStatusBlimp, registerBlimp, repeatCountBlimp, typedKeysBlimp, errorStatusBlimp);
+	hb.getChildren()
+		.addAll(recordingStatusBlimp, modeStatusBlimp, vFlagStatusBlimp, registerBlimp, repeatCountBlimp, typedKeysBlimp, errorStatusBlimp);
 
-	vb.getChildren().addAll(cmdLine, infoTextArea, hb);
-	canvas.setFocusTraversable(true);
+	vb.getChildren()
+		.addAll(cmdLine, infoTextArea, hb);
+	canvas.setFocusTraversable(
+		true);
 	// Clear away portions as the user drags the mouse
-	canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
-	    @Override
-	    public void handle(MouseEvent e) {
+	canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED,
+		new EventHandler<MouseEvent>() {
+		    @Override
+		    public void handle(MouseEvent e
+		    ) {
 
-		//gc.clearRect(e.getX() - 2, e.getY() - 2, 5, 5);
-	    }
-	});
+			//gc.clearRect(e.getX() - 2, e.getY() - 2, 5, 5);
+		    }
+		});
 
 	/*
 	 canvas.addEventHandler(KeyEvent.KEY_PRESSED,
@@ -517,35 +747,47 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 		ke.consume();
 	    }
 	};
+
 	canvas.addEventHandler(KeyEvent.KEY_TYPED,
 		theHandler);
+
 	canvas.addEventHandler(KeyEvent.KEY_PRESSED,
 		theHandler);
+
 	// Fill the Canvas with a Blue rectnagle when the user double-clicks
-	canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-	    @Override
-	    public void handle(MouseEvent t) {
-		GUIPanel.this.handleMousePress(t);
-		if (t.getClickCount() > 1) {
-		    reset(canvas, Color.BLUE);
+	canvas.addEventHandler(MouseEvent.MOUSE_PRESSED,
+		new EventHandler<MouseEvent>() {
+		    @Override
+		    public void handle(MouseEvent t
+		    ) {
+			GUIPanel.this.handleMousePress(t);
+			if (t.getClickCount() > 1) {
+			    reset(canvas, Color.BLUE);
+			}
+		    }
 		}
-	    }
-	});
-	canvas.setOnScroll((ScrollEvent event) -> {
-	    double deltaY = event.getDeltaY();
-	    GUIPanel.this.getCurrentGUITab().sendMouseScroll(event);
+	);
+	canvas.setOnScroll(
+		(ScrollEvent event) -> {
+		    double deltaY = event.getDeltaY();
+		    GUIPanel.this.getCurrentGUITab().sendMouseScroll(event);
 
-	});
-	canvas.setOnMouseDragged((MouseEvent event) -> {
-	    GUIPanel.this.getCurrentGUITab().sendMouseDrag(event);
+		}
+	);
+	canvas.setOnMouseDragged(
+		(MouseEvent event) -> {
+		    GUIPanel.this.getCurrentGUITab().sendMouseDrag(event);
 
-	});
+		}
+	);
 
 	//actionMap.put("j", testAction);
 	//actionMap.put("k", testAction2);
 	GUITab gt = new GUITab(this, "tab1");
 	GUITab gt2 = new GUITab(this, "tab2");
+
 	this.addGUITab(gt);
+
 	this.addGUITab(gt2);
 	currentGUITab = gt2;
 
@@ -573,18 +815,30 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	GUITimer gti = new GUITimer(gt);
 	GUIStatsDisplay gsd = new GUIStatsDisplay(gt2);
 	GUIPID pid = new GUIPID(gt2);
-	System.out.println("pipka kokon:");
-	pid.getPropertyByName("P").setValue(10F);
+
+	System.out.println(
+		"pipka kokon:");
+	pid.getPropertyByName(
+		"P").setValue(10F);
 	GUIPID pid2 = (GUIPID) pid.makeCopy();
 	GUINumericUpDown gnud = new GUINumericUpDown(gt2);
+
 	gt2.addGUIelement(gnud);
+
 	gt2.addGUIelement(pid);
+
 	gt2.addGUIelement(pid2);
+
 	gt2.addGUIelement(gsd);
+
 	gt.addGUIelement(gd);
+
 	gt2.addGUIelement(gs2);
+
 	gt2.addGUIelement(gs3);
+
 	gt2.addGUIelement(gs4);
+
 	gt2.addGUIelement(gti);
 
 	//gt.addGUIelement(gs4);
@@ -625,47 +879,67 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//this.recompileEventsForAll();
 
 	final Stage dialog = new Stage();
+
 	dialog.initModality(Modality.APPLICATION_MODAL);
 	//dialog.initOwner(primaryStage);
 	VBox dialogVbox = new VBox(20);
+
 	//dialogVbox.getChildren().add(new Text("This is a Dialog"));
-	dialogVbox.getChildren().add(editorTextArea);
+	dialogVbox.getChildren()
+		.add(editorTextArea);
 	Scene dialogScene = new Scene(dialogVbox, 500, 500);
+
 	dialog.setScene(dialogScene);
 
 	Button btn = new Button();
-	btn.setText("Save and recompile");
+
+	btn.setText(
+		"Save and recompile");
 	btn.setOnAction(
 		new EventHandler<ActionEvent>() {
 		    @Override
-		    public void handle(ActionEvent event) {
+		    public void handle(ActionEvent event
+		    ) {
 			GUIPanel.this.userCode = editorTextArea.getText();
 			GUIPanel.this.recompileUserCode();
 		    }
-		});
-	dialogVbox.getChildren().add(btn);
+		}
+	);
+	dialogVbox.getChildren()
+		.add(btn);
 	dialog.show();
+
 	System.out.println(HintManager.get(this).fillString("I TAB1_GS"));
 	/*
-	sc = new SerialCommunicator(this);
-	try {
-	    sc.connect("COM3");
-	    //Thread.sleep(5000);
-	    sc.getWriter().sendInit();
-	} catch (Exception ex) {
-	    Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
-	}
-	*/
+	 sc = new SerialCommunicator(this);
+	 try {
+	 sc.connect("COM3");
+	 //Thread.sleep(5000);
+	 sc.getWriter().sendInit();
+	 } catch (Exception ex) {
+	 Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
+	 }
+	 */
     }
 
-    public void setErrorStatus() {
+    /**
+     * Start showing the ERROR blimp in the status line.
+     */
+    private void setErrorStatus() {
 	Platform.runLater(() -> this.errorStatusBlimp.setText("ERROR!"));
     }
 
-    public void resetErrorStatus() {
+    /**
+     * Stop showing the ERROR blimp in the status line.
+     */
+    private void resetErrorStatus() {
 	Platform.runLater(() -> this.errorStatusBlimp.setText(""));
     }
 
+    /**
+     * Recompile the user code into a bytecode using the GUICompiler.
+     * @see #getGUICompiler()
+     */
     public void recompileUserCode() {
 	try {
 	    c.compile(this.userCode);
@@ -681,6 +955,7 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    @Deprecated
     public Canvas getCanvas() {
 	return canvas;
     }
@@ -703,6 +978,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
+    /**
+     * Switch the currently selected tab to be the nth next in the list, where
+     * n is the number provided. N can also be negative, in such a case, switch
+     * to the -nth previous tab.
+     * @param count 
+     */
     public void traverseTabs(int count) {
 	boolean forward = true;
 	if (count > 0) {
@@ -718,6 +999,12 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     }
 
+    /**
+     * Switch the currently selected tab to be the next one in the list (if 
+     * the boolean provided is true) or to be the previous one (if the boolean
+     * provided is false).
+     * @param forward whether to switch to the next (true) or previous (false)
+     */
     protected void traverseTabs(boolean forward) {
 	if (forward) {
 	    this.currentGUITabIndex++;
@@ -734,11 +1021,20 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	System.out.println(this.currentGUITab.hashCode());
     }
 
+    /**
+     * Add a {@link #ChangeListener} to the list of listeners, events of which get fired,
+     * once the enter is pressed.
+     * @param listener 
+     */
     protected void addCmdLineListener(javafx.beans.value.ChangeListener<String> listener) {
 	this.cmdLine.textProperty().addListener(listener);
 	this.cmdLineListenerList.add(listener);
     }
 
+    /**
+     * Reverts the behavior of an enter press, which follows after text is typed into the
+     * commandLine to the default state, which is compiling this text as a command and running it.
+     */
     private void resetCmdLineListeners() {
 	for (javafx.beans.value.ChangeListener cl : this.cmdLineListenerList) {
 	    this.cmdLine.textProperty().removeListener(cl);
@@ -753,21 +1049,41 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	};
     }
 
-    @Override
-    public GUIelement makeCopy() {
-	throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    /*
+     @Override
+     public GUIelement makeCopy() {
+     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+     }
+     */
 
+    /**
+     * Returns the {@link #TextArea}, representing the commandLine
+     * @return 
+     */
     protected TextArea getCmdLine() {
 	return this.cmdLine;
     }
 
+    /**
+     * Returns, whether UniqueNames of components are shown (true) or if the human readable names
+     * are shown (false).
+     * Unique name is a name of the component, which can be used to uniquely identify it, using
+     * the name2IdMap and ID2GUIMap.
+     * 
+     * @return whether UniqueNames of components are shown (true) or if the human readable names
+     * are shown (false).
+     */
     public boolean showUniqueNames() {
 	return uniqueNames;
     }
 
+    /**
+     * Set, whether UniqueNames of components are shown (true) or if the human readable names
+     * are shown (false).
+     * */
     public void setUniqueNames(boolean set) {
 	this.uniqueNames = set;
+
     }
 
     private class PanelKeyEventHandler implements GUIKeyEventHandler {
@@ -1035,10 +1351,29 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
     }
 
+    /**
+     * Get the ArrayList, containing all the currently selected GUIelements.
+     * No particular ordering is imposed.
+     * This method is semantically equivalent to {@link #getSelectedGUIelementsList(true)}
+     * @return the ArrayList, containing all the currently selected GUIelements.
+     */
     public ArrayList<GUIelement> getSelectedGUIelementsList() {
 	return getSelectedGUIelementsList(true);
     }
 
+    /**
+     * Get the ArrayList, containing all the currently selected GUIelements.
+     * No particular ordering is imposed.
+     * This method makes calls to the {@code GUITab#getSelectedGUIelementsList}.
+     * 
+     * When respectVFlag is off, return an arrayList with only one element,
+     * representing the currently focused GUIelement instead.
+     * 
+     * @param respectVFlag  When respectVFlag is off, return an arrayList with only one element,
+     * representing the currently focused GUIelement instead.
+     * @return the ArrayList, containing all the currently selected GUIelements; if none are selected, return an empty list if
+     * respectVFlag is off, return an ArrayList containing the focused element if respectVFlag is on.
+     */
     public ArrayList<GUIelement> getSelectedGUIelementsList(boolean respectVFlag) {
 	ArrayList<GUIelement> returnList = new ArrayList<>();
 	if (respectVFlag) {
@@ -1058,19 +1393,44 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 
     }
 
+    /**
+     * Return, whether the VFlag is currently on.
+     * This flag determines, whether the next action should apply to the
+     * focused element only, or to all the elements selected.
+     * @return whether the VFlag is currently on.
+     */
     public boolean getVFlag() {
 	return this.vFlag;
     }
 
+    /**
+     * Return, whether the NFlag is currently on. That is, whether the user
+     * has provided any numeric argument
+     * @see #getCount
+     * @return whether the NFlag is currently on. That is, whether the user
+     * has provided any numeric argument
+     */
     public boolean getNFlag() {
 
 	return this.nFlag;
     }
 
+    /**
+     * Return, whether the LFlag is currently on. That is, whether the user
+     * has provided any letter argument
+     * @see #getCurrentRegisterLetter()
+     * @return whether the NFlag is currently on. That is, whether the user
+     * has provided any numeric argument
+     */
     public boolean getLFlag() {
 	return this.lFlag;
     }
 
+    /**
+     * Start recording the keypresses that are about to follow as a string
+     * inside a register, letter of which is determined by the argument provided.
+     * @param register the register to record the macro into
+     */
     protected void startRecordingMacro(String register) {
 	this.isRecordingAMacro = true;
 	this.currentMacroRegister = register;
@@ -1080,12 +1440,22 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	//this.macroMap.put(register, m);
     }
 
+    /**
+     * Stop recording the current macro if any is being recorded. Do nothing otherwise.
+     */
     protected void stopRecordingMacro() {
 	this.setRegisterContent(currentMacroRegister, currentMacro.toString());
 	this.recordingStatusBlimp.setText("");
 	this.isRecordingAMacro = false;
     }
 
+    /**
+     * Execute a macro, simulating the subsequent presses of the key sequence provided.
+     * This method is similar to {#handle}, but also resets the current menu to the main menu.
+     * @param sequenceOfKeys 
+     * @see PanelKeyEventHandler#getMainMenu() 
+     * @see this#handle()
+     */
     protected void executeMacro(String sequenceOfKeys) {
 	//Macro m = this.macroMap.get(register);
 	KeySequence macro = new KeySequence(sequenceOfKeys);
@@ -1095,47 +1465,49 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	macro.execute(this);
     }
 
-    public void handleActions(KeyEvent ke) {
-	GUIAbstractAction gaa = actionMap.get(ke.getText());
-	/*
-	 if (gaa != null) {
-	 gaa.doAction();
-	 }
-	 else
-	 {
-	 getFocusedGUIElement().handleActions(ke);
-	 }
-	 */
-	this.currentMenu.handle(ke.getText());
-    }
 
-    public void addGUIelement(GUIelement ge) {
-	ge.setGUIPanel(this);
-	GUIList.add(ge);
-    }
-
+    /**
+     * Add another tab to this panel. This tab will then be assigned a unique
+     * number, based on how many tabs have already been on this panel when this
+     * new one was added.
+     * @param gt the tab to add.
+     * @return the number, which was assigned to this tab.
+     */
     public int addGUITab(GUITab gt) {
 	gt.setGUIPanel(this);
 	tabList.add(gt);
 	return tabList.size() - 1;
     }
 
+    /**
+     * @return the Label object, displaying the current mode in the statusLine (Normal/Edit).
+     */
     public Label getModeStatusBlimp() {
 	return this.modeStatusBlimp;
     }
 
-    public void addAction(String s, GUIAbstractAction gaa) {
-	actionMap.put(s, gaa);
-    }
 
+    /**
+     * @return the currently active {@link Menu}
+     */
     public Menu getMenu() {
 	return this.currentMenu;
     }
 
+    /**
+     * Reset the string, which stores all the keypresses that occured before a command was run to an empty string.
+     */
     public void resetCurrentCommandText() {
 	this.currentCommandText = "";
     }
 
+    /**
+     * Set the currently active menu to the one provided. If this menu is equal
+     * ({@link #equals()}) with the main menu of this class, also reset the current mode to normal (which reflects in the
+     * statusLine).
+     * @param m 
+     * @see
+     */
     public void setMenu(Menu m) {
 	if (pkeh != null && m != null) {
 	    if (m.equals(pkeh.getMainMenu())) {
@@ -1157,8 +1529,13 @@ public class GUIPanel extends GUIelement implements IRepetitionCounter {
 	}
 	this.currentMenu = m;
 	m.showMenu();
+
     }
 
+    /**
+     * A simple class intended as a wrapper for {@link #Canvas}, to allow
+     * it to autoresize on window size changes.
+     */
     private static class CanvasPane extends Pane {
 
 	private final Canvas canvas;
