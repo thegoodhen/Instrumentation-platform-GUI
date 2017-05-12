@@ -12,7 +12,7 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, used to print a text in the status window of a {@link GUIPanel}. 
  * @author thegoodhen
  */
 public class PrintTextUserFunctionToken extends AbstractBuiltInFunctionToken {

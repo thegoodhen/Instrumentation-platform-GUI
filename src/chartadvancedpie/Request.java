@@ -13,7 +13,8 @@ import shuntingyard.Token;
  * and open the template in the editor.
  */
 /**
- *
+ *@deprecated
+ * This class has now been replaced by the {@link RequestNew class}
  * @author thegoodhen
  * @param <type> the return data type of the request
  */

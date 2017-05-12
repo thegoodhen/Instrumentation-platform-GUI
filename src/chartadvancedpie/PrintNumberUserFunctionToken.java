@@ -12,7 +12,9 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, used to print a floating number in the status window of a {@link GUIPanel}. When the floating number
+ * is very close to an integer ({@literal absolute difference<0.0000001}),
+ * print out as an integer.
  * @author thegoodhen
  */
 public class PrintNumberUserFunctionToken extends AbstractBuiltInFunctionToken {

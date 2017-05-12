@@ -6,7 +6,9 @@
 package chartadvancedpie;
 
 /**
- *
+ *@deprecated 
+ * Now deprecated class, related to the old way register access was handled.
+ * Still used in some places of the code, but should be removed ASAP.
  * @author thegoodhen
  */
 public class RegisterAction extends NamedGUIAction{

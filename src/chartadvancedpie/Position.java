@@ -19,10 +19,20 @@ public class Position {
 		this.ge=ge;
 	}
 
+	/**
+	 * 
+	 * @return the {@link GUITab} assigned to this {@code Position}
+	 */
 	public GUITab getGUITab()
 	{
 		return gt;
 	}
+
+
+	/**
+	 * 
+	 * @return the {@link GUIelement} assigned to this {@code Position}
+	 */
 	public GUIelement getGUIElement()
 	{
 		return ge;

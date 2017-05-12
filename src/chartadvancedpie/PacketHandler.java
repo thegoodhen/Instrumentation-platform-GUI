@@ -220,10 +220,22 @@ public class PacketHandler {
 
     }
 
+    /**
+     * 
+     * @return Whether the thread, which is processing the requests is running
+     * @see #offer(chartadvancedpie.RequestNew) 
+     */
     private synchronized boolean isProcessingRequests() {
 	return this.processingRequest;
     }
 
+    /**
+     * 
+     * Set the flag, determining whether the thread, which is processing the requests is running.
+     * This just controls the flag (true/false), but has no other effects.
+     * Not intended to be called outside {@link #offer(chartadvancedpie.RequestNew) }
+     * @see #offer(chartadvancedpie.RequestNew) 
+     */
     private synchronized void setProcessingRequests(boolean sw) {
 	this.processingRequest = sw;
     }

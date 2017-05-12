@@ -15,7 +15,10 @@ import shuntingyard.HelpByteMethods;
 import shuntingyard.Token;
 
 /**
- * Class that should replace the obsolete Variable class with generics.
+ * Abstraction for something that stores a value; it's usually used to store
+ * different properthies of {@link GUIelement}. This class can also react to
+ * reading and writing to this value by firing java callbacks and also CLUC
+ * callbacs (special functions in the user code).
  *
  * @author thegoodhen
  */
@@ -30,31 +33,74 @@ public abstract class Property<T> {
     private PropertyCallback getterPropertyCallback = null;
     private boolean updatesToModule = false;
 
+    /**
+     *
+     * @return the {@link PropertyCallback} fired when the value of this
+     * {@code Property} is accessed from CLUC code.
+     */
     public PropertyCallback getGetterPropertyCallback() {
 	return getterPropertyCallback;
     }
 
+    /**
+     *
+     * Provide the {@link PropertyCallback} fired when the value of this
+     * {@code Property} is accessed (read) from CLUC code.
+     *
+     * @param getterPropertyCallback the {@link PropertyCallback} fired when the
+     * value of this {@code Property} is accessed from CLUC code.
+     */
     public void setGetterPropertyCallback(PropertyCallback getterPropertyCallback) {
 	this.getterPropertyCallback = getterPropertyCallback;
     }
 
+    /**
+     * @return the {@link PropertyCallback} fired when the value of this
+     * {@code Property} is accessed (changed) from CLUC code.
+     * @param setterPropertyCallback the {@link PropertyCallback} fired when the
+     * value of this {@code Property} is adjusted from CLUC code.
+     */
     public PropertyCallback getSetterPropertyCallback() {
 	return setterPropertyCallback;
     }
 
+    /**
+     * Provide the {@link PropertyCallback} fired when the value of this
+     * {@code Property} is accessed (changed) from CLUC code.
+     *
+     * @param setterPropertyCallback the {@link PropertyCallback} fired when the
+     * value of this {@code Property} is adjusted from CLUC code.
+     */
     public void setSetterPropertyCallback(PropertyCallback setterPropertyCallback) {
 	this.setterPropertyCallback = setterPropertyCallback;
     }
     private PropertyCallback setterPropertyCallback = null;
 
+    /**
+     *
+     * @return whether any module is notified about the changes of this
+     * {@code Property}
+     */
     public boolean updatesModule() {
 	return updatesToModule;
     }
 
+    /**
+     *
+     * Set, whether any module is notified about the changes of this
+     * {@code Property}
+     *
+     * @param shouldIt whether any module is notified about the changes of this
+     * {@code Property}
+     */
     public void setIfIShouldUpdateToModule(boolean shouldIt) {
 	this.updatesToModule = shouldIt;
     }
 
+    /**
+     * Inform the module assigned to this {@code Property} about the fact it has
+     * been updated, sending the new value.
+     */
     public void sendValue() {
 	//System.out.println("zkousim odpalit setr (svetr)");
 	int data[] = new int[7];
@@ -80,6 +126,11 @@ public abstract class Property<T> {
 	}
     }
 
+    /**
+     * Recompile the CLUC code snippets, used to call the getter and setter CLUC callbacks
+     * of this {@code Property} , if possible (that is, if the respective bodies
+     * of the getter and setter are present in the user code).
+     */
     public void recompile() {
 
 	try {
@@ -103,10 +154,18 @@ public abstract class Property<T> {
 
     }
 
+    /**
+     * Get the CLUC code snippet, used to call the respective getter method.
+     * @return the CLUC code snippet, used to call the respective getter method.
+     */
     private String getGetEventString() {
 	return this.ge.getUniqueName() + "_" + name + "_G" + "();\n";
     }
 
+    /**
+     * Get the CLUC code snippet, used to call the respective setter method.
+     * @return the CLUC code snippet, used to call the respective setter method.
+     */
     private String getSetEventString() {
 	return this.ge.getUniqueName() + "_" + name + "_S" + "();\n";
 	//return "slepice();\n";
@@ -118,10 +177,9 @@ public abstract class Property<T> {
     }
 
     /**
-     * Returns the value assigned to this Property after having called Java
-     * callbacks and user callbacks;
      *
-     * @return
+     * @return the value assigned to this Property after having called Java
+     * callbacks and user callbacks;
      */
     public synchronized T getValue() {
 	return this.getValue(true, true);
@@ -135,7 +193,7 @@ public abstract class Property<T> {
      *
      * @param javaCallbacks whether Java callbacks should be fired
      * @param userCallbacks whether user callbacks should be fired
-     * @return
+     * @return the value assigned to this Property
      */
     public synchronized T getValue(boolean javaCallbacks, boolean userCallbacks) {
 	if (this.name.equals("RunTime")) {
@@ -215,6 +273,20 @@ public abstract class Property<T> {
 	this.value = source.getValueSilent();
     }
 
+    /**
+     * Returns the ID of this {@link Property}. Objects with properties, such
+     * as {@link GUIelement} can then use this ID to refer to the
+     * {@code Property}. In such a case, this ID is used to uniquely identify
+     * such {@code Property}. Since looking up a {@code Property} by its ID
+     * is less computationally intensive than doing so by the name, this is usually the
+     * preferred way. CLUC user functions, such as {@link SetFloatPropertyUserFunctionToken}
+     * refer to the individual properthies by their IDs.
+     * 
+     * 
+     *
+     * @return the ID of this {@code Property}
+     * @see getName()
+     */
     public int getId() {
 	return this.id;
     }
@@ -240,6 +312,16 @@ public abstract class Property<T> {
 	return null;
     }
 
+    /**
+     * Returns the name of this {@link Property}. Objects with properties, such
+     * as {@link GUIelement} can then use this name to refer to the
+     * {@code Property}. In such a case, this name is used to uniquely identify
+     * such {@code Property}
+     * 
+     * 
+     *
+     * @return the name of this {@code Property}
+     */
     public String getName() {
 	return this.name;
     }

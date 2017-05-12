@@ -15,7 +15,9 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, which returns a float representation of a {@link Color},
+ * given the r, g, b, a channels as an integer from 0 to 255.
+ * @see ColorManager#get()#floatFromColor(javafx.scene.paint.Color) 
  * @author thegoodhen
  */
 public class RGBAUserFunctionToken extends AbstractBuiltInFunctionToken {

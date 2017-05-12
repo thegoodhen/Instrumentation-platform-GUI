@@ -1199,7 +1199,7 @@ public class GUIChart extends GUIelement {
      * should be found.
      */
     //TODO: some refactoring would come in handy, as code duplication is always bad
-    void autoScaleXForRange(Collection<PlotLine> lines, double minY, double maxY) {
+  private  void autoScaleXForRange(Collection<PlotLine> lines, double minY, double maxY) {
 	double maxX = Double.NEGATIVE_INFINITY;
 	double minX = Double.POSITIVE_INFINITY;
 

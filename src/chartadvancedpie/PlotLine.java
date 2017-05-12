@@ -16,7 +16,11 @@ import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 /**
- *
+ * A class for storing data points and their respective histograms.
+ * Used by {@link GUIChart}.
+ * Each {@code PlotLine} can have its width, color, set of data points and a histogram associated to it.
+ * It can also become selected.
+ * Lines are referred to by the {@link GUIChart} by their letter. This letter is also stored in the line.
  * @author thegoodhen
  */
 public class PlotLine {
@@ -42,31 +46,57 @@ public class PlotLine {
     private HashMap<Integer, FloatProperty> id2PropertyMap = new HashMap<>();
     private HashMap<FloatProperty, Integer> property2idMap = new HashMap<>();
 
+    /**
+     * Get the amount of bins for the histogram display.
+     * @return the amount of bins for the histogram display.
+     */
     public int getHistogramBinsCount() {
 	return histogramBinsCount;
     }
 
+    /**
+     * Set the amount of bins for the histogram display.
+     */
     public void setHistogramBinsCount(int histogramBinsCount) {
 	this.histogramBinsCount = histogramBinsCount;
     }
     private ArrayList<Integer> histogramBins;
 
+    /**
+     * @return The x-minimum of the leftmost bin of the histogram.
+     */
     public double getHistogramMin() {
 	return histogramMin;
     }
 
+    /**
+     * @return The x-maximum of the rightmost bin of the histogram.
+     */
     public double getHistogramMax() {
 	return histogramMax;
     }
 
+    /**
+     * 
+     * @return an {@link ArrayList} of {@link Integer}, each element representing the
+     * number of samples in a single bin.
+     */
     public ArrayList<Integer> getHistogramBins() {
 	return histogramBins;
     }
 
+    /**
+     * 
+     * @return the displayed width of this line (2 by default)
+     */
     public double getLineWidth() {
 	return this.getPropertyByName("LineWidth").getValue();
     }
 
+    /**
+     * Revert this {@code PlotLine} to the default state, discarding the data.
+     * 
+     */
     public void reset() {
 	this.pointList = new ConcurrentSkipListMap();
 	histogramMin = 0;
@@ -178,6 +208,12 @@ public class PlotLine {
 	return 0;
     }
 
+    /**
+     * Add a data point to this {@code PlotLine}. 
+     * Will automatically update the histogram, the {@code LineSamples} {@link Property} and request the repainting of the
+     * enclosing {@link GUIChart}
+     * @param fp 
+     */
     public void addPoint(FloatPoint fp) {
 	this.pointList.put(fp.x, fp);
 	float currentSamplesCount = this.getPropertyByName("LineSamples").getValue();
@@ -198,59 +234,130 @@ public class PlotLine {
 	updateHistogram(fp);
     }
 
+    /**
+     * 
+     * @return the {@link ConcurrentSkipListMap}, which stores all the {@link FloatPoint}s of this
+     * {@code PlotLine}
+     */
     public synchronized ConcurrentSkipListMap<Double, FloatPoint> getPoints() {
 	return this.pointList;
     }
 
+    /**
+     * @return the {@link Color} of this {@code PlotLine}
+     */
     public Color getColor() {
 	return this.lineColor;
     }
 
+    /**
+     * @return the {@code LineX} {@link Property}. This is used by the {@link GUIChart}
+     * to determine where next {@link FloatPoint} should be recorded when recording a
+     * {@code PlotLine}.
+     * @see #sample() 
+     * @see GUIChart#sampleAllRelevant() 
+     */
     public double getCursorX() {
 	return this.getPropertyByName("LineX").getValue();
     }
 
+
+    /**
+     * @return the {@code LineY} {@link Property}. This is used by the {@link GUIChart}
+     * to determine where next {@link FloatPoint} should be recorded when recording a
+     * {@code PlotLine}.
+     * @see #sample() 
+     * @see GUIChart#sampleAllRelevant() 
+     */
     public double getCursorY() {
 	return this.getPropertyByName("LineY").getValue();
     }
 
+    /**
+     * Set the {@code LineX} {@link Property}.
+     * @see #getCursorX() 
+     * @param x the new value of the {@code LineX} {@link Property}.
+     * 
+     */
     public void setCursorX(double x) {
 	this.setProperty(this.name2IdMap.get("LineX"), (float) x);
     }
 
+    /**
+     * Set the {@code LineY} {@link Property}.
+     * @see #getCursorY() 
+     * @param y the new value of the {@code LineY} {@link Property}.
+     */
     public void setCursorY(double y) {
 	this.setProperty(this.name2IdMap.get("LineY"), (float) y);
     }
 
+    /**
+     * Set whether or not should this line be recorded by the {@link GUIChart}.
+     * @see GUIChart#startRecording() 
+     * @param rec whether or not should this line be recorded by the {@link GUIChart}.
+     */
     public synchronized void setRecorded(boolean rec) {
 	this.recorded = rec;
     }
 
+    /**
+     * @return whether or not should this line be recorded by the {@link GUIChart}.
+     */
     public synchronized boolean isBeingRecorded() {
 	return this.recorded;
     }
 
+
+    /**
+     * Set whether or not this {@code PlotLine} is selected, when on the {@link GUIChart}
+     * @param selected whether or not this {@code PlotLine} is selected, when on the {@link GUIChart}
+     */
     public void setSelected(boolean selected) {
 	this.selected = selected;
     }
 
+    /**
+     * Whether or not this {@code PlotLine} is selected, when on the {@link GUIChart}.
+     * This determines, whether it will be recorded when the next recording is initialized and more.
+     * @see GUIChart#sampleAllRelevant() 
+     */
     public boolean isSelected() {
 	return this.selected;
     }
 
+    /**
+     * 
+     * @return the character, representing this {@code PlotLine}
+     */
     public char getCharacter() {
 	return this.lineChar;
     }
 
+    /**
+     * 
+     * @return whether or not should this line be drawn
+     */
     boolean isVisible() {
 	return this.visible;
     }
 
+    /**
+     * 
+     * @return the number of {@link FloatPoint}s it his {@code PlotLine}.
+     * Calling this method is semantically equivalent to calling {@code getPoints().size()}
+     */
     public synchronized int getPointCount() {
 	return this.pointList.size();
     }
 
     @Override
+    /**
+     * @return The textual representation of the data points in this line, compatible
+     * with spreadsheet editors, such as Excel, and with the format from which
+     * the line can be imported into a {@link GUIChart}
+     * @see GUIChart#pasteOverwriteAction
+     */
     public String toString() {
 	StringBuilder sb = new StringBuilder();
 	for (FloatPoint fp : this.pointList.values()) {
@@ -262,6 +369,14 @@ public class PlotLine {
 	return sb.toString();
     }
 
+    /**
+     * Add a new {@link FloatPoint} to the list.
+     * The position is determined by the {@code LineX} and 
+     * {@code LineY}  {@link Property} objects.
+     * @see #getCursorX() 
+     * @see #getCursorY() 
+     * @see #getPoints() 
+     */
     public void sample() {
 	this.addPoint(new FloatPoint(this.getPropertyByName("LineX").getValue(), this.getPropertyByName("LineY").getValue()));
 	//TODO: Following is just for debug purposes
@@ -269,6 +384,11 @@ public class PlotLine {
 	//cursor.y = Math.random() * 200 - 100;
     }
 
+    /**
+     * Update the range of the histogram and the data, using the new {@link FloatPoint}. If necessarry (the newly added point is outside
+     * the current histogram x-range), recalculate the whole histogram for the adjusted range.
+     * @param fp the newly added {@link FloatPoint}
+     */
     private void updateHistogram(FloatPoint fp) {
 	boolean updatedRange = false;
 	if (fp.y > dataMax) {
@@ -300,6 +420,12 @@ public class PlotLine {
 	}
     }
 
+    /**
+     * Return a {@link Property}, given its unique name.
+     * @param name the name of the {@link Property} to return.
+     * @return {@link Property}, given its unique name.
+     * @see Property#getName() 
+     */
     public FloatProperty getPropertyByName(String name) {
 	Integer id = this.name2IdMap.get(name);
 	if (id != null) {
@@ -309,6 +435,17 @@ public class PlotLine {
 	return null;
     }
 
+    /**
+     * Set the {@link Property}, identified by its unique ID, to the value provided.
+     * (Remark: for simplicity of implementation, all properties of a line are of type
+     * {@link FloatProperty}).
+     * 
+     * This method will safely fail (return false) if no such {@link Property} exists.
+     * 
+     * @param propertyId the unique ID of the {@link Property} to adjust
+     * @param value the new value of this property
+     * @return whether the act of setting was succesful (true) or not (false)
+     */
     public boolean setProperty(int propertyId, float value) {
 	FloatProperty fp = id2PropertyMap.get(propertyId);
 	if (fp != null) {
@@ -321,6 +458,21 @@ public class PlotLine {
 	}
     }
 
+
+
+
+    /**
+     * Register a new {@link Property} for this {@code PlotLine}. Once this
+     * method is called, it is possible to set the value of this property and
+     * retrieve it using the setLine[PropertyName] or getLine[PropertyName] CLUC
+     * functions.
+     *
+     * The registration of this property is handled by correctly adjusting the
+     * {@code name2IdMap}, {@code id2NameMap}, {@code property2idMap} and
+     * {@code property2idMap} {@link HashMap}s.
+     *
+     * @param p the {@link Property} to add
+     */
     public void addProperty(FloatProperty p) {
 	name2IdMap.put(p.getName(), p.getId());
 	id2NameMap.put(p.getId(), p.getName());
@@ -329,6 +481,12 @@ public class PlotLine {
 
     }
 
+    /**
+     * Get the {@link FloatProperty}, based on the given unique ID
+     * @param propertyId
+     * @return {@link FloatProperty}, based on the given unique ID
+     * @see Property#getId() 
+     */
     FloatProperty getProperty(int propertyId) {
 	return id2PropertyMap.get(propertyId);
     }

@@ -10,7 +10,9 @@ import java.util.ArrayList;
  */
 
 /**
- *
+ * @deprecated 
+ * This is a now deprecated class related to the old way communication and parsing of GUI element lists was handled.
+ * It has nothing to do with the Vim register concept (as used by methods such as {@link GUIPanel#getRegisterContent(java.lang.String) }).
  * @author thegoodhen
  */
 public class Register extends Container{

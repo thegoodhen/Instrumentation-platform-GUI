@@ -13,7 +13,8 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function to display the content of all registers in the status window
+ * of the {@link GUIPanel}.
  * @author thegoodhen
  */
 public class RegistersUserFunctionToken extends AbstractBuiltInFunctionToken {

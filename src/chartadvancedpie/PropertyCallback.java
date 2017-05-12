@@ -7,7 +7,7 @@ package chartadvancedpie;
 
 /**
  * Wrapper for a runnable code, ran whenever a getter or setter of a property is called.
- * This class does NOT contain the user code of the getter or setter, written in my language; 
+ * This class does NOT contain the user code of the getter or setter, written in the CLUC language; 
  * instead, it contains Java code that's executed before the getter or setter call itself.
  * This allows, among other things, the value of the property to be dynamically updated before it's read.
  * Effectively it means that it's not necessary to constantly update a property for it to have an up-to-date value once it's read.

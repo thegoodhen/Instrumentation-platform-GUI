@@ -1,12 +1,10 @@
 package chartadvancedpie;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 /**
- *
+ * @deprecated 
+ * This is a now deprecated class related to the old way communication and parsing of GUI element lists was handled.
+ * It has nothing to do with the Vim register concept (as used by methods such as {@link GUIPanel#getRegisterContent(java.lang.String) }).
  * @author thegoodhen
  */
 //TODO: use generics for Factory, as in ModuleFactory extends ContainerFactory<Module>

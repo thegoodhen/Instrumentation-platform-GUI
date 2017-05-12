@@ -22,6 +22,10 @@ public class PropertyManager {
 	initialize();
     }
 
+    /**
+     * Singleton pattern getter
+     * @return the one an only instance of this class, that will ever be created.
+     */
     public static PropertyManager get() {
 
 	if (pm == null) {
@@ -51,7 +55,8 @@ public class PropertyManager {
      * of the property, given its name.
      *
      * @param name
-     * @return
+     * @return the type, with the first letter capitalised (for instance, "Int")
+     * of the property, given its name.
      */
     public String getPropertyTypeString(String name) {
 	//initialize();
@@ -68,6 +73,14 @@ public class PropertyManager {
 	}
     }
 
+    /**
+     * Return a {@link Property}, given its ID. This performs the search between all existing {@link GUIelement}s registered in the {@link initialize()} function.
+     * Then returns the first {@link Property found}.
+     * This method can be used to determine whether one of the existing {@link GUIelement}s even has a {@link Property} with this ID,
+     * which type of element it is, and what is its name.
+     * @param id the ID of the {@link Property} to search for
+     * @return a {@link Property}, given its ID. 
+     */
     public Property getProperty(int id) {
 	Property returnProperty = null;
 	for (GUIelement ge : elementList) {
@@ -79,6 +92,14 @@ public class PropertyManager {
 	return returnProperty;
     }
 
+    /**
+     * Return a {@link Property}, given its name. This performs the search between all existing {@link GUIelement}s registered in the {@link initialize()} function.
+     * Then returns the first {@link Property found}.
+     * This method can be used to determine whether one of the existing {@link GUIelement}s even has a {@link Property} with this name,
+     * which type of element it is, and what is its ID.
+     * @param name the name of the {@link Property} to search for
+     * @return a {@link Property}, given its name. 
+     */
     public Property getProperty(String name) {
 	Property returnProperty = null;
 	for (GUIelement ge : elementList) {
@@ -91,6 +112,12 @@ public class PropertyManager {
 
     }
 
+
+    /**
+     * Return a {@link Property} ID, given its name. This performs the search between all existing {@link GUIelement}s registered in the {@link initialize()} function.
+     * Then returns the ID of the first matching {@link Property found}.
+     * @param name the name of the {@link Property} to search for
+     */
     public int getPropertyIDByName(String name) {
 	Property p = this.getProperty(name);
 	return p.getId();

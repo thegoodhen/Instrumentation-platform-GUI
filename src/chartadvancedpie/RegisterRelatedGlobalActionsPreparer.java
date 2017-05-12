@@ -11,6 +11,13 @@ import java.util.ArrayList;
  *
  * @author thegoodhen
  */
+
+/**
+ * An {@link IKeyboardShortcutPreparer} for preparing keyboard shortcuts, related to registers.
+ * @see GUIPanel#getRegisterContent(java.lang.String) 
+ * @author thegoodhen
+ */
+
 public class RegisterRelatedGlobalActionsPreparer implements IKeyboardShortcutPreparer {
 
     GUIPanel gp;
