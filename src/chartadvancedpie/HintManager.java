@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class for managing properties of all the different GUI elements...
+ * Class for generating autocompletion of the CLUC code.
  *
  * @author thegoodhen
  */
@@ -34,6 +34,11 @@ public class HintManager {
 	this.gp = gp;
     }
 
+    /**
+     * Singleton getter
+     * @param gp the {@link GUIPanel} to assign to this {@code HintManager}
+     * @return 
+     */
     public static HintManager get(GUIPanel gp) {
 
 	if (pm == null) {
@@ -68,6 +73,11 @@ public class HintManager {
 	return "";
     }
 
+    /**
+     * 
+     * @param source the string typed by the user
+     * @return newline-separated list of full autocompletion matches
+     */
     public String getHints(String source) {
 	this.filterHints(source);
 
@@ -79,6 +89,16 @@ public class HintManager {
 	return sb.toString();
     }
 
+    /**
+     * Return the longest text that can be appended to the one typed by the user (which is the argument provided).
+     * 
+     * This means that when the text already typed by the user isn't enough to uniquely determine the autocompletion,
+     * this method will fill out the overlapping part of all autocompletion suggestions.
+     * For instance, if the user types "SL" and both "SLIDER1" and "SLIDER2" would be valid autocompletition results,
+     * this method would return the text to be appended, common for both of those results: "IDER".
+     * @param source the string typed by the user which should be filled
+     * @return the c
+     */
     public String fillString(String source) {
 	source = this.stripSource(source);
 	filterHints(source);
@@ -115,6 +135,11 @@ public class HintManager {
 	return "";
     }
 
+    /**
+     * Update all the the generated autocompletion hints if necessary; otherwise don't regenerate them
+     * and just remove the ones no longer applicable.
+     * @param source the source string the user has typed
+     */
     private void filterHints(String source) {
 
 	source = this.stripSource(source);
@@ -131,6 +156,10 @@ public class HintManager {
 	lastSource = source;
     }
 
+    /**
+     * Internally update the list of hints, based on what the user has typed.
+     * @param source the string typed by the user
+     */
     public void generateHints(String source) {
 	if (currentMode == GUI_FUNCTION) {
 	    int id=this.gp.getGUIElementIDByName(this.parsedName);

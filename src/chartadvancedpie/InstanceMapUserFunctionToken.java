@@ -12,7 +12,9 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, used to add a new Instance mapping, that is, a mapping which
+ * only applies to a single instance of a {@link GUIelement}.
+ * @see MappingManager
  * @author thegoodhen
  */
 public class InstanceMapUserFunctionToken extends AbstractBuiltInFunctionToken {

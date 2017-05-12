@@ -14,7 +14,11 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, which returns the float value of some line property, given the GUIElementID this {@link Property} belongs to,
+ * the string representing the letter of the said line
+ * and the PropertyID. This function is used internally and isn't usually typed by the user into the user code directly.
+ * Dot notation, such as {@code CHART.setLineX(10);} is internally converted to calls to this CLUC function by {@link DotNotationParser}.
+ * @see DotNotationParser
  * @author thegoodhen
  */
 public class GetLinePropertyUserFunctionToken extends AbstractBuiltInFunctionToken {

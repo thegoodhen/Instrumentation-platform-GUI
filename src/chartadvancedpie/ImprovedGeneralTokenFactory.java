@@ -16,7 +16,7 @@ import shuntingyard.StringLiteralTokenFactory;
 import shuntingyard.VariableTokenFactory;
 
 /**
- *
+ * Factory for tokens, found in an expression.
  * @author thegoodhen
  */
 public class ImprovedGeneralTokenFactory extends DelegatingFactory {

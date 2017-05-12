@@ -41,7 +41,7 @@ public class RegisterSelectionMenu extends Menu {
 	}
 
 	@Override
-	public void handleAction(String keystroke) {
+	public void handle(String keystroke) {
 		if (keystroke.length() == 1) {
 			int asciiCode = (int) keystroke.charAt(0);
 			//if ((asciiCode >= 'A' && asciiCode <= 'Z') || (asciiCode >= 'a' && asciiCode <= 'z')) {

@@ -12,9 +12,12 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, used to add a new global mapping, that is, a mapping which
+ * only applies globally.
+ * @see MappingManager
  * @author thegoodhen
  */
+
 public class MapUserFunctionToken extends AbstractBuiltInFunctionToken {
 
     public MapUserFunctionToken(String tokenString) {

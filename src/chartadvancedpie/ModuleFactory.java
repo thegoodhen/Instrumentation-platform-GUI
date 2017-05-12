@@ -6,7 +6,7 @@ package chartadvancedpie;
  * and open the template in the editor.
  */
 /**
- *
+ *@deprecated
  * @author thegoodhen
  */
 //TODO: use generics for Factory, as in ModuleFactory extends ContainerFactory<Module>

@@ -40,10 +40,10 @@ public class RegisterFactory extends ContainerFactory {
 			case GUIelement.SLIDER:
 
 				SliderFactory sf = new SliderFactory();
-				GUISlider newCont = sf.create(getXml(), getIndex());
-				newCont.setRegister(reg);
-				newCont.subscribeToAll();
-				reg.addContainer(newCont);
+				//GUISlider newCont = sf.create(getXml(), getIndex());
+				//newCont.setRegister(reg);
+				//newCont.subscribeToAll();
+				//reg.addContainer(newCont);
 				return ContainerFactory.getNewIndex();
 			default:
 				super.resolveTag(tagNumber);

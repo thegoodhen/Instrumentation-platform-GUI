@@ -6,7 +6,7 @@
 package chartadvancedpie;
 
 /**
- *
+ * Property carrying an integer value.
  * @author thegoodhen
  */
 public class IntegerProperty extends Property<Integer>{

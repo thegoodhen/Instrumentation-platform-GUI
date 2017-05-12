@@ -6,7 +6,8 @@
 package chartadvancedpie;
 
 /**
- *
+ * An {@link IKeyboardShortcutPreparer} for preparing keyboard shortcuts, related to marks.
+ * @see GUITab#jumpToMark(java.lang.String) 
  * @author thegoodhen
  */
 public class MarkMotionsKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {

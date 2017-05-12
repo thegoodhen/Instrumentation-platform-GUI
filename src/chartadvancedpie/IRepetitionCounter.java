@@ -9,6 +9,7 @@ package chartadvancedpie;
  *
  * @author thegoodhen
  */
+@Deprecated
 public interface IRepetitionCounter {
 
 	public int getRepeatCount();

@@ -7,7 +7,8 @@ package chartadvancedpie;
  */
 
 /**
- *
+ * A {@link GUIAction}, which can have a named assigned. This name is then displayed
+ * when traversing {@link Menu}s.
  * @author thegoodhen
  */
 public class NamedGUIAction extends GUIAction{

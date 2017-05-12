@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
 import shuntingyard.HelpByteMethods;
 
 /**
- *
+ * Class for processing requests, sent by the module.
  * @author thegoodhen
  */
 public class PacketHandler {
@@ -24,6 +24,9 @@ public class PacketHandler {
     LinkedBlockingQueue<RequestNew> queue = new LinkedBlockingQueue(10);//10 requests max
     ArrayList<Resolver> resolverList;
 
+    /**
+     * Abstraction of a Class for resolving a request.
+     */
     private abstract class Resolver {
 
 	public abstract void resolve(RequestNew rn);
@@ -225,6 +228,14 @@ public class PacketHandler {
 	this.processingRequest = sw;
     }
 
+    /**
+     * Offer a new {@link RequestNew} to be processed. 
+     * Then start a new {@link Thread}, which processes all unprocessed requests and then exits, if such
+     * a thread is not already running.
+     * It may be rejected, if too many requests are waiting in the internal queue.
+     * @param rn the {@link RequestNew} to be processed
+     * @return true if accepted, false otherwise.
+     */
     public boolean offer(RequestNew rn) {
 	boolean accepted = queue.offer(rn);
 	if (accepted) {
@@ -238,6 +249,12 @@ public class PacketHandler {
 
     }
 
+    /**
+     * Analyze the {@link RequestNew} provided, and decide, which
+     * {@link Resolver} should be used to resolve it. Then resolve it, using
+     * this {@link Resolver}.
+     * @param rn the {@link RequestNew}, which should be resolved.
+     */
     public void resolveRequest(RequestNew rn) {
 	int requestType = rn.getData()[0];
 	//System.out.println("should I send for resolution? hmm...");
@@ -250,6 +267,10 @@ public class PacketHandler {
 	}
     }
 
+    /**
+     * Start a new {@link Thread}, which will resolve all {@link RequestNew}s
+     * in the queue and exit.
+     */
     private void startProcessingRequests() {
 	class RequestProcessor implements Runnable {
 

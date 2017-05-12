@@ -15,6 +15,21 @@ import shuntingyard.VirtualMachine;
  *
  * @author thegoodhen
  */
+
+
+/**
+ * CLUC function, which returns the ID of a {@link Property} of some GUI element, given
+ * the string representing the name of this {@link Property}.
+ * 
+ * This function works even for properties, that are not common for all {@link GUIelement}s.
+ * This is ensured by making calls to the
+ * {@link PropertyManager#get()#getPropertyIDByName(java.lang.String) }
+ * 
+ * @see DotNotationParser
+ * @see GUIelement#getId2PropertyMap() 
+ * @see Property#getId() 
+ * @author thegoodhen
+ */
 public class GetPropertyIDByNameUserFunctionToken extends AbstractBuiltInFunctionToken{
 
 

@@ -44,10 +44,12 @@ ArrayList<GUIelement> getGUIelements()
 	ArrayList<GUIelement> returnList=new ArrayList<>();
 	for(Container c:getContainerList())
 	{
+	    /*
 		if (c instanceof GUIelement)
 		{
 			returnList.add((GUIelement)c);
 		}
+	    */
 	}
 	return returnList;
 }

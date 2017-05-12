@@ -11,6 +11,7 @@ import java.util.ArrayList;
  *
  * @author thegoodhen
  */
+@Deprecated
 public class Module extends Container {
 
 	@Override

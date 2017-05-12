@@ -11,9 +11,10 @@ import javafx.scene.input.KeyEvent;
  */
 
 /**
- *
+ * This class is related to the old way of handling Macros and is now deprecated. This class is related to the old way of handling Macros and is now deprecated.
  * @author thegoodhen
  */
+@Deprecated
 public class Macro {
 	private ArrayList<KeyEvent> buttonList;
 	public Macro()

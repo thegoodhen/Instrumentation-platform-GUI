@@ -8,7 +8,8 @@ package chartadvancedpie;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * An extension of the regular {@link VirtualMachine}, allowing it to carry a reference to
+ * a {@link GUIPanel}.
  * @author thegoodhen
  */
 public class GUIVirtualMachine extends VirtualMachine {

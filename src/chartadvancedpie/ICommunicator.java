@@ -13,10 +13,27 @@ import java.io.IOException;
  *
  * @author thegoodhen
  */
+
+/**
+ * @deprecated 
+ * @author thegoodhen
+ */
+
 public interface ICommunicator {
 	
+/**
+ * Read as single byte.
+ * @return the byte read, expressed as Integer from 0 to 255.
+ * @throws IOException 
+ */
 int readByte() throws IOException;
+/**
+ * Write a signle byte
+ * @param b the byte to write
+ * @throws IOException 
+ */
 void writeByte(byte b) throws IOException;
+
 byte [] read();
 void write(byte[] b) throws IOException;
 int available();

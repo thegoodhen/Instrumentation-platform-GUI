@@ -6,7 +6,9 @@
 package chartadvancedpie;
 
 /**
- *
+ * An {@link IKeyboardShortcutPreparer}, related to actions that are related
+ * to macros.
+ * @see GUIPanel#executeMacro(java.lang.String) 
  * @author thegoodhen
  */
 public class MacroRelatedActionsPreparer implements IKeyboardShortcutPreparer {

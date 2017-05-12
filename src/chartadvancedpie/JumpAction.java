@@ -6,7 +6,9 @@
 package chartadvancedpie;
 
 /**
- *
+ * Abstraction for a n action, result of which is changing focus or something similar,
+ * but not modifying properties of {@link GUIelement}s (other than the {@code Focused}
+ * {@link Property}.
  * @author thegoodhen
  */
 public abstract class JumpAction extends NamedGUIAction{

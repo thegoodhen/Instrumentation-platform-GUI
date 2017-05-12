@@ -6,7 +6,7 @@ package chartadvancedpie;
  * and open the template in the editor.
  */
 /**
- *
+ *@deprecated 
  * @author thegoodhen
  */
 //TODO: use generics for Factory, as in ModuleFactory extends ContainerFactory<Module>
@@ -22,8 +22,9 @@ public class SliderFactory extends ContainerFactory {
 
 	private GUISlider gs;
 
-	@Override
+	//@Override
 	//TODO: utilize generics in create to avoid code duplication in subclasses
+	/*
 	public GUISlider create(byte[] xml, int index2) {
 
 		setStartIndex(index2);
@@ -33,6 +34,7 @@ public class SliderFactory extends ContainerFactory {
 		parseXml();
 		return gs;
 	}
+	*/
 
 	@Override
 	int resolveTag(int tagNumber) {
@@ -51,7 +53,7 @@ public class SliderFactory extends ContainerFactory {
 		Variable v = VariableFactory.create(getXml(), getIndex());
 
 
-		gs.addVariable(v);
+	//	gs.addVariable(v);
 		//System.out.println(v.toString());
 		return VariableFactory.getNewIndex();
 	}

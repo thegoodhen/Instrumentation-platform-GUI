@@ -14,7 +14,10 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function, which returns whether the {@link GUIElement} specified by its ID (first parameter)
+ * has ALL the tags specified by the string, passed as the 2nd parameter.
+ * This function internally calls {@link GUIelement#hasTag(java.lang.String) }.
+ * @see GUIelement#hasTag(java.lang.String) 
  * @author thegoodhen
  */
 public class HasTagUserFunctionToken extends AbstractBuiltInFunctionToken {

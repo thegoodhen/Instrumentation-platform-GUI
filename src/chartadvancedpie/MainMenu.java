@@ -9,6 +9,7 @@ package chartadvancedpie;
  *
  * @author thegoodhen
  */
+@Deprecated
 public class MainMenu extends Menu{
 
 	public MainMenu(GUIPanel gp, String s) {

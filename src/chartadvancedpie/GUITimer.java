@@ -16,7 +16,7 @@ import javafx.scene.paint.Color;
 import shuntingyard.Token;
 
 /**
- *
+ * A {@code GUIelement} used for running a user-defined code at fixed, user-adjustable time intervals.
  * @author thegoodhen
  */
 public class GUITimer extends GUIelement {
@@ -187,6 +187,9 @@ public class GUITimer extends GUIelement {
 	return "TIMER";
     }
 
+    /**
+     * Toggle between the timer running and stopped.
+     */
     public void startStopSampling() {
 	if (isSampling) {
 	    isSampling = false;
@@ -230,6 +233,12 @@ public class GUITimer extends GUIelement {
 	}
     }
 
+
+    /**
+     * @return the name for the CLUC callback user function, which can be placed in
+     * the user code to automatically get called every tick period of this Timer
+     *
+     */
     public String getSampleEventString() {
 	return this.getUniqueName() + "_Tick();\n";
     }

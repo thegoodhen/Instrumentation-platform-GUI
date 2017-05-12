@@ -13,6 +13,17 @@ import javafx.scene.input.KeyEvent;
  */
 public class KeyProcessingUtils {
 
+    /**
+     * Create a string, representing the given {@link KeyEvent}.
+     * If this {@link KeyEvent} is a letter press, return the string representing this letter.
+     * If it is a special key (such as F1), wrap the text representing this key in "{@literal <>}" and then
+     * return this string. ({@literal <F1>}).
+     * When modifier keys are used, also use {@literal <>}; then use "S-" for shift,
+     * "A-" for alt and "C-" for control; append this before the actual letter or key pressed as such:
+     * {@literal <C-A-a>} for control-alt-a. or {@literal <C-S-F1>} for control-shift-F1.
+     * @param ke
+     * @return 
+     */
     public static String createStringFromKeyEvent(KeyEvent ke) {
 	String returnString = "";
 	if (ke.getEventType() == KeyEvent.KEY_TYPED) {
