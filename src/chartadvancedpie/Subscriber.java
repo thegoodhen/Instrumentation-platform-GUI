@@ -6,7 +6,8 @@
 package chartadvancedpie;
 
 /**
- *
+ *@deprecated
+ * An old class related to the old way communications were handled
  * @author thegoodhen
  */
 public interface Subscriber {

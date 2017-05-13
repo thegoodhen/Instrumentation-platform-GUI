@@ -1736,10 +1736,12 @@ public class GUIChart extends GUIelement {
 
     /**
      * If the line with this letter exists, return it; otherwise create it and
-     * return it.
+     * return it, if the 2nd argument is set to true or ignore otherwise.
      *
      * @param letter
-     * @return
+     * @param createIfNonexistant whether the line should be created, if no 
+     * line with this letter exists
+     * @return the line with this letter
      */
     public PlotLine getLine(String letter, boolean createIfNonexistant) {
 	char ch;

@@ -13,8 +13,24 @@ import shuntingyard.NumericByteCodeToken;
 import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
+
+
+
 /**
- *
+ * CLUC function to set some {@link IntegerProperty} of some {@link GUIElement} to a value.
+ * First argument is the ID of the {@link GUIElement}. Second is the target value
+ * to set this {@link IntegerProperty} to.
+ * Finally, the 3rd argument is the unique ID of this {@link Property}.
+ * 
+ * This ordering is a bit counterintuitive, but it is so for technical reasons,
+ * beyond the scope of this document.
+ * 
+ * This function isn't usually called by the user directly. It's used
+ * when compiling setter calls, such as {@code SLIDER3.setSelected(0);} by the
+ * {@link DotNotationParser}.
+ * 
+ * @see Property#getId() 
+ * @see DotNotationParser
  * @author thegoodhen
  */
 public class SetIntPropertyUserFunctionToken extends AbstractBuiltInFunctionToken {

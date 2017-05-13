@@ -11,9 +11,16 @@ import shuntingyard.IntegerNumberToken;
 import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
+
 /**
- *
+ * CLUC function for creating a new {@link GUISlider} {@link GUIElement}.
+ * Has a single argument, which is the name of the new {@link GUIDisplay}.
+ * It also places this new {@link GUIElement} on the current tab, under the 
+ * currently focused one.
+ * @see GUITab#getFocusedGUIElementIndex() 
+ * @see GUITab#addGUIelement(chartadvancedpie.GUIelement, int) 
  * @author thegoodhen
+ * @see GUIElement#getName()
  */
 public class newSliderUserFunctionToken extends AbstractBuiltInFunctionToken {
 

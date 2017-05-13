@@ -8,7 +8,8 @@ package chartadvancedpie;
 import java.util.ArrayList;
 
 /**
- *
+ * An {@link IKeyboardShortcutPreparer} for preparing keyboard shortcuts, related to tags.
+ * @see GUIelement#getTags() 
  * @author thegoodhen
  */
 public class TagKeyboardShortcutPreparer implements IKeyboardShortcutPreparer {

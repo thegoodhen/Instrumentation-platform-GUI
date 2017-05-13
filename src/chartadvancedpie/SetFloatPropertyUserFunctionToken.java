@@ -14,7 +14,20 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function to set some {@link FloatProperty} of some {@link GUIElement} to a value.
+ * First argument is the ID of the {@link GUIElement}. Second is the target value
+ * to set this {@link FloatProperty} to.
+ * Finally, the 3rd argument is the unique ID of this {@link Property}.
+ * 
+ * This ordering is a bit counterintuitive, but it is so for technical reasons,
+ * beyond the scope of this document.
+ * 
+ * This function isn't usually called by the user directly. It's used
+ * when compiling setter calls, such as {@code SLIDER3.setValue(20);} by the
+ * {@link DotNotationParser}.
+ * 
+ * @see DotNotationParser
+ * @see Property#getId() 
  * @author thegoodhen
  */
 public class SetFloatPropertyUserFunctionToken extends AbstractBuiltInFunctionToken {

@@ -15,6 +15,12 @@ import shuntingyard.VirtualMachine;
  *
  * @author thegoodhen
  */
+
+/**
+ * CLUC function for creating a new {@link GUITab}
+ * Has a single argument, which is the name of the new {@link GUITab}.
+ * @author thegoodhen
+ */
 public class newTabUserFunctionToken extends AbstractBuiltInFunctionToken {
 
     public newTabUserFunctionToken(String tokenString) {

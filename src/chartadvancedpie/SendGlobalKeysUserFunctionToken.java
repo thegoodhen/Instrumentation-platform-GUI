@@ -12,7 +12,11 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function to simulate the key presses, when no {@link GUIelement} is focused.
+ * 
+ * Uses the {@link GUIPanel#executeMacro(java.lang.String)} method.
+ * 
+ * @see GUIelement#isFocused() 
  * @author thegoodhen
  */
 public class SendGlobalKeysUserFunctionToken extends AbstractBuiltInFunctionToken {

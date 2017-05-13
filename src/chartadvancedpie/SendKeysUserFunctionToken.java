@@ -15,6 +15,18 @@ import shuntingyard.VirtualMachine;
  *
  * @author thegoodhen
  */
+
+
+/**
+ * CLUC function to simulate focusing of some {@link GUIelement} and then sending key presses to it.
+ * The ID of the {@link GUIelement} is the very first argument, the keypresses are the second one.
+ * 
+ * Uses the {@link KeySequence#execute(chartadvancedpie.GUIPanel)} method.
+ * 
+ * @see GUIelement#isFocused() 
+ * @author thegoodhen
+ */
+
 public class SendKeysUserFunctionToken extends AbstractBuiltInFunctionToken {
 
     public SendKeysUserFunctionToken(String tokenString) {

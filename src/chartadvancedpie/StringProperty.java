@@ -6,7 +6,7 @@
 package chartadvancedpie;
 
 /**
- *
+ * Property of type float.
  * @author thegoodhen
  */
 public class StringProperty extends Property<String>{

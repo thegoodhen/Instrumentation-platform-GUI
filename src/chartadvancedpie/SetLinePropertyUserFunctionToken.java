@@ -17,6 +17,32 @@ import shuntingyard.VirtualMachine;
  *
  * @author thegoodhen
  */
+
+
+
+
+/**
+ * CLUC function to set some {@link FloatProperty} of some {@link PlotLine} of some {@link GUIChart} to a value.
+ * First argument is the ID of the {@link GUIElement}. Second is the letter of the line,
+ * under which it is stored in the {@link GUIChart}.
+ * Third argument is the value to set this {@link FloatProperty} to.
+ * Finally, the 4th argument is the unique ID of this {@link Property}.
+ * 
+ * This ordering is a bit counterintuitive, but it is so for technical reasons,
+ * beyond the scope of this document.
+ * 
+ * This function isn't usually called by the user directly. It's used
+ * when compiling setter calls, such as {@code CHART1.setLineX(20);} by the
+ * {@link DotNotationParser}.
+ * 
+ * Returns 0 if everything went well or -1, if the {@link GUIelement} reffered
+ * by the ID is not a {@link GUIChart}.
+ * 
+ * 
+ * @see DotNotationParser
+ * @see Property#getId() 
+ * @author thegoodhen
+ */
 public class SetLinePropertyUserFunctionToken extends AbstractBuiltInFunctionToken {
 
     public SetLinePropertyUserFunctionToken(String tokenString) {

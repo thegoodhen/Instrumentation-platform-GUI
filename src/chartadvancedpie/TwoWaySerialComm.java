@@ -19,7 +19,8 @@ import java.util.logging.Logger;
 /**
  * This version of the TwoWaySerialComm example makes use of the
  * SerialPortEventListener to avoid polling.
- *
+ * @deprecated 
+ * An obsolete class for testing purposes.
  */
 public class TwoWaySerialComm {
 

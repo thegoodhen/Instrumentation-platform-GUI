@@ -12,8 +12,14 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function for creating a new {@link GUIDisplay} {@link GUIElement}.
+ * It also places this new {@link GUIElement} on the current tab, under the 
+ * currently focused one.
+ * Has a single argument, which is the name of the new {@link GUIDisplay}.
  * @author thegoodhen
+ * @see GUITab#getFocusedGUIElementIndex() 
+ * @see GUITab#addGUIelement(chartadvancedpie.GUIelement, int) 
+ * @see GUIElement#getName()
  */
 public class newDisplayUserFunctionToken extends AbstractBuiltInFunctionToken {
 

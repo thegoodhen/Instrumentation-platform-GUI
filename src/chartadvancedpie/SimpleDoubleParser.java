@@ -10,10 +10,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * A utility class for parsing text containing multiple Doubles at once.
  * @author thegoodhen
  */
 public class SimpleDoubleParser {
+    /**
+     * Parse doubles from a string; there are many supported formats of the input string:
+     * 
+     * 1 2 3 4
+     * <br>
+     * 1,3; 3,5; 2,8
+     * <br>
+     * 1.2 2.3 4.6
+     * <br>
+     * 1.1, 2.4, 5.6
+     * <br>
+     * 1,2 2,3 4,564
+     * <br>
+     * 1 000, 2 000, 3 000
+     * <br>
+     * 1,000,000; 2,000,000
+     * <br>
+     * 
+     * 
+     * @param s
+     * @return 
+     */
     public static ArrayList<Double> parseDoublesFromString(String s) {
 	Matcher m1 = Pattern.compile("^([^0-9.,-])*(.*?)(([^0-9e.,-]))*$").matcher(s);
 	String nonNumericCharsRegex = "[^0-9.,e-\\s]";

@@ -60,10 +60,24 @@ public class SerialCommunicator {
 	return this.sw;
     }
 
+    /**
+     *
+     * @return the {@link PacketHandler } object assigned to this
+     * {@code SerialCommunicator}
+     */
     public PacketHandler getPacketHandler() {
 	return this.ph;
     }
 
+    /**
+     * Estabilish connection with a module, located on serial port of the given
+     * name (such as "COM1" on win or "/dev/ttyUSB0/" on Linux)
+     *
+     * @param portName the name of the port to open
+     * @throws Exception when no such port exists or its busy or something else
+     * went wrong
+     * @see CommPortIdentifier#getPortIdentifier(java.lang.String)
+     */
     void connect(String portName) throws Exception {
 	CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 	if (portIdentifier.isCurrentlyOwned()) {
@@ -92,8 +106,7 @@ public class SerialCommunicator {
     }
 
     /**
-     * Handles the input coming from the serial port. A new line character is
-     * treated as the end of a block in this example.
+     * Handles the input coming from the serial port.
      */
     public class SerialReader implements SerialPortEventListener {
 
@@ -122,6 +135,19 @@ public class SerialCommunicator {
 	    }
 	}
 
+	/**
+	 * Try reading some bytes from the serial port we are connected to,
+	 * returning them as an array of integers from 0 to 255; If we have been
+	 * waiting for too long, throw a {@link TimeoutException} instead
+	 *
+	 * @param howMany how many bytes to wait for
+	 * @param timeoutBetweenBytes the maximum time period for which to wait
+	 * for another byte before throwing a {@link TimeoutException}
+	 * @return an array of ints from 0 to 255, representing the received
+	 * bytes.
+	 * @throws TimeoutException
+	 * @throws IOException
+	 */
 	public int[] readOrDie(int howMany, long timeoutBetweenBytes) throws TimeoutException, IOException {
 	    int[] returnArr = new int[howMany];
 	    for (int i = 0; i < howMany; i++) {
@@ -149,6 +175,15 @@ public class SerialCommunicator {
 	    return returnArr;
 	}
 
+	/**
+	 * Link layer method, which interprets the incoming data as a packet,
+	 * checks the integrity using the {@link checkIntegrity} method and then
+	 * forms a {@link RequestNew} from this packet and sends it to be
+	 * resolved, using {@link PacketHandler#offer(chartadvancedpie.RequestNew)
+	 * }. Also sends an acknowledge ({@link sendOk}) or nonacknowledge
+	 * ({@link sendNOTOk}) on success or fail of the integrity check
+	 * respectively.
+	 */
 	private void handlePacket() {
 	    try {
 		//System.out.println("new Packet!");
@@ -191,6 +226,13 @@ public class SerialCommunicator {
 	    }
 	}
 
+	/**
+	 * Check the integrity of the data provided, by calculating a crc-8 checksum and comparing it with the
+	 * one provided.
+	 * @param data the data to calculate the crc-8 checksum from.
+	 * @param chksum the checksum to compare the calculated checskum with
+	 * @return whether the integrity check passed.
+	 */
 	private boolean checkIntegrity(int[] data, int chksum) {
 	    if (chksum == 6) {//TODO: actually implement chksum
 		return true;
@@ -198,6 +240,13 @@ public class SerialCommunicator {
 	    return false;
 	}
 
+	/**
+	 * This method is a listener method, which automatically gets called
+	 * when a new SerialPortEvent occurs. (When new data is received).
+	 *
+	 * @param arg0 the {@link SerialPortEvent} object, containing the
+	 * information about the event that occured.
+	 */
 	public void serialEvent(SerialPortEvent arg0) {
 	    if (!idle) {//only handle the start of a packet!
 		return;
@@ -210,7 +259,8 @@ public class SerialCommunicator {
     }
 
     /**
-     *
+     * Take the data array and append a crc-8 checksum to the end.
+     * This method modifies the input argument.
      */
     public static void fillCheckSum(byte[] data) {
 	byte chksum = 0;
@@ -220,7 +270,10 @@ public class SerialCommunicator {
 	data[data.length - 1] = chksum;
     }
 
-    public class SerialWriter implements Runnable {
+    /**
+     * Class for sending data to the serial port.
+     */
+    public class SerialWriter {
 
 	private int unprocessedRequestCount = 0;//number of outgoing requests we haven't received "OK" to.
 	private int maxUnprocessedRequestCount = 5;//maximum number of outgoing request that we haven't received confirmation to, for which we still allow sending new request
@@ -228,6 +281,9 @@ public class SerialCommunicator {
 	private final Object lock1 = new Object();
 	private final Object reqCountLock = new Object();
 
+	/**
+	 * Inform this writer that one of the requests it send have been resolved.
+	 */
 	public void informAboutProcessedRequest() {
 	    synchronized (reqCountLock) {
 		if (unprocessedRequestCount != 0) {//should never happen tho
@@ -236,12 +292,18 @@ public class SerialCommunicator {
 	    }
 	}
 
+	/**
+	 * Increase the counter that determines the amount of currently sent, but unresolved requests.
+	 */
 	private void increaseUnprocessedRequestCount() {
 	    synchronized (reqCountLock) {
 		unprocessedRequestCount += 1;
 	    }
 	}
 
+	/**
+	   * Return the value of the counter that determines the amount of currently sent, but unresolved requests.
+	 */
 	public int getUnprocessedRequestCount() {
 	    synchronized (reqCountLock) {
 		return unprocessedRequestCount;
@@ -254,6 +316,9 @@ public class SerialCommunicator {
 	    this.out = out;
 	}
 
+	/**
+	 * Send an OK (positive ACK) command to the module.
+	 */
 	public void sendOk() {
 	    System.out.println("sending ok");
 	    final int OK = 0;
@@ -265,6 +330,9 @@ public class SerialCommunicator {
 	    }
 	}
 
+	/**
+	 * Send an NotOK (Negative ACK) command to the module.
+	 */
 	public void sendNOTOk() {
 	    final int NOTOK = 1;
 	    int[] a = {NOTOK};
@@ -276,6 +344,10 @@ public class SerialCommunicator {
 
 	}
 
+
+	/**
+	 * Send an INIT command to the module.
+	 */
 	public void sendInit() {
 	    int[] data = {10};
 	    try {
@@ -285,19 +357,23 @@ public class SerialCommunicator {
 	    }
 	}
 
-
-
+	/**
+	 * Send an INIT2 command to the module.
+	 */
 	public void sendInit2() {
-	    
+
 	    int[] data = {9};
 	    try {
 		sendData(data, true);
 	    } catch (IOException ex) {
 		Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
 	    }
-	    
+
 	}
 
+	/**
+	 * Send an GUI_ELEMENT_RENUMBER command to the module.
+	 */
 	void sendGUIElementRenumber(byte origNumber, byte targetNumber)//TODO: maybe it should be int, int or byte, int
 	{
 	    int[] data = {12, origNumber, targetNumber};
@@ -308,6 +384,13 @@ public class SerialCommunicator {
 	    }
 	}
 
+	/**
+	 * Send the data provided to the module, returning true on success, false otherwise.
+	 * @param data the data to send, array of ints from 0 to 255.
+	 * @param waitForConfirm whether we should actively wait for the reply (true) or not (false)
+	 * @return true on success, false otherwise.
+	 * @throws IOException when something goes wrong
+	 */
 	public boolean sendData(int[] data, boolean waitForConfirm) throws IOException {
 	    synchronized (lock1) {
 		if (getUnprocessedRequestCount() >= maxUnprocessedRequestCount) {
@@ -344,12 +427,15 @@ public class SerialCommunicator {
 	    }
 	}
 
+	/**
+	 * Calculate the crc-8 checksum of the data provided
+	 * @param data
+	 * @return the crc-8 checksum of the data provided
+	 */
 	private int calculateChecksum(int[] data) {
 	    return 6;//TODO: actually calculate the checksum
 	}
 
-	public void run() {
-	}
     }
 
     /*

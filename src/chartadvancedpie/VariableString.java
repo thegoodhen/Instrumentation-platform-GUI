@@ -8,6 +8,7 @@ package chartadvancedpie;
 /**
  *
  * @author thegoodhen
+ * @deprecated
  */
 public class VariableString extends Variable{
 	private String stringValue;

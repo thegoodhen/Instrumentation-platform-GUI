@@ -12,7 +12,10 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ * CLUC function used for setting a content of some register.
+ * The first argument is the string, determining the letter of this register.
+ * Second one is the new content of said register.
+ * @see GUIPanel#setRegisterContent(java.lang.String, java.lang.String) 
  * @author thegoodhen
  */
 public class setRegisterUserFunctionToken extends AbstractBuiltInFunctionToken {

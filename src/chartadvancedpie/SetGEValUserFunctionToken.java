@@ -14,7 +14,15 @@ import shuntingyard.VariableToken;
 import shuntingyard.VirtualMachine;
 
 /**
- *
+ *@deprecated
+ * This was a CLUC function, used to set the {@code Value} {@link Property} of
+ * {@link GUIElement} objects. It has since been replaced by a more powerful
+ * set of function {@link SetFloatPropertyUserFunctionToken}, that allow
+ * adjustments of any {@link Property}, not just the {@code Value}.
+ * This has rendered this function obsolete.
+ * 
+ * @see SetIntPropertyUserFunctionToken
+ * @see SetFloatPropertyUserFunctionToken
  * @author thegoodhen
  */
 public class SetGEValUserFunctionToken extends AbstractBuiltInFunctionToken{

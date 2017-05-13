@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Abstraction of a request, sent by the connected module.
  * Replacement for the old request class, which is now @Deprecated.
  *
  * @author thegoodhen
@@ -23,10 +24,20 @@ public class RequestNew {
 	this.arr = arr;
     }
 
+    /**
+     * Return the data of the request, as an array of bytes, stored as integers from 0 to 255. The first
+     * integer determines how many numbers are going to follow. The second one determines the type of the request
+     * an the rest are parameters, related to this request type that differ from type to type.
+     * 
+     * @return the data of the request, as an array of integers.
+     */
     public int[] getData() {
 	return arr;
     }
 
+    /**
+     * Take the request and resolve it, doing the action this request asks us to do.
+     */
     public void resolve() {
 
 	try {
